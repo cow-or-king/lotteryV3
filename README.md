@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReviewLottery v3.0
 
-## Getting Started
+## 🎯 Professional SaaS with Hexagonal Architecture
 
-First, run the development server:
+**Stack moderne et architecture professionnelle pour une application SaaS scalable.**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### ⚠️ Règles Strictes du Projet
+
+- **ZERO `any` types** - TypeScript ultra-strict
+- **Result Pattern** - Aucun throw dans la logique métier
+- **Hexagonal Architecture** - Séparation stricte des couches
+- **Test-Driven Development** - Tests avant le code
+- **Branded Types** - Type-safety pour tous les IDs
+
+### 🏗️ Architecture
+
+```
+src/
+├── core/              # Domain layer (ZERO dépendances)
+├── application/       # Use cases
+├── infrastructure/    # Implémentations techniques
+├── presentation/      # UI/Components
+├── shared/           # Types partagés (Result, Branded)
+└── test/             # Tests unitaires/intégration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🚀 Technologies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 16.0.7 + React 19.2
+- **Language**: TypeScript 5.x (ultra-strict mode)
+- **Database**: PostgreSQL via Prisma
+- **API**: tRPC (type-safe end-to-end)
+- **Auth**: Supabase
+- **State**: Zustand
+- **Validation**: Zod
+- **Testing**: Vitest + Testing Library
+- **Design**: Tailwind CSS + Radix UI
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📦 Installation
 
-## Learn More
+```bash
+npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 🔧 Commandes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev          # Développement
+npm run build        # Build production
+npm run test         # Tests unitaires
+npm run test:coverage # Coverage report
+npm run lint         # ESLint
+npm run type-check   # TypeScript check
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 📊 Métriques de Qualité
 
-## Deploy on Vercel
+- ✅ **0 `any` types**
+- ✅ **80%+ test coverage**
+- ✅ **0 TypeScript errors**
+- ✅ **0 ESLint errors**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 📚 Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [PRD_ReviewLottery_v3.md](./PRD_ReviewLottery_v3.md) - Product Requirements
+- [plan.md](./plan.md) - Development Plan
+- [PROGRESS.md](./PROGRESS.md) - Daily Progress Tracker
+
+### 🎨 Design System
+
+Inspiré par **Cadeo.io** - Style neo-brutalist avec:
+- Bordures noires épaisses
+- Ombres fortes
+- Gamification visuelle
+- Animations dynamiques
+
+---
+
+**Version**: 3.0.0
+**License**: Proprietary
+**Author**: ReviewLottery Team
