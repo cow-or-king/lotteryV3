@@ -1,0 +1,219 @@
+// ReviewLottery v3.0 - Database Schema
+// Architecture: Hexagonal / DDD
+// IMPORTANT: ZERO compromis sur la type-safety
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =====================
+// USERS & AUTHENTICATION
+// =====================
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  emailVerified   Boolean  @default(false) @map("email_verified")
+  hashedPassword  String?  @map("hashed_password")
+  name            String?
+  avatarUrl       String?  @map("avatar_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subscription    Subscription?
+  stores          Store[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique @map("user_id")
+  plan                 String    @default("FREE")
+  status               String    @default("ACTIVE")
+  storesLimit          Int       @default(1) @map("stores_limit")
+  campaignsLimit       Int       @default(0) @map("campaigns_limit")
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@map("subscriptions")
+}
+
+// =====================
+// STORES
+// =====================
+
+model Store {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  name              String
+  description       String?
+  ownerId           String    @map("owner_id")
+  googlePlaceId     String?   @map("google_place_id")
+  googleBusinessUrl String?   @map("google_business_url")
+  logoUrl           String?   @map("logo_url")
+  primaryColor      String    @default("#5B21B6") @map("primary_color")
+  secondaryColor    String    @default("#FACC15") @map("secondary_color")
+  font              String    @default("inter")
+  isActive          Boolean   @default(true) @map("is_active")
+  isPaid            Boolean   @default(true) @map("is_paid")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  owner     User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaigns Campaign[]
+  reviews   Review[]
+
+  @@index([ownerId])
+  @@index([slug])
+  @@map("stores")
+}
+
+// =====================
+// CAMPAIGNS
+// =====================
+
+model Campaign {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  storeId        String   @map("store_id")
+  startDate      DateTime @map("start_date")
+  endDate        DateTime @map("end_date")
+  isActive       Boolean  @default(false) @map("is_active")
+  wheelStyle     String   @default("classic") @map("wheel_style")
+  wheelAnimation String   @default("spin") @map("wheel_animation")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  prizes       Prize[]
+  participants Participant[]
+
+  @@index([storeId])
+  @@index([isActive, startDate, endDate])
+  @@map("campaigns")
+}
+
+// =====================
+// PRIZES
+// =====================
+
+model Prize {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  value       Float?
+  campaignId  String   @map("campaign_id")
+  color       String
+  probability Float
+  quantity    Int
+  remaining   Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  winners  Winner[]
+
+  @@index([campaignId])
+  @@map("prizes")
+}
+
+// =====================
+// PARTICIPANTS
+// =====================
+
+model Participant {
+  id            String    @id @default(cuid())
+  email         String
+  name          String?
+  phone         String?
+  campaignId    String    @map("campaign_id")
+  hasPlayed     Boolean   @default(false) @map("has_played")
+  playedAt      DateTime? @map("played_at")
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  hasReviewed   Boolean   @default(false) @map("has_reviewed")
+  reviewRating  Int?      @map("review_rating")
+  reviewComment String?   @map("review_comment")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([email, campaignId])
+  @@index([campaignId])
+  @@index([email])
+  @@map("participants")
+}
+
+// =====================
+// WINNERS
+// =====================
+
+model Winner {
+  id               String    @id @default(cuid())
+  prizeId          String    @map("prize_id")
+  participantEmail String    @map("participant_email")
+  participantName  String?   @map("participant_name")
+  claimCode        String    @unique @map("claim_code")
+  status           String    @default("PENDING")
+  claimedAt        DateTime? @map("claimed_at")
+  expiresAt        DateTime  @map("expires_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  prize Prize @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+
+  @@index([claimCode])
+  @@index([status])
+  @@map("winners")
+}
+
+// =====================
+// GOOGLE REVIEWS
+// =====================
+
+model Review {
+  id              String    @id @default(cuid())
+  googleReviewId  String    @unique @map("google_review_id")
+  storeId         String    @map("store_id")
+  authorName      String    @map("author_name")
+  authorPhotoUrl  String?   @map("author_photo_url")
+  rating          Int
+  comment         String?
+  reviewTime      DateTime  @map("review_time")
+  responseText    String?   @map("response_text")
+  respondedAt     DateTime? @map("responded_at")
+  respondedBy     String?   @map("responded_by")
+  status          String    @default("NEW")
+  sentiment       String?
+  syncedAt        DateTime  @default(now()) @map("synced_at")
+
+  // Relations
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, status])
+  @@index([googleReviewId])
+  @@map("reviews")
+}
