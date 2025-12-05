@@ -9,7 +9,7 @@
  */
 
 import { Result } from '@/shared/types/result.type';
-import { UserId, Email, Password, StoreId, SubscriptionId } from '@/shared/types/branded.type';
+import { UserId, Email, StoreId, SubscriptionId } from '@/shared/types/branded.type';
 
 // Domain Errors
 export class InvalidUserDataError extends Error {
@@ -137,8 +137,9 @@ export class UserEntity {
       return false; // Free tier: no campaigns
     }
 
-    return this.props.subscription.status === 'ACTIVE' ||
-           this.props.subscription.status === 'TRIALING';
+    return (
+      this.props.subscription.status === 'ACTIVE' || this.props.subscription.status === 'TRIALING'
+    );
   }
 
   upgradeSubscription(newPlan: UserSubscription['plan']): Result<void> {
@@ -146,7 +147,7 @@ export class UserEntity {
 
     if (!this.canUpgradeTo(currentPlan, newPlan)) {
       return Result.fail(
-        new UserSubscriptionError(`Cannot upgrade from ${currentPlan} to ${newPlan}`)
+        new UserSubscriptionError(`Cannot upgrade from ${currentPlan} to ${newPlan}`),
       );
     }
 
@@ -170,15 +171,11 @@ export class UserEntity {
 
   addStore(storeId: StoreId): Result<UserEntity> {
     if (!this.canCreateStore()) {
-      return Result.fail(
-        new UserSubscriptionError('Store limit reached for current plan')
-      );
+      return Result.fail(new UserSubscriptionError('Store limit reached for current plan'));
     }
 
     if (this.props.stores.includes(storeId)) {
-      return Result.fail(
-        new InvalidUserDataError('Store already associated with user')
-      );
+      return Result.fail(new InvalidUserDataError('Store already associated with user'));
     }
 
     const updatedUser = new UserEntity({
@@ -192,9 +189,7 @@ export class UserEntity {
 
   removeStore(storeId: StoreId): Result<UserEntity> {
     if (!this.props.stores.includes(storeId)) {
-      return Result.fail(
-        new InvalidUserDataError('Store not associated with user')
-      );
+      return Result.fail(new InvalidUserDataError('Store not associated with user'));
     }
 
     const updatedUser = new UserEntity({

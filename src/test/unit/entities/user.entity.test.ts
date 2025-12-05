@@ -5,7 +5,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { UserEntity } from '@/core/entities/user.entity';
-import { Result } from '@/shared/types/result.type';
 
 describe('UserEntity', () => {
   describe('create', () => {
