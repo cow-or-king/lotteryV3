@@ -62,13 +62,15 @@ npm run type-check   # TypeScript check
 
 ### 📚 Documentation
 
-- [PRD_ReviewLottery_v3.md](./PRD_ReviewLottery_v3.md) - Product Requirements
-- [plan.md](./plan.md) - Development Plan
-- [PROGRESS.md](./PROGRESS.md) - Daily Progress Tracker
+- [DEVELOPMENT.md](./docs/DEVELOPMENT.md) - **📖 Guide Complet (START HERE)**
+- [PRD_ReviewLottery_v3.md](./docs/PRD_ReviewLottery_v3.md) - Product Requirements
+- [plan.md](./docs/plan.md) - Development Plan (30 days)
+- [PROGRESS.md](./docs/PROGRESS.md) - Daily Progress Tracker
 
 ### 🎨 Design System
 
 Inspiré par **Cadeo.io** - Style neo-brutalist avec:
+
 - Bordures noires épaisses
 - Ombres fortes
 - Gamification visuelle

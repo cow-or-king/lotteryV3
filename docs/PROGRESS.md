@@ -5,6 +5,7 @@
 ### Accomplissements
 
 #### ✅ Configuration TypeScript Ultra-Stricte
+
 - ✅ **ZERO `any` types autorisés**
 - ✅ `noImplicitAny: true`
 - ✅ `strictNullChecks: true`
@@ -12,6 +13,7 @@
 - ✅ Types explicites obligatoires partout
 
 #### ✅ Architecture Hexagonale
+
 ```
 /src
   /core             ✅ Domain layer (ZERO dépendances)
@@ -23,22 +25,26 @@
 ```
 
 #### ✅ Result Pattern Implémenté
+
 - **Jamais de `throw` dans la logique métier**
 - Gestion des erreurs type-safe
 - Helper methods (ok, fail, map, flatMap, combine)
 
 #### ✅ Branded Types
+
 - Type-safety pour tous les IDs
 - Impossible de confondre UserId avec StoreId
 - Validation helpers intégrés
 
 #### ✅ Premier Domain Entity
+
 - `UserEntity` avec logique métier pure
 - AUCUNE dépendance externe
 - Tests unitaires (8/8 passing)
 - Exemple de TDD appliqué
 
 #### ✅ Tooling & Quality
+
 - ESLint configuré avec règles ultra-strictes
 - Prettier pour le formatting
 - Husky pre-commit hooks
@@ -56,25 +62,30 @@
 ### Technologies Installées
 
 **Core**:
+
 - Next.js 16.0.7
 - TypeScript 5.x (ultra-strict)
 - React 19.2.0
 
 **Database & API**:
+
 - Prisma 7.1.0
 - tRPC 11.7.2
 - Zod 4.1.13
 
 **State & Auth**:
+
 - Zustand 5.0.9
 - Supabase 2.86.2
 
 **UI**:
+
 - Tailwind CSS 4
 - Radix UI
 - Class Variance Authority
 
 **Testing**:
+
 - Vitest 4.0.15
 - Testing Library
 - Playwright
@@ -104,6 +115,7 @@
 ### Notes Importantes
 
 ⚠️ **RAPPEL**: Toujours respecter:
+
 - ZERO `any` types
 - Result Pattern pour TOUTES les erreurs business
 - Tests AVANT le code (TDD)

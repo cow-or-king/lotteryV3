@@ -39,26 +39,26 @@
 // ✅ CONVENTIONS STRICTES À SUIVRE
 
 // Fichiers & Dossiers
-user-service.ts           // kebab-case pour les fichiers
-UserProfile.tsx           // PascalCase pour les composants React
-format-date.ts           // kebab-case pour les utils
-IUserRepository.ts       // Interface avec préfixe I
+user - service.ts; // kebab-case pour les fichiers
+UserProfile.tsx; // PascalCase pour les composants React
+format - date.ts; // kebab-case pour les utils
+IUserRepository.ts; // Interface avec préfixe I
 
 // Classes & Interfaces
-class UserService {}                        // PascalCase
-interface IUserRepository {}                // Préfixe I pour interfaces
-type TUserRole = "admin" | "user";         // Préfixe T pour types
-enum ESubscriptionPlan {}                   // Préfixe E pour enums
+class UserService {} // PascalCase
+interface IUserRepository {} // Préfixe I pour interfaces
+type TUserRole = 'admin' | 'user'; // Préfixe T pour types
+enum ESubscriptionPlan {} // Préfixe E pour enums
 
 // Variables & Constantes
-const MAX_RETRY_ATTEMPTS = 3;              // SCREAMING_SNAKE_CASE pour constantes
-const getUserById = () => {};              // camelCase pour fonctions
-let userCount = 0;                         // camelCase pour variables
+const MAX_RETRY_ATTEMPTS = 3; // SCREAMING_SNAKE_CASE pour constantes
+const getUserById = () => {}; // camelCase pour fonctions
+let userCount = 0; // camelCase pour variables
 
 // Branded Types pour la Type-Safety
-type UserId = string & { __brand: "UserId" };
-type StoreId = string & { __brand: "StoreId" };
-type ClaimCode = string & { __brand: "ClaimCode" };
+type UserId = string & { __brand: 'UserId' };
+type StoreId = string & { __brand: 'StoreId' };
+type ClaimCode = string & { __brand: 'ClaimCode' };
 ```
 
 ### Pattern de Gestion d'Erreurs
@@ -66,9 +66,7 @@ type ClaimCode = string & { __brand: "ClaimCode" };
 ```typescript
 // ✅ OBLIGATOIRE: Result Pattern pour toutes les opérations
 
-type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 
 // Utilisation
 async function createUser(dto: CreateUserDto): Promise<Result<User>> {
@@ -83,14 +81,15 @@ async function createUser(dto: CreateUserDto): Promise<Result<User>> {
     const user = await userRepository.create(validation.data);
     return { success: true, data: user };
   } catch (error) {
-    return { success: false, error: new DomainError("User creation failed", error) };
+    return { success: false, error: new DomainError('User creation failed', error) };
   }
 }
 
 // ❌ INTERDIT
-async function badExample(data: any) {  // ❌ any type
-  const user = await db.user.create(data);  // ❌ Pas de validation
-  return user;  // ❌ Pas de gestion d'erreur
+async function badExample(data: any) {
+  // ❌ any type
+  const user = await db.user.create(data); // ❌ Pas de validation
+  return user; // ❌ Pas de gestion d'erreur
 }
 ```
 
@@ -686,7 +685,7 @@ export class UserEntity {
 
   upgradeSubscription(newPlan: SubscriptionPlan): Result<void> {
     if (!this._subscription.canUpgradeTo(newPlan)) {
-      return { success: false, error: new DomainError("Cannot upgrade to this plan") };
+      return { success: false, error: new DomainError('Cannot upgrade to this plan') };
     }
     this._subscription = this._subscription.upgradeTo(newPlan);
     return { success: true, data: undefined };
@@ -757,7 +756,7 @@ export type CreateUserDTO = {
   email: string;
   password: string;
   name?: string;
-  plan: "starter" | "growth" | "business";
+  plan: 'starter' | 'growth' | 'business';
 };
 
 export type UserResponseDTO = {
@@ -783,13 +782,14 @@ export type UserResponseDTO = {
 ```typescript
 // src/application/validators/user.schema.ts
 export const createUserSchema = z.object({
-  email: z.string().email("Email invalide"),
-  password: z.string()
-    .min(8, "Minimum 8 caractères")
-    .regex(/[A-Z]/, "Au moins une majuscule")
-    .regex(/[0-9]/, "Au moins un chiffre"),
+  email: z.string().email('Email invalide'),
+  password: z
+    .string()
+    .min(8, 'Minimum 8 caractères')
+    .regex(/[A-Z]/, 'Au moins une majuscule')
+    .regex(/[0-9]/, 'Au moins un chiffre'),
   name: z.string().min(2).optional(),
-  plan: z.enum(["starter", "growth", "business"])
+  plan: z.enum(['starter', 'growth', 'business']),
 });
 
 export type TCreateUserInput = z.infer<typeof createUserSchema>;
@@ -806,19 +806,14 @@ interface User {
   name?: string;
 
   // Role & Permissions
-  role: "super_admin" | "admin";
+  role: 'super_admin' | 'admin';
   permissions?: string[]; // Future: granular permissions
 
   // Subscription (si admin)
   stripeCustomerId?: string;
   subscriptionId?: string;
-  subscriptionStatus?:
-    | "active"
-    | "canceled"
-    | "past_due"
-    | "trialing"
-    | "incomplete";
-  subscriptionPlan?: "starter" | "growth" | "business";
+  subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+  subscriptionPlan?: 'starter' | 'growth' | 'business';
   subscriptionStartedAt?: Date;
   subscriptionEndsAt?: Date;
   trialEndsAt?: Date;
@@ -866,11 +861,11 @@ interface Store {
     logoSize?: number; // En bytes
     primaryColor: string; // Hex
     secondaryColor: string; // Hex
-    font: "inter" | "poppins" | "roboto" | "montserrat";
+    font: 'inter' | 'poppins' | 'roboto' | 'montserrat';
 
     // Wheel customization
-    wheelStyle: "classic" | "modern" | "neon" | "minimal";
-    wheelAnimation: "spin" | "bounce" | "elastic";
+    wheelStyle: 'classic' | 'modern' | 'neon' | 'minimal';
+    wheelAnimation: 'spin' | 'bounce' | 'elastic';
     wheelSpeed: number; // 1-5
 
     // Advanced (Plan Business)
@@ -892,7 +887,7 @@ interface Store {
     emailNotifications: boolean;
     reviewMinRating: number; // Ex: 4 (only sync 4-5 stars)
     autoResponseEnabled: boolean; // Phase 2
-    language: "fr" | "en";
+    language: 'fr' | 'en';
   };
 
   // Status
@@ -918,8 +913,8 @@ interface Subscription {
   stripePriceId: string;
 
   // Plan
-  plan: "starter" | "growth" | "business";
-  status: "active" | "canceled" | "past_due" | "trialing" | "incomplete";
+  plan: 'starter' | 'growth' | 'business';
+  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
 
   // Billing
   currentPeriodStart: Date;
@@ -1068,7 +1063,7 @@ interface Winner {
   };
 
   // Status
-  status: "pending" | "claimed" | "expired";
+  status: 'pending' | 'claimed' | 'expired';
   expiresAt: Date;
   claimedAt?: Date;
   claimedBy?: string; // Email de l'admin qui a validé
@@ -1117,7 +1112,7 @@ interface GoogleReview {
   };
 
   // Status
-  status: "new" | "replied" | "flagged" | "archived";
+  status: 'new' | 'replied' | 'flagged' | 'archived';
   flagReason?: string; // Si flagged
 
   // Internal Notes
@@ -1141,11 +1136,11 @@ interface TeamMember {
 
   // Access
   email: string;
-  role: "manager" | "viewer"; // manager: full access, viewer: read-only
+  role: 'manager' | 'viewer'; // manager: full access, viewer: read-only
   storeIds: ObjectId[]; // Stores accessibles
 
   // Status
-  status: "pending" | "active" | "suspended";
+  status: 'pending' | 'active' | 'suspended';
   invitedAt: Date;
   joinedAt?: Date;
 
@@ -1205,15 +1200,15 @@ interface TeamMember {
 // Prix IDs (à créer dans Stripe Dashboard)
 const STRIPE_PRICES = {
   plans: {
-    starter: "price_starter_monthly_29",
-    growth: "price_growth_monthly_79",
-    business: "price_business_monthly_149",
+    starter: 'price_starter_monthly_29',
+    growth: 'price_growth_monthly_79',
+    business: 'price_business_monthly_149',
   },
   addOns: {
-    extraStore: "price_addon_store_15",
-    teamMember: "price_addon_team_10",
-    whiteLabel: "price_addon_whitelabel_30",
-    whatsapp: "price_addon_whatsapp_20",
+    extraStore: 'price_addon_store_15',
+    teamMember: 'price_addon_team_10',
+    whiteLabel: 'price_addon_whitelabel_30',
+    whatsapp: 'price_addon_whatsapp_20',
   },
 };
 
@@ -1228,11 +1223,11 @@ async function createSubscription(userId: string, plan: string) {
     customer: customer.id,
     items: [{ price: STRIPE_PRICES.plans[plan] }],
     trial_period_days: 14,
-    payment_behavior: "default_incomplete",
+    payment_behavior: 'default_incomplete',
     payment_settings: {
-      save_default_payment_method: "on_subscription",
+      save_default_payment_method: 'on_subscription',
     },
-    expand: ["latest_invoice.payment_intent"],
+    expand: ['latest_invoice.payment_intent'],
   });
 
   return subscription;
@@ -1250,19 +1245,16 @@ async function createSubscription(userId: string, plan: string) {
 **Fonctionnalités** :
 
 1. **Connexion Google My Business**
-
    - OAuth 2.0 flow
    - Sélection du lieu (si plusieurs)
    - Stockage tokens (encrypted)
 
 2. **Import automatique**
-
    - Cron job toutes les heures
    - Sync incrémentale (depuis dernier sync)
    - Notification email pour nouveaux avis
 
 3. **Dashboard Reviews**
-
    - Liste avis avec filtres :
      - Rating (1-5 étoiles)
      - Status (new, replied, flagged, archived)
@@ -1280,7 +1272,7 @@ async function createSubscription(userId: string, plan: string) {
 
 ```typescript
 // lib/api/google-mybusiness.ts
-import { google } from "googleapis";
+import { google } from 'googleapis';
 
 export class GoogleMyBusinessAPI {
   private oauth2Client;
@@ -1289,7 +1281,7 @@ export class GoogleMyBusinessAPI {
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
+      process.env.GOOGLE_REDIRECT_URI,
     );
 
     this.oauth2Client.setCredentials({
@@ -1300,13 +1292,13 @@ export class GoogleMyBusinessAPI {
 
   async listReviews(locationId: string, since?: Date) {
     const mybusiness = google.mybusinessaccountmanagement({
-      version: "v1",
+      version: 'v1',
       auth: this.oauth2Client,
     });
 
     const response = await mybusiness.accounts.locations.reviews.list({
       parent: `accounts/${locationId}`,
-      orderBy: "updateTime desc",
+      orderBy: 'updateTime desc',
     });
 
     return response.data.reviews || [];
@@ -1314,7 +1306,7 @@ export class GoogleMyBusinessAPI {
 
   async replyToReview(reviewName: string, comment: string) {
     const mybusiness = google.mybusinessaccountmanagement({
-      version: "v1",
+      version: 'v1',
       auth: this.oauth2Client,
     });
 
@@ -1330,17 +1322,15 @@ export class GoogleMyBusinessAPI {
 // app/api/cron/sync-reviews/route.ts
 export async function GET(req: NextRequest) {
   // Vérifier authorization (Vercel Cron Secret)
-  if (
-    req.headers.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (req.headers.get('Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   await dbConnect();
 
   // Récupérer tous les stores avec credentials Google
   const stores = await Store.find({
-    "googleCredentials.accessToken": { $exists: true },
+    'googleCredentials.accessToken': { $exists: true },
     isActive: true,
   });
 
@@ -1361,10 +1351,7 @@ async function syncStoreReviews(storeId: string) {
 
   const gmb = new GoogleMyBusinessAPI(store.googleCredentials);
 
-  const reviews = await gmb.listReviews(
-    store.googlePlaceId,
-    store.lastReviewSync
-  );
+  const reviews = await gmb.listReviews(store.googlePlaceId, store.lastReviewSync);
 
   let newReviewsCount = 0;
 
@@ -1387,7 +1374,7 @@ async function syncStoreReviews(storeId: string) {
         comment: review.comment,
         createTime: new Date(review.createTime),
         updateTime: review.updateTime ? new Date(review.updateTime) : undefined,
-        status: "new",
+        status: 'new',
         lastSyncedAt: new Date(),
       });
 
@@ -1395,9 +1382,7 @@ async function syncStoreReviews(storeId: string) {
     } else {
       // Update existing
       existing.comment = review.comment;
-      existing.updateTime = review.updateTime
-        ? new Date(review.updateTime)
-        : undefined;
+      existing.updateTime = review.updateTime ? new Date(review.updateTime) : undefined;
       existing.lastSyncedAt = new Date();
       await existing.save();
     }
@@ -1413,7 +1398,7 @@ async function syncStoreReviews(storeId: string) {
     await sendEmail({
       to: owner.email,
       subject: `${newReviewsCount} nouvel(s) avis Google pour ${store.name}`,
-      template: "new-reviews",
+      template: 'new-reviews',
       data: {
         storeName: store.name,
         count: newReviewsCount,
@@ -1424,25 +1409,25 @@ async function syncStoreReviews(storeId: string) {
 }
 
 // lib/actions/review.actions.ts
-("use server");
+('use server');
 
-import { getServerSession } from "next-auth";
+import { getServerSession } from 'next-auth';
 
 export async function replyToReview(reviewId: string, comment: string) {
   const session = await getServerSession();
-  if (!session || session.user.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!session || session.user.role !== 'admin') {
+    throw new Error('Unauthorized');
   }
 
   const review = await GoogleReview.findById(reviewId);
-  if (!review) throw new Error("Review not found");
+  if (!review) throw new Error('Review not found');
 
   const store = await Store.findById(review.storeId);
-  if (!store) throw new Error("Store not found");
+  if (!store) throw new Error('Store not found');
 
   // Vérifier que l'admin possède ce store
   if (store.ownerId.toString() !== session.user.id) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   // Publier réponse via Google API
@@ -1456,7 +1441,7 @@ export async function replyToReview(reviewId: string, comment: string) {
     respondedBy: session.user.email,
     wasAiGenerated: false,
   };
-  review.status = "replied";
+  review.status = 'replied';
   await review.save();
 
   return { success: true };
@@ -1467,14 +1452,14 @@ export async function replyToReview(reviewId: string, comment: string) {
 
 ```tsx
 // components/features/reviews/review-card.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Star, Reply } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { replyToReview } from "@/lib/actions/review.actions";
+import { useState } from 'react';
+import { Star, Reply } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { replyToReview } from '@/lib/actions/review.actions';
 
 interface ReviewCardProps {
   review: GoogleReview;
@@ -1483,7 +1468,7 @@ interface ReviewCardProps {
 
 export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
   const [isReplying, setIsReplying] = useState(false);
-  const [replyText, setReplyText] = useState("");
+  const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleReply = async () => {
@@ -1493,7 +1478,7 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
     try {
       await replyToReview(review._id, replyText);
       setIsReplying(false);
-      setReplyText("");
+      setReplyText('');
       onReplySuccess?.();
     } catch (error) {
       alert("Erreur lors de l'envoi de la réponse");
@@ -1522,9 +1507,7 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
                   <Star
                     key={i}
                     className={`w-4 h-4 ${
-                      i < review.starRating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
+                      i < review.starRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
                     }`}
                   />
                 ))}
@@ -1532,7 +1515,7 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
             </div>
           </div>
           <span className="text-sm text-gray-500">
-            {new Date(review.createTime).toLocaleDateString("fr-FR")}
+            {new Date(review.createTime).toLocaleDateString('fr-FR')}
           </span>
         </div>
 
@@ -1542,14 +1525,10 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
         {/* Response */}
         {review.response ? (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-            <p className="text-sm font-medium text-blue-900 mb-1">
-              Votre réponse
-            </p>
+            <p className="text-sm font-medium text-blue-900 mb-1">Votre réponse</p>
             <p className="text-sm text-blue-800">{review.response.text}</p>
             <p className="text-xs text-blue-600 mt-2">
-              {new Date(review.response.respondedAt).toLocaleDateString(
-                "fr-FR"
-              )}
+              {new Date(review.response.respondedAt).toLocaleDateString('fr-FR')}
             </p>
           </div>
         ) : isReplying ? (
@@ -1561,27 +1540,16 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
               rows={4}
             />
             <div className="flex gap-2">
-              <Button
-                onClick={handleReply}
-                disabled={loading || !replyText.trim()}
-              >
-                {loading ? "Envoi..." : "Publier"}
+              <Button onClick={handleReply} disabled={loading || !replyText.trim()}>
+                {loading ? 'Envoi...' : 'Publier'}
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setIsReplying(false)}
-                disabled={loading}
-              >
+              <Button variant="ghost" onClick={() => setIsReplying(false)} disabled={loading}>
                 Annuler
               </Button>
             </div>
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsReplying(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsReplying(true)}>
             <Reply className="w-4 h-4 mr-2" />
             Répondre
           </Button>
@@ -1597,20 +1565,17 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
 **Fonctionnalités** :
 
 1. **Suggestions de réponse IA**
-
    - Analyse du sentiment de l'avis
    - Génération de 3 propositions de réponse
    - Personnalisation selon le ton du magasin
    - Édition avant publication
 
 2. **Templates intelligents**
-
    - Auto-learning des meilleures réponses
    - Suggestions basées sur avis similaires
    - Variables dynamiques (nom client, produit, etc.)
 
 3. **Sentiment Analysis**
-
    - Score positif/négatif/neutre
    - Identification topics (service, produit, prix, etc.)
    - Alertes pour avis négatifs critiques
@@ -1624,7 +1589,7 @@ export function ReviewCard({ review, onReplySuccess }: ReviewCardProps) {
 
 ```typescript
 // lib/api/openai.ts
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -1632,7 +1597,7 @@ const openai = new OpenAI({
 
 export async function generateReviewResponses(
   review: GoogleReview,
-  store: Store
+  store: Store,
 ): Promise<string[]> {
   const prompt = `
 Tu es un assistant qui aide les commerces à répondre à leurs avis Google.
@@ -1641,17 +1606,15 @@ Commerce: ${store.name}
 Avis: ${review.starRating}/5 étoiles
 Commentaire: "${review.comment}"
 
-Génère 3 réponses professionnelles et personnalisées (ton ${
-    store.branding.tone || "chaleureux"
-  }).
+Génère 3 réponses professionnelles et personnalisées (ton ${store.branding.tone || 'chaleureux'}).
 Format JSON: { "responses": ["réponse1", "réponse2", "réponse3"] }
   `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: prompt }],
     temperature: 0.7,
-    response_format: { type: "json_object" },
+    response_format: { type: 'json_object' },
   });
 
   const result = JSON.parse(completion.choices[0].message.content);
@@ -1667,10 +1630,10 @@ Avis: "${comment}"
   `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: prompt }],
     temperature: 0.3,
-    response_format: { type: "json_object" },
+    response_format: { type: 'json_object' },
   });
 
   return JSON.parse(completion.choices[0].message.content);
@@ -1679,15 +1642,15 @@ Avis: "${comment}"
 // lib/actions/review.actions.ts (Phase 2)
 export async function getAiSuggestions(reviewId: string) {
   const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) throw new Error('Unauthorized');
 
   const review = await GoogleReview.findById(reviewId);
   const store = await Store.findById(review.storeId);
 
   // Check plan supports AI (Growth or Business)
   const user = await User.findById(store.ownerId);
-  if (!["growth", "business"].includes(user.subscriptionPlan)) {
-    throw new Error("AI suggestions require Growth or Business plan");
+  if (!['growth', 'business'].includes(user.subscriptionPlan)) {
+    throw new Error('AI suggestions require Growth or Business plan');
   }
 
   const suggestions = await generateReviewResponses(review, store);
@@ -1699,13 +1662,13 @@ export async function getAiSuggestions(reviewId: string) {
 
 ```tsx
 // components/features/reviews/ai-suggestion-panel.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Sparkles, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { getAiSuggestions } from "@/lib/actions/review.actions";
+import { useState } from 'react';
+import { Sparkles, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { getAiSuggestions } from '@/lib/actions/review.actions';
 
 export function AiSuggestionPanel({ reviewId, onSelect }: Props) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -1717,7 +1680,7 @@ export function AiSuggestionPanel({ reviewId, onSelect }: Props) {
       const data = await getAiSuggestions(reviewId);
       setSuggestions(data);
     } catch (error) {
-      alert("Erreur IA");
+      alert('Erreur IA');
     } finally {
       setLoading(false);
     }
@@ -1730,21 +1693,14 @@ export function AiSuggestionPanel({ reviewId, onSelect }: Props) {
           <Sparkles className="w-4 h-4 text-purple-500" />
           Suggestions IA
         </h4>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={loadSuggestions}
-          disabled={loading}
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        <Button size="sm" variant="ghost" onClick={loadSuggestions} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
       {suggestions.length === 0 ? (
         <Card className="p-4 text-center">
-          <p className="text-sm text-gray-600">
-            Cliquez pour générer des suggestions IA
-          </p>
+          <p className="text-sm text-gray-600">Cliquez pour générer des suggestions IA</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -1777,15 +1733,15 @@ export function AiSuggestionPanel({ reviewId, onSelect }: Props) {
 :root {
   /* Colors */
   --color-black: #000000;
-  --color-white: #FFFFFF;
-  --color-primary: #5B21B6;     /* Purple */
-  --color-accent: #FACC15;      /* Yellow */
-  --color-error: #DC2626;       /* Red */
-  --color-success: #16A34A;     /* Green */
+  --color-white: #ffffff;
+  --color-primary: #5b21b6; /* Purple */
+  --color-accent: #facc15; /* Yellow */
+  --color-error: #dc2626; /* Red */
+  --color-success: #16a34a; /* Green */
 
   /* Borders */
   --border-width: 2px;
-  --border-radius: 0px;          /* Sharp corners */
+  --border-radius: 0px; /* Sharp corners */
 
   /* Shadows */
   --shadow-sm: 2px 2px 0 #313131;
@@ -1831,25 +1787,32 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative px-6 py-24">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-7xl font-bold tracking-tight
+          <h1
+            className="text-7xl font-bold tracking-tight
                         border-4 border-black p-8
-                        shadow-[6px_6px_0_#313131]">
-            Boostez vos avis Google<br />
+                        shadow-[6px_6px_0_#313131]"
+          >
+            Boostez vos avis Google
+            <br />
             <span className="text-primary">avec la gamification</span>
           </h1>
 
           <div className="mt-8 flex gap-4">
-            <button className="px-8 py-4 bg-primary text-white
+            <button
+              className="px-8 py-4 bg-primary text-white
                              border-2 border-black font-bold
                              shadow-[4px_4px_0_#000]
                              hover:translate-x-[-2px] hover:translate-y-[-2px]
-                             hover:shadow-[6px_6px_0_#000] transition-all">
+                             hover:shadow-[6px_6px_0_#000] transition-all"
+            >
               Créer mon compte gratuit
             </button>
 
-            <button className="px-8 py-4 bg-white text-black
+            <button
+              className="px-8 py-4 bg-white text-black
                              border-2 border-black font-bold
-                             shadow-[4px_4px_0_#000]">
+                             shadow-[4px_4px_0_#000]"
+            >
               Voir la démo
             </button>
           </div>
@@ -1858,7 +1821,9 @@ export default function LandingPage() {
           <div className="mt-6 flex items-center gap-4">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-2xl">⭐</span>
+                <span key={i} className="text-2xl">
+                  ⭐
+                </span>
               ))}
             </div>
             <span className="font-bold">4.9/5 (1,234 avis)</span>
@@ -1866,18 +1831,18 @@ export default function LandingPage() {
         </div>
 
         {/* Floating Game Elements */}
-        <div className="absolute top-10 right-10 w-32 h-32
+        <div
+          className="absolute top-10 right-10 w-32 h-32
                       border-4 border-black bg-accent
-                      shadow-[4px_4px_0_#000] rotate-12" />
+                      shadow-[4px_4px_0_#000] rotate-12"
+        />
       </section>
 
       {/* Trust Logos */}
       <section className="border-y-4 border-black bg-gray-50 py-12">
         <div className="mx-auto max-w-6xl">
           <p className="text-center mb-8 font-bold">THEY TRUST US</p>
-          <div className="flex justify-around items-center">
-            {/* Logo carousel */}
-          </div>
+          <div className="flex justify-around items-center">{/* Logo carousel */}</div>
         </div>
       </section>
 
@@ -1885,16 +1850,16 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="mx-auto max-w-6xl grid md:grid-cols-3 gap-8">
           {features.map((feature) => (
-            <div key={feature.id}
-                 className="border-4 border-black p-8
+            <div
+              key={feature.id}
+              className="border-4 border-black p-8
                           shadow-[4px_4px_0_#000]
-                          hover:shadow-[6px_6px_0_#000] transition-all">
+                          hover:shadow-[6px_6px_0_#000] transition-all"
+            >
               <div className="text-4xl mb-4">{feature.icon}</div>
               <h3 className="text-2xl font-bold mb-2">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
-              <div className="mt-4 text-3xl font-bold text-primary">
-                {feature.metric}
-              </div>
+              <div className="mt-4 text-3xl font-bold text-primary">{feature.metric}</div>
             </div>
           ))}
         </div>
@@ -1919,37 +1884,32 @@ npx shadcn@latest add button card dialog sheet form input textarea select table 
 
 ```tsx
 // components/features/wheel-of-fortune/wheel.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ClassicWheel } from "./wheel-styles/classic";
-import { ModernWheel } from "./wheel-styles/modern";
-import { NeonWheel } from "./wheel-styles/neon";
-import { MinimalWheel } from "./wheel-styles/minimal";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ClassicWheel } from './wheel-styles/classic';
+import { ModernWheel } from './wheel-styles/modern';
+import { NeonWheel } from './wheel-styles/neon';
+import { MinimalWheel } from './wheel-styles/minimal';
 
 interface WheelProps {
-  style: "classic" | "modern" | "neon" | "minimal";
-  animation: "spin" | "bounce" | "elastic";
+  style: 'classic' | 'modern' | 'neon' | 'minimal';
+  animation: 'spin' | 'bounce' | 'elastic';
   prizes: Prize[];
   onWin: (prize: Prize) => void;
 }
 
-export function WheelOfFortune({
-  style,
-  animation,
-  prizes,
-  onWin,
-}: WheelProps) {
+export function WheelOfFortune({ style, animation, prizes, onWin }: WheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
 
   const spin = async () => {
     setIsSpinning(true);
 
     // Call API to determine winner
-    const response = await fetch("/api/lottery/spin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch('/api/lottery/spin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ campaignId }),
     });
 
@@ -1973,13 +1933,8 @@ export function WheelOfFortune({
     <div className="flex flex-col items-center gap-8">
       <WheelComponent prizes={prizes} isSpinning={isSpinning} />
 
-      <Button
-        size="lg"
-        onClick={spin}
-        disabled={isSpinning}
-        className="px-12 py-6 text-xl"
-      >
-        {isSpinning ? "Tournez..." : "Lancer la roue"}
+      <Button size="lg" onClick={spin} disabled={isSpinning} className="px-12 py-6 text-xl">
+        {isSpinning ? 'Tournez...' : 'Lancer la roue'}
       </Button>
     </div>
   );
@@ -1990,12 +1945,12 @@ export function WheelOfFortune({
 
 ```tsx
 // components/shared/logo-uploader.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Upload, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { put } from "@vercel/blob";
+import { useState } from 'react';
+import { Upload, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { put } from '@vercel/blob';
 
 export function LogoUploader({ currentLogo, onUpload }: Props) {
   const [preview, setPreview] = useState(currentLogo);
@@ -2007,12 +1962,12 @@ export function LogoUploader({ currentLogo, onUpload }: Props) {
 
     // Validate
     if (file.size > 10 * 1024 * 1024) {
-      alert("Logo trop volumineux (max 10MB)");
+      alert('Logo trop volumineux (max 10MB)');
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      alert("Format invalide (PNG, JPG, SVG uniquement)");
+    if (!file.type.startsWith('image/')) {
+      alert('Format invalide (PNG, JPG, SVG uniquement)');
       return;
     }
 
@@ -2021,13 +1976,13 @@ export function LogoUploader({ currentLogo, onUpload }: Props) {
     try {
       // Upload to Vercel Blob
       const blob = await put(`logos/${Date.now()}-${file.name}`, file, {
-        access: "public",
+        access: 'public',
       });
 
       setPreview(blob.url);
       onUpload(blob.url);
     } catch (error) {
-      alert("Erreur upload");
+      alert('Erreur upload');
     } finally {
       setUploading(false);
     }
@@ -2039,11 +1994,7 @@ export function LogoUploader({ currentLogo, onUpload }: Props) {
 
       {preview ? (
         <div className="relative w-32 h-32 border-2 border-dashed rounded-lg overflow-hidden">
-          <img
-            src={preview}
-            alt="Logo"
-            className="w-full h-full object-cover"
-          />
+          <img src={preview} alt="Logo" className="w-full h-full object-cover" />
           <button
             onClick={() => setPreview(null)}
             className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full"
@@ -2055,12 +2006,7 @@ export function LogoUploader({ currentLogo, onUpload }: Props) {
         <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
           <Upload className="w-8 h-8 text-gray-400 mb-2" />
           <span className="text-xs text-gray-500">Upload</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleUpload}
-            className="hidden"
-          />
+          <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
         </label>
       )}
 
@@ -2074,15 +2020,11 @@ export function LogoUploader({ currentLogo, onUpload }: Props) {
 
 ```tsx
 // components/shared/color-picker.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { HexColorPicker } from "react-colorful";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useState } from 'react';
+import { HexColorPicker } from 'react-colorful';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function ColorPicker({ value, onChange, label }: Props) {
   return (
@@ -2092,10 +2034,7 @@ export function ColorPicker({ value, onChange, label }: Props) {
       <Popover>
         <PopoverTrigger asChild>
           <button className="flex items-center gap-3 px-4 py-2 border rounded-lg hover:border-blue-500 transition-colors">
-            <div
-              className="w-8 h-8 rounded border"
-              style={{ backgroundColor: value }}
-            />
+            <div className="w-8 h-8 rounded border" style={{ backgroundColor: value }} />
             <span className="font-mono text-sm">{value}</span>
           </button>
         </PopoverTrigger>
@@ -2113,12 +2052,12 @@ export function ColorPicker({ value, onChange, label }: Props) {
 
 ```tsx
 // components/shared/qr-code-generator.tsx
-"use client";
+'use client';
 
-import QRCode from "qrcode";
-import { useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import QRCode from 'qrcode';
+import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 export function QRCodeGenerator({ url, filename }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -2136,7 +2075,7 @@ export function QRCodeGenerator({ url, filename }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.download = `${filename}.png`;
     link.href = canvas.toDataURL();
     link.click();
@@ -2162,11 +2101,11 @@ export function QRCodeGenerator({ url, filename }: Props) {
 
 ```typescript
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/db/connect";
-import User from "@/lib/db/models/User";
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import dbConnect from '@/lib/db/connect';
+import User from '@/lib/db/models/User';
 
 export const authOptions = {
   providers: [
@@ -2214,8 +2153,8 @@ export const authOptions = {
   },
 
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: '/login',
+    error: '/login',
   },
 };
 
@@ -2227,8 +2166,8 @@ export { handler as GET, handler as POST };
 
 ```typescript
 // middleware.ts
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
@@ -2236,16 +2175,16 @@ export default withAuth(
     const path = req.nextUrl.pathname;
 
     // Super admin routes
-    if (path.startsWith("/super-admin")) {
-      if (token?.role !== "super_admin") {
-        return NextResponse.redirect(new URL("/login", req.url));
+    if (path.startsWith('/super-admin')) {
+      if (token?.role !== 'super_admin') {
+        return NextResponse.redirect(new URL('/login', req.url));
       }
     }
 
     // Admin routes
-    if (path.startsWith("/admin")) {
-      if (!["admin", "super_admin"].includes(token?.role)) {
-        return NextResponse.redirect(new URL("/login", req.url));
+    if (path.startsWith('/admin')) {
+      if (!['admin', 'super_admin'].includes(token?.role)) {
+        return NextResponse.redirect(new URL('/login', req.url));
       }
     }
 
@@ -2255,11 +2194,11 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => !!token,
     },
-  }
+  },
 );
 
 export const config = {
-  matcher: ["/super-admin/:path*", "/admin/:path*"],
+  matcher: ['/super-admin/:path*', '/admin/:path*'],
 };
 ```
 
@@ -2267,7 +2206,7 @@ export const config = {
 
 ```typescript
 // lib/actions/gdpr.actions.ts
-"use server";
+'use server';
 
 // Export données utilisateur
 export async function exportUserData(userId: string) {
@@ -2292,7 +2231,7 @@ export async function exportUserData(userId: string) {
 // Supprimer compte + données
 export async function deleteAccount(userId: string) {
   const session = await getServerSession();
-  if (session.user.id !== userId) throw new Error("Unauthorized");
+  if (session.user.id !== userId) throw new Error('Unauthorized');
 
   // 1. Cancel Stripe subscription
   const user = await User.findById(userId);
@@ -2311,14 +2250,14 @@ export async function deleteAccount(userId: string) {
   await Winner.updateMany(
     { clientEmail: user.email },
     {
-      clientName: "[SUPPRIMÉ]",
-      clientEmail: "[SUPPRIMÉ]",
+      clientName: '[SUPPRIMÉ]',
+      clientEmail: '[SUPPRIMÉ]',
       anonymized: true,
-    }
+    },
   );
 
   // 5. Delete reviews
-  const storeIds = await Store.find({ ownerId: userId }).distinct("_id");
+  const storeIds = await Store.find({ ownerId: userId }).distinct('_id');
   await GoogleReview.deleteMany({ storeId: { $in: storeIds } });
 
   // 6. Delete user
@@ -2331,12 +2270,12 @@ export async function deleteAccount(userId: string) {
 export async function anonymizeWinner(winnerId: string) {
   const winner = await Winner.findById(winnerId);
 
-  if (winner.status !== "claimed") {
-    throw new Error("Only claimed prizes can be anonymized");
+  if (winner.status !== 'claimed') {
+    throw new Error('Only claimed prizes can be anonymized');
   }
 
-  winner.clientName = "[SUPPRIMÉ]";
-  winner.clientEmail = "[SUPPRIMÉ]";
+  winner.clientName = '[SUPPRIMÉ]';
+  winner.clientEmail = '[SUPPRIMÉ]';
   winner.anonymized = true;
   await winner.save();
 
@@ -2467,7 +2406,7 @@ export default async function AdminDashboard() {
 
 ```typescript
 // sentry.client.config.ts
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -2504,42 +2443,42 @@ export function Providers({ children }) {
 
 ```typescript
 // scripts/migrate-v1-to-v2.ts
-import dbConnect from "@/lib/db/connect";
-import bcrypt from "bcryptjs";
+import dbConnect from '@/lib/db/connect';
+import bcrypt from 'bcryptjs';
 
 async function migrateV1ToV2() {
   await dbConnect();
 
-  console.log("🚀 Starting migration v1.0 → v2.0\n");
+  console.log('🚀 Starting migration v1.0 → v2.0\n');
 
   // 1. Create Super Admin
-  console.log("1️⃣ Creating super admin...");
+  console.log('1️⃣ Creating super admin...');
   const superAdmin = await User.create({
-    email: "admin@reviewlottery.com",
-    password: await bcrypt.hash("CHANGE_ME", 10),
+    email: 'admin@reviewlottery.com',
+    password: await bcrypt.hash('CHANGE_ME', 10),
     emailVerified: true,
-    role: "super_admin",
+    role: 'super_admin',
     maxStores: 99999,
     onboardingCompleted: true,
   });
-  console.log("✅ Super admin created\n");
+  console.log('✅ Super admin created\n');
 
   // 2. Convert old Commerces to Users + Stores
-  console.log("2️⃣ Converting commerces...");
+  console.log('2️⃣ Converting commerces...');
   const oldCommerces = await OldCommerce.find();
 
   for (const oldCommerce of oldCommerces) {
     // Create admin user
     const adminUser = await User.create({
       email: oldCommerce.email,
-      password: await bcrypt.hash("temp123", 10), // Envoyer email reset password
+      password: await bcrypt.hash('temp123', 10), // Envoyer email reset password
       emailVerified: true,
-      role: "admin",
+      role: 'admin',
       name: oldCommerce.name,
 
       // Free trial
-      subscriptionStatus: "trialing",
-      subscriptionPlan: "starter",
+      subscriptionStatus: 'trialing',
+      subscriptionPlan: 'starter',
       trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
 
       maxStores: 1,
@@ -2553,15 +2492,15 @@ async function migrateV1ToV2() {
       ownerId: adminUser._id,
       name: oldCommerce.name,
       slug: oldCommerce.slug,
-      googleBusinessUrl: oldCommerce.googleBusinessUrl || "",
+      googleBusinessUrl: oldCommerce.googleBusinessUrl || '',
 
       branding: {
         logo: oldCommerce.logo,
-        primaryColor: "#3B82F6",
-        secondaryColor: "#8B5CF6",
-        font: "inter",
-        wheelStyle: "classic",
-        wheelAnimation: "spin",
+        primaryColor: '#3B82F6',
+        secondaryColor: '#8B5CF6',
+        font: 'inter',
+        wheelStyle: 'classic',
+        wheelAnimation: 'spin',
         wheelSpeed: 3,
       },
 
@@ -2569,7 +2508,7 @@ async function migrateV1ToV2() {
         emailNotifications: true,
         reviewMinRating: 4,
         autoResponseEnabled: false,
-        language: "fr",
+        language: 'fr',
       },
 
       isActive: oldCommerce.isActive,
@@ -2584,7 +2523,7 @@ async function migrateV1ToV2() {
           storeId: store._id,
           ownerId: adminUser._id,
         },
-      }
+      },
     );
 
     // Migrate prizes
@@ -2595,25 +2534,22 @@ async function migrateV1ToV2() {
           storeId: store._id,
           ownerId: adminUser._id,
         },
-      }
+      },
     );
 
     // Migrate winners
-    await Winner.updateMany(
-      { commerceId: oldCommerce._id },
-      { $set: { storeId: store._id } }
-    );
+    await Winner.updateMany({ commerceId: oldCommerce._id }, { $set: { storeId: store._id } });
 
     console.log(`✅ Migrated: ${oldCommerce.name}`);
   }
 
-  console.log("\n3️⃣ Sending password reset emails...");
-  const admins = await User.find({ role: "admin" });
+  console.log('\n3️⃣ Sending password reset emails...');
+  const admins = await User.find({ role: 'admin' });
   for (const admin of admins) {
     await sendPasswordResetEmail(admin.email);
   }
 
-  console.log("\n✅ Migration complete!");
+  console.log('\n✅ Migration complete!');
   console.log(`- Super admins: 1`);
   console.log(`- Admins migrated: ${oldCommerces.length}`);
   console.log(`- Stores created: ${oldCommerces.length}`);
@@ -2731,13 +2667,11 @@ migrateV1ToV2();
 ### Points Critiques
 
 1. **Storage Management**
-
    - Limiter upload logo à 10MB
    - Compression auto des images
    - Clean-up régulier des logos non utilisés
 
 2. **Stripe Webhooks**
-
    - CRITIQUE : bien gérer tous les events
    - `customer.subscription.created`
    - `customer.subscription.updated`
@@ -2746,13 +2680,11 @@ migrateV1ToV2();
    - `invoice.payment_failed`
 
 3. **Google API Quotas**
-
    - Limiter sync reviews à 1x/heure max
    - Caching aggressive
    - Handle rate limiting
 
 4. **Performance**
-
    - Indexes MongoDB sur `storeId`, `ownerId`, `googleReviewId`
    - Server Components partout sauf interactions
    - Image optimization (Next.js Image)
