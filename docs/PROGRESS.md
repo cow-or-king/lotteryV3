@@ -104,24 +104,55 @@
 4. **`src/test/unit/entities/user.entity.test.ts`**
    - Tests TDD complets
 
-### Prochaines Étapes (Day 2)
+## 🎯 Day 2 - Database & Domain Layer ✅
 
-- [ ] Initialize Prisma avec PostgreSQL
-- [ ] Créer tous les Domain Entities (Store, Campaign, Prize)
-- [ ] Implémenter les Value Objects
-- [ ] Définir les Repository Interfaces
-- [ ] Setup Prisma Schema complet
+### Accomplissements
+
+- ✅ Prisma initialisé avec Supabase PostgreSQL
+- ✅ 5 Domain Entities créées (User, Store, Campaign, Prize, Participant)
+- ✅ 3 Value Objects implémentés (Email, Money, ClaimCode)
+- ✅ 8 Repository Interfaces définies
+- ✅ Prisma Schema complet avec mappings snake_case
+
+## 🎯 Day 3 - Application Layer ✅
+
+### Accomplissements
+
+- ✅ 5 Use Cases (Register, Login, CreateStore, CreateCampaign, SpinLottery)
+- ✅ DTOs et validation Zod
+- ✅ Repository Implementations Prisma
+- ✅ tRPC Router configuré avec auth router
+
+## 🎯 Day 4 - UI Foundation ✅
+
+### Accomplissements
+
+- ✅ Design System Glassmorphism V5 (suppression V1-V4)
+- ✅ 6 Composants UI glass effect
+- ✅ Pages Auth (Login/Register)
+- ✅ Intégration tRPC côté client
+- ✅ Push sur GitHub (commit 20b5154)
+
+## 🎯 Day 5 - Authentication 🚧
+
+### En Cours
+
+- ✅ Supabase configuré et connecté
+- [ ] Intégration Supabase Auth avec JWT
+- [ ] Session management avec cookies
+- [ ] Protected routes middleware
 
 ### Notes Importantes
 
-⚠️ **RAPPEL**: Toujours respecter:
+⚠️ **RAPPEL**:
 
-- ZERO `any` types
-- Result Pattern pour TOUTES les erreurs business
-- Tests AVANT le code (TDD)
-- Architecture hexagonale stricte
-- Branded Types pour TOUS les IDs
+- **Design**: Glassmorphism V5 UNIQUEMENT (pas cadeo.io)
+- ZERO `any` types (toujours respecté ✅)
+- Result Pattern pour TOUTES les erreurs business ✅
+- Architecture hexagonale stricte ✅
+- Branded Types pour TOUS les IDs ✅
 
 ---
 
-**Statut Global**: Phase 0 - 33% Complete 🚧
+**Statut Global**: Phase 1 - 40% Complete 🚧
+**Dernière mise à jour**: 2024-12-06
