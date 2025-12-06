@@ -10,6 +10,8 @@ import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import type { UserId } from '@/shared/types/branded.type';
+import { sessionService } from '@/infrastructure/auth/session.service';
+import { cookies } from 'next/headers';
 
 /**
  * Context de base pour chaque requête
@@ -17,7 +19,8 @@ import type { UserId } from '@/shared/types/branded.type';
  */
 interface CreateContextOptions {
   userId: UserId | null;
-  sessionId: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
 }
 
 /**
@@ -28,7 +31,8 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     prisma,
     userId: opts.userId,
-    sessionId: opts.sessionId,
+    accessToken: opts.accessToken,
+    refreshToken: opts.refreshToken,
   };
 };
 
@@ -39,14 +43,23 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
 
-  // TODO: Extraire l'userId depuis le token JWT/session
-  // Pour l'instant, on retourne null
-  const userId = null as UserId | null;
-  const sessionId = req.cookies['session-id'] ?? null;
+  // Récupérer la session depuis les cookies
+  const sessionResult = await sessionService.getSession();
+
+  let userId: UserId | null = null;
+  let accessToken: string | null = null;
+  let refreshToken: string | null = null;
+
+  if (sessionResult.success && sessionResult.data) {
+    userId = sessionResult.data.userId;
+    accessToken = sessionResult.data.accessToken;
+    refreshToken = sessionResult.data.refreshToken;
+  }
 
   return createInnerTRPCContext({
     userId,
-    sessionId,
+    accessToken,
+    refreshToken,
   });
 };
 

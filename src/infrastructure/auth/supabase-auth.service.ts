@@ -1,0 +1,334 @@
+/**
+ * Supabase Authentication Service
+ * Service d'authentification utilisant Supabase
+ * IMPORTANT: ZERO any types
+ */
+
+import { createClient, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
+import type { Result } from '@/shared/types/result.type';
+import type { UserId } from '@/shared/types/branded.type';
+import { Email } from '@/core/value-objects/email.vo';
+
+/**
+ * Configuration Supabase
+ */
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+/**
+ * Type pour les données d'authentification
+ */
+export interface AuthUser {
+  id: UserId;
+  email: string;
+  emailVerified: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Type pour les tokens
+ */
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  expiresAt: number;
+}
+
+/**
+ * Service d'authentification Supabase
+ */
+export class SupabaseAuthService {
+  private supabase: SupabaseClient;
+
+  constructor() {
+    this.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false, // On gère les sessions côté serveur
+        autoRefreshToken: false,
+      },
+    });
+  }
+
+  /**
+   * Inscription d'un nouvel utilisateur
+   */
+  async signUp(email: string, password: string): Promise<Result<AuthUser>> {
+    try {
+      const { data, error } = await this.supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      if (!data.user) {
+        return {
+          success: false,
+          error: new Error('User creation failed'),
+        };
+      }
+
+      return {
+        success: true,
+        data: this.mapSupabaseUserToAuthUser(data.user),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Sign up failed'),
+      };
+    }
+  }
+
+  /**
+   * Connexion d'un utilisateur
+   */
+  async signIn(email: string, password: string): Promise<Result<AuthTokens>> {
+    try {
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      if (!data.session) {
+        return {
+          success: false,
+          error: new Error('No session created'),
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          expiresIn: data.session.expires_in ?? 3600,
+          expiresAt: data.session.expires_at ?? Date.now() / 1000 + 3600,
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Sign in failed'),
+      };
+    }
+  }
+
+  /**
+   * Envoi d'un magic link
+   */
+  async sendMagicLink(email: string): Promise<Result<void>> {
+    try {
+      const { error } = await this.supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Failed to send magic link'),
+      };
+    }
+  }
+
+  /**
+   * Réinitialisation du mot de passe
+   */
+  async resetPassword(email: string): Promise<Result<void>> {
+    try {
+      const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Failed to reset password'),
+      };
+    }
+  }
+
+  /**
+   * Mise à jour du mot de passe
+   */
+  async updatePassword(accessToken: string, newPassword: string): Promise<Result<void>> {
+    try {
+      const { error } = await this.supabase.auth.updateUser(
+        {
+          password: newPassword,
+        },
+        {
+          accessToken,
+        },
+      );
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Failed to update password'),
+      };
+    }
+  }
+
+  /**
+   * Déconnexion
+   */
+  async signOut(accessToken: string): Promise<Result<void>> {
+    try {
+      // Set the session before signing out
+      await this.supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: '', // Not needed for signout
+      });
+
+      const { error } = await this.supabase.auth.signOut();
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Sign out failed'),
+      };
+    }
+  }
+
+  /**
+   * Vérifier un token
+   */
+  async verifyToken(accessToken: string): Promise<Result<AuthUser>> {
+    try {
+      const { data, error } = await this.supabase.auth.getUser(accessToken);
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      if (!data.user) {
+        return {
+          success: false,
+          error: new Error('No user found'),
+        };
+      }
+
+      return {
+        success: true,
+        data: this.mapSupabaseUserToAuthUser(data.user),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Token verification failed'),
+      };
+    }
+  }
+
+  /**
+   * Rafraîchir les tokens
+   */
+  async refreshTokens(refreshToken: string): Promise<Result<AuthTokens>> {
+    try {
+      const { data, error } = await this.supabase.auth.refreshSession({
+        refresh_token: refreshToken,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: new Error(error.message),
+        };
+      }
+
+      if (!data.session) {
+        return {
+          success: false,
+          error: new Error('No session created'),
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          expiresIn: data.session.expires_in ?? 3600,
+          expiresAt: data.session.expires_at ?? Date.now() / 1000 + 3600,
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Token refresh failed'),
+      };
+    }
+  }
+
+  /**
+   * Mapper un utilisateur Supabase vers notre AuthUser
+   */
+  private mapSupabaseUserToAuthUser(user: SupabaseUser): AuthUser {
+    return {
+      id: user.id as UserId,
+      email: user.email ?? '',
+      emailVerified: !!user.email_confirmed_at,
+      metadata: user.user_metadata,
+    };
+  }
+}
+
+/**
+ * Instance singleton du service
+ */
+export const supabaseAuthService = new SupabaseAuthService();
