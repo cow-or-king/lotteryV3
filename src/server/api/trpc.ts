@@ -9,7 +9,6 @@ import { ZodError } from 'zod';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import type { UserId } from '@/shared/types/branded.type';
 import { sessionService } from '@/infrastructure/auth/session.service';
-import { cookies } from 'next/headers';
 
 /**
  * Context de base pour chaque requête

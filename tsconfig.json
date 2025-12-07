@@ -16,7 +16,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true, // Désactivé temporairement - incompatible avec tRPC/Prisma/Playwright
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,

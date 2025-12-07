@@ -7,13 +7,11 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '../trpc';
 import { RegisterUserUseCase } from '@/core/use-cases/auth/register-user.use-case';
-import { LoginUserUseCase } from '@/core/use-cases/auth/login-user.use-case';
 import { UserRepositoryPrisma } from '@/infrastructure/repositories/prisma/user.repository.prisma';
 import { SubscriptionRepositoryPrisma } from '@/infrastructure/repositories/prisma/subscription.repository.prisma';
 import { supabaseAuthService } from '@/infrastructure/auth/supabase-auth.service';
 import { sessionService } from '@/infrastructure/auth/session.service';
 import { TRPCError } from '@trpc/server';
-import type { UserId } from '@/shared/types/branded.type';
 
 // Schemas de validation Zod
 const registerSchema = z.object({
@@ -62,7 +60,7 @@ export const authRouter = createTRPCRouter({
 
     // Créer le use case avec un password hasher factice (on utilise Supabase pour l'auth)
     const passwordHasher = {
-      async hash(password: string): Promise<string> {
+      async hash(_password: string): Promise<string> {
         return 'handled-by-supabase'; // Le hash est géré par Supabase
       },
     };
@@ -165,7 +163,7 @@ export const authRouter = createTRPCRouter({
       // L'utilisateur existe dans Supabase mais pas dans notre DB, on le crée
       const subscriptionRepository = new SubscriptionRepositoryPrisma(ctx.prisma);
       const passwordHasher = {
-        async hash(password: string): Promise<string> {
+        async hash(_password: string): Promise<string> {
           return 'handled-by-supabase';
         },
       };
@@ -245,7 +243,7 @@ export const authRouter = createTRPCRouter({
   /**
    * Déconnexion
    */
-  logout: publicProcedure.mutation(async ({ ctx }) => {
+  logout: publicProcedure.mutation(async () => {
     const result = await sessionService.destroySession();
 
     if (!result.success) {

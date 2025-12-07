@@ -4,10 +4,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import type { Session } from '@/infrastructure/auth/session.service';
 import type { AuthTokens } from '@/infrastructure/auth/supabase-auth.service';
 import type { UserId } from '@/shared/types/branded.type';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 // Mock next/headers
 const mockCookieStore = {

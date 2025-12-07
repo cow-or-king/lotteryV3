@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { Email } from '@/core/value-objects/email.vo';
-import { Result } from '@/shared/types/result.type';
 
 describe('Email Value Object', () => {
   describe('create', () => {

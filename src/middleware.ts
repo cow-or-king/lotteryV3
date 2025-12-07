@@ -58,7 +58,6 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/auth/callback') {
     const url = request.nextUrl.clone();
     const code = url.searchParams.get('code');
-    const next = url.searchParams.get('next') ?? '/dashboard';
 
     if (!code) {
       url.pathname = '/login';

@@ -7,7 +7,6 @@
 import { Result } from '@/shared/types/result.type';
 import { CampaignId, PrizeId, WinnerId } from '@/shared/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
-import { ClaimCode } from '@/core/value-objects/claim-code.vo';
 import { ICampaignRepository } from '@/core/repositories/campaign.repository.interface';
 import { IPrizeRepository } from '@/core/repositories/prize.repository.interface';
 import { IParticipantRepository } from '@/core/repositories/participant.repository.interface';

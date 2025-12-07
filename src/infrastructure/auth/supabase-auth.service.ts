@@ -7,9 +7,7 @@
 
 import { createClient, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
 import type { Result } from '@/shared/types/result.type';
-import type { UserId } from '@/shared/types/branded.type';
 import { brandUserId } from '@/shared/types/branded.type';
-import { Email } from '@/core/value-objects/email.vo';
 import type { IAuthProvider, AuthUser, AuthTokens } from '@/core/ports/auth.port';
 
 // Re-export types for backward compatibility

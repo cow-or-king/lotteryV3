@@ -4,12 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import {
-  SupabaseAuthService,
-  type AuthUser,
-  type AuthTokens,
-} from '@/infrastructure/auth/supabase-auth.service';
-import type { UserId } from '@/shared/types/branded.type';
+import { SupabaseAuthService } from '@/infrastructure/auth/supabase-auth.service';
 
 // Mock du module @supabase/supabase-js
 vi.mock('@supabase/supabase-js', () => ({

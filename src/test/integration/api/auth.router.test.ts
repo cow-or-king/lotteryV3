@@ -80,9 +80,6 @@ const mockPrisma = {
   $transaction: vi.fn((callback) => callback(mockPrisma)),
 } as unknown as PrismaClient;
 
-// Store reference to the mockPrisma in the module scope
-const mockPrismaRef = mockPrisma;
-
 describe('auth.router (Integration Tests)', () => {
   let caller: ReturnType<typeof import('@/server/api/root').appRouter.createCaller>;
   let mockSupabaseAuthService: {

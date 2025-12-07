@@ -38,7 +38,7 @@ export class SessionService implements ISessionManager {
   /**
    * Créer une session
    */
-  async createSession(tokens: AuthTokens, userId: UserId): Promise<Result<void>> {
+  async createSession(tokens: AuthTokens, _userId: UserId): Promise<Result<void>> {
     try {
       const cookieStore = await cookies();
 
