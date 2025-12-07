@@ -24,7 +24,7 @@ export class ListBrandsUseCase {
   async execute(input: ListBrandsInput): Promise<Result<ListBrandsOutput>> {
     // Validation de l'owner ID
     if (!input.ownerId || input.ownerId.trim().length === 0) {
-      return fail('Owner ID is required');
+      return fail(new Error('Owner ID is required'));
     }
 
     // Récupérer les enseignes

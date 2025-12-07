@@ -23,7 +23,7 @@ export class GetCampaignByIdUseCase {
   async execute(input: GetCampaignByIdInput): Promise<Result<GetCampaignByIdOutput>> {
     // Validation de l'ID
     if (!input.id || input.id.trim().length === 0) {
-      return fail('Campaign ID is required');
+      return fail(new Error('Campaign ID is required'));
     }
 
     // Récupérer la campagne
@@ -36,7 +36,7 @@ export class GetCampaignByIdUseCase {
     const campaign = campaignResult.value;
 
     if (!campaign) {
-      return fail('Campaign not found');
+      return fail(new Error('Campaign not found'));
     }
 
     return ok({

@@ -24,12 +24,12 @@ export class GetBrandByIdUseCase {
   async execute(input: GetBrandByIdInput): Promise<Result<GetBrandByIdOutput>> {
     // Validation de l'ID
     if (!input.id || input.id.trim().length === 0) {
-      return fail('Brand ID is required');
+      return fail(new Error('Brand ID is required'));
     }
 
     // Validation de l'owner ID
     if (!input.ownerId || input.ownerId.trim().length === 0) {
-      return fail('Owner ID is required');
+      return fail(new Error('Owner ID is required'));
     }
 
     // Récupérer l'enseigne
@@ -42,12 +42,12 @@ export class GetBrandByIdUseCase {
     const brand = brandResult.value;
 
     if (!brand) {
-      return fail('Brand not found');
+      return fail(new Error('Brand not found'));
     }
 
     // Vérifier que l'utilisateur a le droit d'accéder à cette enseigne
     if (brand.ownerId !== input.ownerId) {
-      return fail('You do not have permission to access this brand');
+      return fail(new Error('You do not have permission to access this brand'));
     }
 
     return ok({

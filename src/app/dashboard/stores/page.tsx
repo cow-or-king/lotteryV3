@@ -22,8 +22,10 @@ import {
   Trash2,
   HelpCircle,
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function StoresPage() {
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isNewBrand, setIsNewBrand] = useState(false);
@@ -129,7 +131,7 @@ export default function StoresPage() {
       setSelectedBrandId(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -140,7 +142,7 @@ export default function StoresPage() {
       setOpenMenuId(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -150,7 +152,7 @@ export default function StoresPage() {
       setEditingStore(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -161,7 +163,7 @@ export default function StoresPage() {
       setOpenBrandMenuId(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -171,7 +173,7 @@ export default function StoresPage() {
       setEditingBrand(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -549,7 +551,13 @@ export default function StoresPage() {
               <button
                 onClick={() => {
                   setShowCreateForm(false);
-                  setFormData({ brandName: '', logoUrl: '', name: '', googleBusinessUrl: '' });
+                  setFormData({
+                    brandName: '',
+                    logoUrl: '',
+                    name: '',
+                    googleBusinessUrl: '',
+                    googlePlaceId: '',
+                  });
                   setErrors({});
                   setIsNewBrand(false);
                   setSelectedBrandId(null);

@@ -28,17 +28,17 @@ export class CreateParticipantUseCase {
   async execute(input: CreateParticipantInput): Promise<Result<CreateParticipantOutput>> {
     // Validation de l'email
     if (!input.email || input.email.trim().length === 0) {
-      return fail('Email is required');
+      return fail(new Error('Email is required'));
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(input.email.trim())) {
-      return fail('Invalid email format');
+      return fail(new Error('Invalid email format'));
     }
 
     // Validation du campaign ID
     if (!input.campaignId || input.campaignId.trim().length === 0) {
-      return fail('Campaign ID is required');
+      return fail(new Error('Campaign ID is required'));
     }
 
     // Vérifier si le participant existe déjà
@@ -52,7 +52,7 @@ export class CreateParticipantUseCase {
     }
 
     if (existingParticipantResult.value) {
-      return fail('You have already registered for this campaign');
+      return fail(new Error('You have already registered for this campaign'));
     }
 
     // Créer le participant

@@ -24,7 +24,7 @@ export class ClaimPrizeUseCase {
   async execute(input: ClaimPrizeInput): Promise<Result<ClaimPrizeOutput>> {
     // Validation du code
     if (!input.claimCode || input.claimCode.trim().length === 0) {
-      return fail('Claim code is required');
+      return fail(new Error('Claim code is required'));
     }
 
     // Récupérer le gagnant par le code
@@ -39,12 +39,12 @@ export class ClaimPrizeUseCase {
     const winner = winnerResult.value;
 
     if (!winner) {
-      return fail('Invalid claim code');
+      return fail(new Error('Invalid claim code'));
     }
 
     // Vérifier que le gain n'a pas déjà été réclamé
     if (winner.status === 'CLAIMED') {
-      return fail('This prize has already been claimed');
+      return fail(new Error('This prize has already been claimed'));
     }
 
     // Vérifier que le gain n'a pas expiré
@@ -58,7 +58,7 @@ export class ClaimPrizeUseCase {
 
       await this.winnerRepository.save(expiredWinner);
 
-      return fail('This prize has expired');
+      return fail(new Error('This prize has expired'));
     }
 
     // Marquer le gain comme réclamé

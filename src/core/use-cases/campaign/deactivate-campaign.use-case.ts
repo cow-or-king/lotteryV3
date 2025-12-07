@@ -23,7 +23,7 @@ export class DeactivateCampaignUseCase {
   async execute(input: DeactivateCampaignInput): Promise<Result<DeactivateCampaignOutput>> {
     // Validation de l'ID
     if (!input.id || input.id.trim().length === 0) {
-      return fail('Campaign ID is required');
+      return fail(new Error('Campaign ID is required'));
     }
 
     // Récupérer la campagne
@@ -36,12 +36,12 @@ export class DeactivateCampaignUseCase {
     const campaign = campaignResult.value;
 
     if (!campaign) {
-      return fail('Campaign not found');
+      return fail(new Error('Campaign not found'));
     }
 
     // Vérifier que la campagne est active
     if (!campaign.isActive) {
-      return fail('Campaign is already inactive');
+      return fail(new Error('Campaign is already inactive'));
     }
 
     // Désactiver la campagne

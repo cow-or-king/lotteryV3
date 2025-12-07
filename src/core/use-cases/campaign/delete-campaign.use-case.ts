@@ -7,9 +7,11 @@
 import type { Result } from '@/shared/types/result.type';
 import { ok, fail } from '@/shared/types/result.type';
 import type { CampaignRepository } from '@/core/ports/campaign.repository';
+import type { BrandRepository } from '@/core/ports/brand.repository';
 
 export interface DeleteCampaignInput {
   id: string;
+  userId: string; // L'utilisateur qui fait la requête
 }
 
 export interface DeleteCampaignOutput {
@@ -17,12 +19,20 @@ export interface DeleteCampaignOutput {
 }
 
 export class DeleteCampaignUseCase {
-  constructor(private readonly campaignRepository: CampaignRepository) {}
+  constructor(
+    private readonly campaignRepository: CampaignRepository,
+    private readonly brandRepository: BrandRepository,
+  ) {}
 
   async execute(input: DeleteCampaignInput): Promise<Result<DeleteCampaignOutput>> {
     // Validation de l'ID
     if (!input.id || input.id.trim().length === 0) {
-      return fail('Campaign ID is required');
+      return fail(new Error('Campaign ID is required'));
+    }
+
+    // Validation du userId
+    if (!input.userId || input.userId.trim().length === 0) {
+      return fail(new Error('User ID is required'));
     }
 
     // Vérifier que la campagne existe
@@ -33,12 +43,31 @@ export class DeleteCampaignUseCase {
     }
 
     if (!campaignResult.value) {
-      return fail('Campaign not found');
+      return fail(new Error('Campaign not found'));
+    }
+
+    const campaign = campaignResult.value;
+
+    // Vérifier que l'utilisateur est le propriétaire de la brand
+    const brandResult = await this.brandRepository.findById(campaign.brandId);
+
+    if (!brandResult.success) {
+      return fail(brandResult.error);
+    }
+
+    const brand = brandResult.value;
+
+    if (!brand) {
+      return fail(new Error('Brand not found'));
+    }
+
+    if (brand.ownerId !== input.userId) {
+      return fail(new Error('You do not have permission to delete this campaign'));
     }
 
     // Vérifier que la campagne n'est pas active
-    if (campaignResult.value.isActive) {
-      return fail('Cannot delete an active campaign. Please deactivate it first.');
+    if (campaign.isActive) {
+      return fail(new Error('Cannot delete an active campaign. Please deactivate it first.'));
     }
 
     // Supprimer la campagne

@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sessionService } from '@/infrastructure/auth/session.service';
+import { brandUserId } from '@/shared/types/branded.type';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -38,6 +39,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { session, user } = data;
 
+    // Valider et brander l'userId pour type-safety
+    const userIdResult = brandUserId(user.id);
+    if (!userIdResult.success) {
+      console.error('Invalid user ID from Supabase:', userIdResult.error);
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 500 });
+    }
+
     // Créer la session avec cookies HTTP-only
     const tokens = {
       accessToken: session.access_token,
@@ -46,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       expiresAt: session.expires_at ?? Date.now() / 1000 + 3600,
     };
 
-    const sessionResult = await sessionService.createSession(tokens, user.id);
+    const sessionResult = await sessionService.createSession(tokens, userIdResult.data);
 
     if (!sessionResult.success) {
       console.error('Failed to create session:', sessionResult.error);

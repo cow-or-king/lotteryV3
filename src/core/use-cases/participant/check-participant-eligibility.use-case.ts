@@ -33,17 +33,17 @@ export class CheckParticipantEligibilityUseCase {
   ): Promise<Result<CheckParticipantEligibilityOutput>> {
     // Validation de l'email
     if (!input.email || input.email.trim().length === 0) {
-      return fail('Email is required');
+      return fail(new Error('Email is required'));
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(input.email.trim())) {
-      return fail('Invalid email format');
+      return fail(new Error('Invalid email format'));
     }
 
     // Validation du campaign ID
     if (!input.campaignId || input.campaignId.trim().length === 0) {
-      return fail('Campaign ID is required');
+      return fail(new Error('Campaign ID is required'));
     }
 
     // Vérifier que la campagne existe et est active
@@ -56,7 +56,7 @@ export class CheckParticipantEligibilityUseCase {
     const campaign = campaignResult.value;
 
     if (!campaign) {
-      return fail('Campaign not found');
+      return fail(new Error('Campaign not found'));
     }
 
     if (!campaign.isActive) {

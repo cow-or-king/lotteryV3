@@ -32,15 +32,25 @@ export class GetPrizeTemplateByIdUseCase {
         return Result.fail(new Error('Gain non trouvé'));
       }
 
-      // Vérifier que le brand appartient à l'utilisateur
-      const brand = await this.brandRepository.findById(prizeTemplate.brandId);
+      // Vérifier ownership:
+      // - Si brandId est null: gain commun, vérifier que l'ownerId correspond
+      // - Si brandId existe: vérifier que le brand appartient à l'utilisateur
+      if (prizeTemplate.brandId === null) {
+        // Gain commun: vérifier directement l'ownerId
+        if (prizeTemplate.ownerId !== userId) {
+          return Result.fail(new Error('Ce gain ne vous appartient pas'));
+        }
+      } else {
+        // Gain spécifique: vérifier via le brand
+        const brand = await this.brandRepository.findById(prizeTemplate.brandId);
 
-      if (!brand) {
-        return Result.fail(new Error('Enseigne non trouvée'));
-      }
+        if (!brand) {
+          return Result.fail(new Error('Enseigne non trouvée'));
+        }
 
-      if (brand.ownerId !== userId) {
-        return Result.fail(new Error('Ce gain ne vous appartient pas'));
+        if (brand.ownerId !== userId) {
+          return Result.fail(new Error('Ce gain ne vous appartient pas'));
+        }
       }
 
       return Result.ok(prizeTemplate);

@@ -4,18 +4,9 @@
  * Architecture hexagonale: Port dans le core, Adapter dans l'infrastructure
  */
 
-export interface BrandEntity {
-  id: string;
-  name: string;
-  logoUrl: string;
-  ownerId: string;
-  primaryColor: string | null;
-  secondaryColor: string | null;
-  font: string | null;
-  isPaid: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { BrandEntity } from '@/core/entities/brand.entity';
+
+export type { BrandEntity };
 
 export interface CreateBrandInput {
   name: string;

@@ -53,3 +53,7 @@ export const Result = {
     return Result.ok(values) as never;
   },
 };
+
+// Standalone helper functions for convenience
+export const ok = Result.ok;
+export const fail = Result.fail;

@@ -25,7 +25,7 @@ export class GetWinnerByClaimCodeUseCase {
   async execute(input: GetWinnerByClaimCodeInput): Promise<Result<GetWinnerByClaimCodeOutput>> {
     // Validation du code
     if (!input.claimCode || input.claimCode.trim().length === 0) {
-      return fail('Claim code is required');
+      return fail(new Error('Claim code is required'));
     }
 
     // Récupérer le gagnant
@@ -40,7 +40,7 @@ export class GetWinnerByClaimCodeUseCase {
     const winner = winnerResult.value;
 
     if (!winner) {
-      return fail('Invalid claim code');
+      return fail(new Error('Invalid claim code'));
     }
 
     // Vérifier le statut

@@ -33,6 +33,10 @@ export type PrizeSetItemId = Brand<'PrizeSetItemId', string>;
 // Brand Types
 export type BrandId = Brand<'BrandId', string>;
 
+// Participant & Winner Types
+export type ParticipantId = Brand<'ParticipantId', string>;
+export type WinnerId = Brand<'WinnerId', string>;
+
 // Subscription Types
 export type SubscriptionId = Brand<'SubscriptionId', string>;
 export type CustomerId = Brand<'CustomerId', string>;
@@ -58,6 +62,8 @@ export const BrandedTypes = {
   prizeSetId: (id: string): PrizeSetId => id as PrizeSetId,
   prizeSetItemId: (id: string): PrizeSetItemId => id as PrizeSetItemId,
   brandId: (id: string): BrandId => id as BrandId,
+  participantId: (id: string): ParticipantId => id as ParticipantId,
+  winnerId: (id: string): WinnerId => id as WinnerId,
   subscriptionId: (id: string): SubscriptionId => id as SubscriptionId,
   customerId: (id: string): CustomerId => id as CustomerId,
   paymentMethodId: (id: string): PaymentMethodId => id as PaymentMethodId,

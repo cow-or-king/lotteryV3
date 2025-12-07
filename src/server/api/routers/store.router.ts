@@ -108,19 +108,27 @@ export const storeRouter = createTRPCRouter({
     }
 
     // Enrichir avec brandName et logoUrl pour l'UI
-    const storesWithBrandInfo = await Promise.all(
-      result.data.map(async (store) => {
-        const brand = await prisma.brand.findUnique({
-          where: { id: store.brandId },
-          select: { name: true, logoUrl: true },
-        });
-        return {
-          ...store,
-          brandName: brand?.name || '',
-          logoUrl: brand?.logoUrl || '',
-        };
-      }),
-    );
+    // Récupérer tous les brand IDs uniques pour éviter le N+1 query
+    const uniqueBrandIds = [...new Set(result.data.map((store) => store.brandId))];
+
+    // Une seule requête pour récupérer tous les brands
+    const brands = await prisma.brand.findMany({
+      where: { id: { in: uniqueBrandIds } },
+      select: { id: true, name: true, logoUrl: true },
+    });
+
+    // Créer un map pour un accès O(1)
+    const brandsMap = new Map(brands.map((b) => [b.id, b]));
+
+    // Mapper les stores avec leurs brand info
+    const storesWithBrandInfo = result.data.map((store) => {
+      const brand = brandsMap.get(store.brandId);
+      return {
+        ...store,
+        brandName: brand?.name || '',
+        logoUrl: brand?.logoUrl || '',
+      };
+    });
 
     return storesWithBrandInfo;
   }),
