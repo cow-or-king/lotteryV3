@@ -25,7 +25,10 @@ export class AddItemToSetUseCase {
       const prizeSet = await this.prizeSetRepository.findById(input.prizeSetId);
       if (!prizeSet) return Result.fail(new Error('Lot non trouvé'));
 
-      const brand = await this.brandRepository.findById(prizeSet.brandId);
+      const brandResult = await this.brandRepository.findById(prizeSet.brandId);
+      if (!brandResult.success) return Result.fail(brandResult.error);
+
+      const brand = brandResult.data;
       if (!brand || brand.ownerId !== userId)
         return Result.fail(new Error('Ce lot ne vous appartient pas'));
 

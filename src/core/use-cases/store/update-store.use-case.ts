@@ -25,40 +25,42 @@ export class UpdateStoreUseCase {
   ) {}
 
   async execute(input: UpdateStoreInput, userId: string): Promise<Result<StoreEntity, Error>> {
-    try {
-      // 1. Vérifier que le store existe
-      const store = await this.storeRepository.findById(input.id);
+    // 1. Vérifier que le store existe
+    const store = await this.storeRepository.findById(input.id);
 
-      if (!store) {
-        return Result.fail(new Error('Commerce non trouvé'));
-      }
-
-      // 2. Vérifier que le store appartient à l'utilisateur (via Brand)
-      const brand = await this.brandRepository.findById(store.brandId);
-
-      if (!brand) {
-        return Result.fail(new Error('Enseigne non trouvée'));
-      }
-
-      if (brand.ownerId !== userId) {
-        return Result.fail(new Error('Ce commerce ne vous appartient pas'));
-      }
-
-      // 3. Préparer les données de mise à jour (seulement les champs fournis)
-      const updateData: Partial<UpdateStoreInput> = {};
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.googleBusinessUrl !== undefined)
-        updateData.googleBusinessUrl = input.googleBusinessUrl;
-      if (input.googlePlaceId !== undefined) updateData.googlePlaceId = input.googlePlaceId;
-      if (input.description !== undefined) updateData.description = input.description;
-      if (input.isActive !== undefined) updateData.isActive = input.isActive;
-
-      // 4. Mettre à jour le store
-      const updatedStore = await this.storeRepository.update(input.id, updateData);
-
-      return Result.ok(updatedStore);
-    } catch (error) {
-      return Result.fail(error instanceof Error ? error : new Error('Erreur inconnue'));
+    if (!store) {
+      return Result.fail(new Error('Commerce non trouvé'));
     }
+
+    // 2. Vérifier que le store appartient à l'utilisateur (via Brand)
+    const brandResult = await this.brandRepository.findById(store.brandId);
+
+    if (!brandResult.success) {
+      return Result.fail(brandResult.error);
+    }
+
+    const brand = brandResult.data;
+
+    if (!brand) {
+      return Result.fail(new Error('Enseigne non trouvée'));
+    }
+
+    if (brand.ownerId !== userId) {
+      return Result.fail(new Error('Ce commerce ne vous appartient pas'));
+    }
+
+    // 3. Préparer les données de mise à jour (seulement les champs fournis)
+    const updateData: Partial<UpdateStoreInput> = {};
+    if (input.name !== undefined) updateData.name = input.name;
+    if (input.googleBusinessUrl !== undefined)
+      updateData.googleBusinessUrl = input.googleBusinessUrl;
+    if (input.googlePlaceId !== undefined) updateData.googlePlaceId = input.googlePlaceId;
+    if (input.description !== undefined) updateData.description = input.description;
+    if (input.isActive !== undefined) updateData.isActive = input.isActive;
+
+    // 4. Mettre à jour le store
+    const updatedStore = await this.storeRepository.update(input.id, updateData);
+
+    return Result.ok(updatedStore);
   }
 }

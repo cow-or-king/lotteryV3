@@ -8,13 +8,9 @@ import type {
   PrizeTemplateRepository,
   PrizeTemplateEntity,
 } from '@/core/ports/prize-template.repository';
-import type { BrandRepository } from '@/core/ports/brand.repository';
 
 export class ListPrizeTemplatesUseCase {
-  constructor(
-    private readonly prizeTemplateRepository: PrizeTemplateRepository,
-    private readonly brandRepository: BrandRepository,
-  ) {}
+  constructor(private readonly prizeTemplateRepository: PrizeTemplateRepository) {}
 
   async execute(userId: string): Promise<Result<PrizeTemplateEntity[], Error>> {
     try {

@@ -55,7 +55,7 @@ export class DeleteCampaignUseCase {
       return fail(brandResult.error);
     }
 
-    const brand = brandResult.value;
+    const brand = brandResult.data;
 
     if (!brand) {
       return fail(new Error('Brand not found'));

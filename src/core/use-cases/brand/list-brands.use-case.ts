@@ -35,8 +35,8 @@ export class ListBrandsUseCase {
     }
 
     return ok({
-      brands: brandsResult.value,
-      total: brandsResult.value.length,
+      brands: brandsResult.data,
+      total: brandsResult.data.length,
     });
   }
 }

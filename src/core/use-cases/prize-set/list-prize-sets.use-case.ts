@@ -10,7 +10,13 @@ export class ListPrizeSetsUseCase {
 
   async execute(userId: string): Promise<Result<PrizeSetWithItems[], Error>> {
     try {
-      const brands = await this.brandRepository.findByOwnerId(userId);
+      const brandsResult = await this.brandRepository.findByOwnerId(userId);
+
+      if (!brandsResult.success) {
+        return Result.fail(brandsResult.error);
+      }
+
+      const brands = brandsResult.data;
       const allPrizeSets = await Promise.all(
         brands.map((brand) => this.prizeSetRepository.findManyByBrandId(brand.id)),
       );

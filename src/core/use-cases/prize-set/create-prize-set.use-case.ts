@@ -25,7 +25,13 @@ export class CreatePrizeSetUseCase {
   ): Promise<Result<PrizeSetEntity, Error>> {
     try {
       // Vérifier que le brand existe et appartient à l'utilisateur
-      const brand = await this.brandRepository.findById(input.brandId);
+      const brandResult = await this.brandRepository.findById(input.brandId);
+
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
+      }
+
+      const brand = brandResult.data;
 
       if (!brand) {
         return Result.fail(new Error('Enseigne non trouvée'));

@@ -32,21 +32,27 @@ export class CreatePrizeTemplateUseCase {
     input: CreatePrizeTemplateInput,
     userId: string,
   ): Promise<Result<PrizeTemplateEntity, Error>> {
-    try {
-      // Si brandId est fourni, vérifier que le brand existe et appartient à l'utilisateur
-      if (input.brandId) {
-        const brand = await this.brandRepository.findById(input.brandId);
+    // Si brandId est fourni, vérifier que le brand existe et appartient à l'utilisateur
+    if (input.brandId) {
+      const brandResult = await this.brandRepository.findById(input.brandId);
 
-        if (!brand) {
-          return Result.fail(new Error('Enseigne non trouvée'));
-        }
-
-        if (brand.ownerId !== userId) {
-          return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
-        }
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
       }
 
-      // Créer le prize template
+      const brand = brandResult.data;
+
+      if (!brand) {
+        return Result.fail(new Error('Enseigne non trouvée'));
+      }
+
+      if (brand.ownerId !== userId) {
+        return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
+      }
+    }
+
+    // Créer le prize template
+    try {
       const prizeTemplate = await this.prizeTemplateRepository.create({
         name: input.name,
         brandId: input.brandId,

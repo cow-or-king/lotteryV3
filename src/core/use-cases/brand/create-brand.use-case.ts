@@ -61,22 +61,22 @@ export class CreateBrandUseCase {
     }
 
     // Créer via repository
-    try {
-      const brand = await this.brandRepository.create({
-        name: input.name.trim(),
-        logoUrl: input.logoUrl.trim(),
-        ownerId: input.ownerId,
-        primaryColor: input.primaryColor || '#5B21B6',
-        secondaryColor: input.secondaryColor || '#FACC15',
-        font: input.font || 'inter',
-        isPaid: input.isPaid || false,
-      });
+    const brandResult = await this.brandRepository.create({
+      name: input.name.trim(),
+      logoUrl: input.logoUrl.trim(),
+      ownerId: input.ownerId,
+      primaryColor: input.primaryColor || '#5B21B6',
+      secondaryColor: input.secondaryColor || '#FACC15',
+      font: input.font || 'inter',
+      isPaid: input.isPaid || false,
+    });
 
-      return ok({
-        brand,
-      });
-    } catch (error) {
-      return fail(error instanceof Error ? error : new Error('Failed to create brand'));
+    if (!brandResult.success) {
+      return fail(brandResult.error);
     }
+
+    return ok({
+      brand: brandResult.data,
+    });
   }
 }

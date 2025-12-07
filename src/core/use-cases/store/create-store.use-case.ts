@@ -28,86 +28,104 @@ export class CreateStoreUseCase {
   ) {}
 
   async execute(input: CreateStoreInput, userId: string): Promise<Result<StoreEntity, Error>> {
-    try {
-      let brandId: string;
+    let brandId: string;
 
-      // Cas 1: Brand existant fourni
-      if (input.brandId) {
-        const brand = await this.brandRepository.findById(input.brandId);
+    // Cas 1: Brand existant fourni
+    if (input.brandId) {
+      const brandResult = await this.brandRepository.findById(input.brandId);
 
-        if (!brand) {
-          return Result.fail(new Error('Enseigne non trouvée'));
-        }
-
-        if (brand.ownerId !== userId) {
-          return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
-        }
-
-        brandId = brand.id;
-      }
-      // Cas 2: Créer un nouveau brand
-      else if (input.brandName && input.logoUrl) {
-        const brandsCount = await this.brandRepository.countByOwnerId(userId);
-
-        const newBrand = await this.brandRepository.create({
-          name: input.brandName,
-          logoUrl: input.logoUrl,
-          ownerId: userId,
-          isPaid: brandsCount > 0, // Le 2ème brand et suivants sont payants
-        });
-
-        brandId = newBrand.id;
-      }
-      // Erreur: ni brandId ni brandName+logoUrl
-      else {
-        return Result.fail(
-          new Error(
-            'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName + logoUrl)',
-          ),
-        );
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
       }
 
-      // Récupérer le brand pour générer le slug
-      const brand = await this.brandRepository.findById(brandId);
+      const brand = brandResult.data;
 
       if (!brand) {
-        return Result.fail(new Error("Erreur lors de la récupération de l'enseigne"));
+        return Result.fail(new Error('Enseigne non trouvée'));
       }
 
-      // Générer un slug unique depuis brandName + name
-      const combinedName = `${brand.name} ${input.name}`;
-      const baseSlug = combinedName
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-
-      let slug = baseSlug;
-      let counter = 1;
-
-      // Vérifier si le slug existe déjà
-      while (await this.storeRepository.findBySlug(slug)) {
-        slug = `${baseSlug}-${counter}`;
-        counter++;
+      if (brand.ownerId !== userId) {
+        return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
       }
 
-      // Compter les stores existants pour ce brand
-      const storesCount = await this.storeRepository.countByBrandId(brandId);
+      brandId = brand.id;
+    }
+    // Cas 2: Créer un nouveau brand
+    else if (input.brandName && input.logoUrl) {
+      const countResult = await this.brandRepository.countByOwnerId(userId);
 
-      // Créer le store
-      const store = await this.storeRepository.create({
-        name: input.name,
-        slug,
-        googleBusinessUrl: input.googleBusinessUrl,
-        description: input.description,
-        brandId,
-        isPaid: storesCount > 0, // Le 2ème commerce et suivants sont payants
+      if (!countResult.success) {
+        return Result.fail(countResult.error);
+      }
+
+      const brandsCount = countResult.data;
+
+      const newBrandResult = await this.brandRepository.create({
+        name: input.brandName,
+        logoUrl: input.logoUrl,
+        ownerId: userId,
+        isPaid: brandsCount > 0, // Le 2ème brand et suivants sont payants
       });
 
-      return Result.ok(store);
-    } catch (error) {
-      return Result.fail(error instanceof Error ? error : new Error('Erreur inconnue'));
+      if (!newBrandResult.success) {
+        return Result.fail(newBrandResult.error);
+      }
+
+      brandId = newBrandResult.data.id;
     }
+    // Erreur: ni brandId ni brandName+logoUrl
+    else {
+      return Result.fail(
+        new Error(
+          'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName + logoUrl)',
+        ),
+      );
+    }
+
+    // Récupérer le brand pour générer le slug
+    const brandResult = await this.brandRepository.findById(brandId);
+
+    if (!brandResult.success) {
+      return Result.fail(brandResult.error);
+    }
+
+    const brand = brandResult.data;
+
+    if (!brand) {
+      return Result.fail(new Error("Erreur lors de la récupération de l'enseigne"));
+    }
+
+    // Générer un slug unique depuis brandName + name
+    const combinedName = `${brand.name} ${input.name}`;
+    const baseSlug = combinedName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Vérifier si le slug existe déjà
+    while (await this.storeRepository.findBySlug(slug)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Compter les stores existants pour ce brand
+    const storesCount = await this.storeRepository.countByBrandId(brandId);
+
+    // Créer le store
+    const store = await this.storeRepository.create({
+      name: input.name,
+      slug,
+      googleBusinessUrl: input.googleBusinessUrl,
+      description: input.description,
+      brandId,
+      isPaid: storesCount > 0, // Le 2ème commerce et suivants sont payants
+    });
+
+    return Result.ok(store);
   }
 }

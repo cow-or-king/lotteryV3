@@ -5,6 +5,7 @@
  */
 
 import type { BrandEntity } from '@/core/entities/brand.entity';
+import type { Result } from '@/shared/types/result.type';
 
 export type { BrandEntity };
 
@@ -27,10 +28,10 @@ export interface UpdateBrandInput {
 }
 
 export interface BrandRepository {
-  create(input: CreateBrandInput): Promise<BrandEntity>;
-  findById(id: string): Promise<BrandEntity | null>;
-  findByOwnerId(ownerId: string): Promise<BrandEntity[]>;
-  update(id: string, input: UpdateBrandInput): Promise<BrandEntity>;
-  delete(id: string): Promise<void>;
-  countByOwnerId(ownerId: string): Promise<number>;
+  create(input: CreateBrandInput): Promise<Result<BrandEntity>>;
+  findById(id: string): Promise<Result<BrandEntity | null>>;
+  findByOwnerId(ownerId: string): Promise<Result<BrandEntity[]>>;
+  update(id: string, input: UpdateBrandInput): Promise<Result<BrandEntity>>;
+  delete(id: string): Promise<Result<void>>;
+  countByOwnerId(ownerId: string): Promise<Result<number>>;
 }

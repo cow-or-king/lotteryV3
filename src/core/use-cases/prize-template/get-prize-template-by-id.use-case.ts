@@ -42,7 +42,13 @@ export class GetPrizeTemplateByIdUseCase {
         }
       } else {
         // Gain spécifique: vérifier via le brand
-        const brand = await this.brandRepository.findById(prizeTemplate.brandId);
+        const brandResult = await this.brandRepository.findById(prizeTemplate.brandId);
+
+        if (!brandResult.success) {
+          return Result.fail(brandResult.error);
+        }
+
+        const brand = brandResult.data;
 
         if (!brand) {
           return Result.fail(new Error('Enseigne non trouvée'));
