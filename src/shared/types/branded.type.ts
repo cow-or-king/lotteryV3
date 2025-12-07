@@ -26,6 +26,12 @@ export type ClaimCode = Brand<'ClaimCode', string>;
 // Prize Types
 export type PrizeId = Brand<'PrizeId', string>;
 export type PrizePoolId = Brand<'PrizePoolId', string>;
+export type PrizeTemplateId = Brand<'PrizeTemplateId', string>;
+export type PrizeSetId = Brand<'PrizeSetId', string>;
+export type PrizeSetItemId = Brand<'PrizeSetItemId', string>;
+
+// Brand Types
+export type BrandId = Brand<'BrandId', string>;
 
 // Subscription Types
 export type SubscriptionId = Brand<'SubscriptionId', string>;
@@ -48,6 +54,10 @@ export const BrandedTypes = {
   claimCode: (code: string): ClaimCode => code as ClaimCode,
   prizeId: (id: string): PrizeId => id as PrizeId,
   prizePoolId: (id: string): PrizePoolId => id as PrizePoolId,
+  prizeTemplateId: (id: string): PrizeTemplateId => id as PrizeTemplateId,
+  prizeSetId: (id: string): PrizeSetId => id as PrizeSetId,
+  prizeSetItemId: (id: string): PrizeSetItemId => id as PrizeSetItemId,
+  brandId: (id: string): BrandId => id as BrandId,
   subscriptionId: (id: string): SubscriptionId => id as SubscriptionId,
   customerId: (id: string): CustomerId => id as CustomerId,
   paymentMethodId: (id: string): PaymentMethodId => id as PaymentMethodId,

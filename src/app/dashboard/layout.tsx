@@ -9,6 +9,7 @@
 import { api } from '@/lib/trpc/client';
 import {
   Dices,
+  Gift,
   LayoutDashboard,
   Loader2,
   Settings,
@@ -41,6 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setActiveMenu('dashboard');
     } else if (pathname.startsWith('/dashboard/stores')) {
       setActiveMenu('stores');
+    } else if (pathname.startsWith('/dashboard/prizes')) {
+      setActiveMenu('prizes');
     } else if (pathname.startsWith('/campaigns')) {
       setActiveMenu('campaigns');
     } else if (pathname.startsWith('/lottery')) {
@@ -100,6 +103,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: <Store className="w-5 h-5" />,
       label: 'Mes Commerces',
       path: '/dashboard/stores',
+    },
+    {
+      id: 'prizes',
+      icon: <Gift className="w-5 h-5" />,
+      label: 'Gains & Lots',
+      path: '/dashboard/prizes',
     },
     {
       id: 'campaigns',
