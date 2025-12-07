@@ -6,15 +6,15 @@
 
 'use client';
 
-import { type InputHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
+import { type InputHTMLAttributes, forwardRef } from 'react';
 
 interface GlassInputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  icon?: string | React.ReactNode;
-  fullWidth?: boolean;
+  label?: string | undefined;
+  error?: string | undefined;
+  helperText?: string | undefined;
+  icon?: string | React.ReactNode | undefined;
+  fullWidth?: boolean | undefined;
 }
 
 /**
@@ -27,16 +27,25 @@ export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
         {label && <label className="block text-sm font-semibold text-gray-700">{label}</label>}
         <div className="relative">
           {icon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              {typeof icon === 'string' ? <span className="text-gray-400">{icon}</span> : icon}
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+              {typeof icon === 'string' ? (
+                <span
+                  className="text-2xl opacity-100"
+                  style={{ filter: 'contrast(1.2) brightness(1.1)' }}
+                >
+                  {icon}
+                </span>
+              ) : (
+                icon
+              )}
             </div>
           )}
           <input
             ref={ref}
             className={cn(
-              'w-full py-3 bg-white/50 backdrop-blur border border-white/50 rounded-2xl',
-              'focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent',
-              'placeholder-gray-400 transition-all duration-200',
+              'w-full py-3 bg-white/70 backdrop-blur border border-white/60 rounded-2xl',
+              'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
+              'text-gray-900 font-medium placeholder-gray-500 transition-all duration-200',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               icon ? 'pl-10 pr-3' : 'px-4',
               error && 'border-red-400/50 focus:ring-red-400',

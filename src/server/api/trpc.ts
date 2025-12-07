@@ -5,8 +5,6 @@
  */
 
 import { initTRPC, TRPCError } from '@trpc/server';
-import { type CreateNextContextOptions } from '@trpc/server/adapters/next';
-import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import type { UserId } from '@/shared/types/branded.type';
@@ -21,6 +19,7 @@ interface CreateContextOptions {
   userId: UserId | null;
   accessToken: string | null;
   refreshToken: string | null;
+  prisma?: typeof prisma; // Optional prisma for testing
 }
 
 /**
@@ -29,7 +28,7 @@ interface CreateContextOptions {
  */
 export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
-    prisma,
+    prisma: opts.prisma ?? prisma, // Use provided prisma or default
     userId: opts.userId,
     accessToken: opts.accessToken,
     refreshToken: opts.refreshToken,
@@ -39,10 +38,9 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
 /**
  * Context pour les requêtes HTTP
  * Extrait les informations de session depuis les headers/cookies
+ * Compatible avec fetchRequestHandler
  */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req, res } = opts;
-
+export const createTRPCContext = async () => {
   // Récupérer la session depuis les cookies
   const sessionResult = await sessionService.getSession();
 
@@ -65,10 +63,9 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
 /**
  * Initialisation de tRPC avec le contexte
- * Utilise SuperJSON pour la sérialisation des dates et types complexes
+ * Note: Pas de transformer pour éviter les problèmes avec fetchRequestHandler
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
       ...shape,
@@ -93,17 +90,27 @@ export const publicProcedure = t.procedure;
 
 /**
  * Middleware d'authentification
- * Vérifie que l'utilisateur est connecté
+ * Vérifie que l'utilisateur est connecté et récupère ses infos
  */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
   if (!ctx.userId) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
+  // Récupérer l'utilisateur depuis la DB
+  const user = await ctx.prisma.user.findUnique({
+    where: { id: ctx.userId },
+  });
+
+  if (!user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not found' });
+  }
+
   return next({
     ctx: {
-      // userId est maintenant garanti non-null
+      // userId et user sont maintenant garantis non-null
       userId: ctx.userId,
+      user,
     },
   });
 });

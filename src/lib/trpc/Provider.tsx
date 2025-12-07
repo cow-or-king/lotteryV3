@@ -11,7 +11,6 @@ import { httpBatchLink, loggerLink } from '@trpc/client';
 import { createTRPCReact } from '@trpc/react-query';
 import { useState } from 'react';
 import { api } from './client';
-import superjson from 'superjson';
 
 /**
  * Fonction pour obtenir l'URL de base
@@ -37,8 +36,11 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000, // 5 secondes
-            refetchOnWindowFocus: false,
+            staleTime: 60 * 1000, // 1 minute - les données restent fraîches plus longtemps
+            gcTime: 5 * 60 * 1000, // 5 minutes - garde les données en cache
+            refetchOnWindowFocus: false, // Pas de refetch automatique au focus
+            refetchOnReconnect: false, // Pas de refetch à la reconnexion
+            retry: 1, // Réduit les tentatives de retry
           },
         },
       }),
@@ -46,7 +48,6 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer: superjson,
       links: [
         loggerLink({
           enabled: (opts) =>

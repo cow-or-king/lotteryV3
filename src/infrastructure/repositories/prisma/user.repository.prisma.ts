@@ -32,7 +32,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   async findByEmail(email: Email): Promise<UserEntity | null> {
     try {
       const user = await this.prisma.user.findUnique({
-        where: { email: email.value },
+        where: { email: email.getValue() },
       });
 
       if (!user) return null;
@@ -47,7 +47,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   async emailExists(email: Email): Promise<boolean> {
     try {
       const count = await this.prisma.user.count({
-        where: { email: email.value },
+        where: { email: email.getValue() },
       });
 
       return count > 0;
@@ -149,7 +149,7 @@ export class UserRepositoryPrisma implements IUserRepository {
     const data = entity.toPersistence();
     return {
       id: data.id,
-      email: data.email.value,
+      email: data.email, // email est déjà une string (branded type)
       emailVerified: data.emailVerified,
       hashedPassword: data.hashedPassword,
       name: data.name,

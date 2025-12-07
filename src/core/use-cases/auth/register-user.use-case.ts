@@ -14,10 +14,11 @@ import { ISubscriptionRepository } from '@/core/repositories/subscription.reposi
 
 // DTO pour l'input
 export interface RegisterUserInput {
+  readonly id?: UserId | undefined; // Optional: use Supabase ID if provided
   readonly email: string;
   readonly password: string;
-  readonly name?: string;
-  readonly avatarUrl?: string;
+  readonly name: string | undefined;
+  readonly avatarUrl: string | undefined;
 }
 
 // DTO pour l'output
@@ -73,6 +74,7 @@ export class RegisterUserUseCase {
 
     // 4. Créer l'entité User
     const userResult = UserEntity.create({
+      id: input.id, // Use Supabase ID if provided
       email: input.email,
       hashedPassword,
       name: input.name,
@@ -109,7 +111,7 @@ export class RegisterUserUseCase {
       // 6. Retourner le résultat
       return Result.ok({
         userId: user.id,
-        email: user.email.value,
+        email: user.email,
         name: user.name,
         subscriptionPlan: 'FREE',
       });

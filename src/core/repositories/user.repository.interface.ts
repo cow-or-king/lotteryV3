@@ -5,7 +5,8 @@
  */
 
 import { Result } from '@/shared/types/result.type';
-import { UserId, Email } from '@/shared/types/branded.type';
+import { UserId } from '@/shared/types/branded.type';
+import { Email } from '@/core/value-objects/email.vo';
 import { UserEntity } from '@/core/entities/user.entity';
 
 export interface IUserRepository {

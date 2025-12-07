@@ -2,12 +2,18 @@
  * Supabase Authentication Service
  * Service d'authentification utilisant Supabase
  * IMPORTANT: ZERO any types
+ * Architecture hexagonale: Implémente IAuthProvider (port du domain)
  */
 
 import { createClient, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
 import type { Result } from '@/shared/types/result.type';
 import type { UserId } from '@/shared/types/branded.type';
+import { brandUserId } from '@/shared/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
+import type { IAuthProvider, AuthUser, AuthTokens } from '@/core/ports/auth.port';
+
+// Re-export types for backward compatibility
+export type { AuthUser, AuthTokens };
 
 /**
  * Configuration Supabase
@@ -16,29 +22,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Type pour les données d'authentification
- */
-export interface AuthUser {
-  id: UserId;
-  email: string;
-  emailVerified: boolean;
-  metadata?: Record<string, unknown>;
-}
-
-/**
- * Type pour les tokens
- */
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  expiresAt: number;
-}
-
-/**
  * Service d'authentification Supabase
+ * Implémente le port IAuthProvider
  */
-export class SupabaseAuthService {
+export class SupabaseAuthService implements IAuthProvider {
   private supabase: SupabaseClient;
 
   constructor() {
@@ -77,9 +64,14 @@ export class SupabaseAuthService {
         };
       }
 
+      const authUserResult = this.mapSupabaseUserToAuthUser(data.user);
+      if (!authUserResult.success) {
+        return authUserResult;
+      }
+
       return {
         success: true,
-        data: this.mapSupabaseUserToAuthUser(data.user),
+        data: authUserResult.data,
       };
     } catch (err) {
       return {
@@ -263,9 +255,14 @@ export class SupabaseAuthService {
         };
       }
 
+      const authUserResult = this.mapSupabaseUserToAuthUser(data.user);
+      if (!authUserResult.success) {
+        return authUserResult;
+      }
+
       return {
         success: true,
-        data: this.mapSupabaseUserToAuthUser(data.user),
+        data: authUserResult.data,
       };
     } catch (err) {
       return {
@@ -317,13 +314,26 @@ export class SupabaseAuthService {
 
   /**
    * Mapper un utilisateur Supabase vers notre AuthUser
+   * Utilise brandUserId() pour validation sécurisée
    */
-  private mapSupabaseUserToAuthUser(user: SupabaseUser): AuthUser {
+  private mapSupabaseUserToAuthUser(user: SupabaseUser): Result<AuthUser> {
+    // Valider et brander l'userId
+    const userIdResult = brandUserId(user.id);
+    if (!userIdResult.success) {
+      return {
+        success: false,
+        error: new Error(`Invalid user ID from Supabase: ${userIdResult.error.message}`),
+      };
+    }
+
     return {
-      id: user.id as UserId,
-      email: user.email ?? '',
-      emailVerified: !!user.email_confirmed_at,
-      metadata: user.user_metadata,
+      success: true,
+      data: {
+        id: userIdResult.data,
+        email: user.email ?? '',
+        emailVerified: !!user.email_confirmed_at,
+        metadata: user.user_metadata,
+      },
     };
   }
 }

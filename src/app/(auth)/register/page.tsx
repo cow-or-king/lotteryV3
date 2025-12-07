@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { User, Mail, Key, Lock } from 'lucide-react';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -86,37 +87,41 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="relative min-h-[100dvh] overflow-x-hidden">
       {/* Animated blobs background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
         <div className="absolute top-20 right-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-20 left-60 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Content */}
-      <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="relative min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:py-12">
         <div className="w-full max-w-md">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-block p-3 bg-white/30 backdrop-blur-xl rounded-3xl mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl"></div>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-block p-2 sm:p-3 bg-white/30 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
               Review
               <span className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
                 Lottery
               </span>
             </h1>
-            <p className="mt-2 text-gray-600">Créez votre compte gratuit</p>
+            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
+              Créez votre compte gratuit
+            </p>
           </div>
 
           {/* Glass card */}
           <GlassCard>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-5">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Inscription</h2>
-                <p className="mt-1 text-sm text-gray-600">Rejoignez des milliers de commerces</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Inscription</h2>
+                <p className="mt-1 text-xs sm:text-sm text-gray-600">
+                  Rejoignez des milliers de commerces
+                </p>
               </div>
 
               {errors.general && (
@@ -128,7 +133,7 @@ export default function RegisterPage() {
               <GlassInput
                 type="text"
                 label="Nom complet"
-                icon="👤"
+                icon={<User className="w-5 h-5 text-purple-300" />}
                 value={formData.name}
                 onChange={(e) => updateField('name', e.target.value)}
                 error={errors.name}
@@ -139,7 +144,7 @@ export default function RegisterPage() {
               <GlassInput
                 type="email"
                 label="Email professionnel"
-                icon="📧"
+                icon={<Mail className="w-5 h-5 text-purple-300" />}
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
                 error={errors.email}
@@ -150,7 +155,7 @@ export default function RegisterPage() {
               <GlassInput
                 type="password"
                 label="Mot de passe"
-                icon="🔑"
+                icon={<Key className="w-5 h-5 text-purple-300" />}
                 value={formData.password}
                 onChange={(e) => updateField('password', e.target.value)}
                 error={errors.password}
@@ -161,7 +166,7 @@ export default function RegisterPage() {
               <GlassInput
                 type="password"
                 label="Confirmer le mot de passe"
-                icon="🔒"
+                icon={<Lock className="w-5 h-5 text-purple-300" />}
                 value={formData.confirmPassword}
                 onChange={(e) => updateField('confirmPassword', e.target.value)}
                 error={errors.confirmPassword}
@@ -169,24 +174,24 @@ export default function RegisterPage() {
                 fullWidth
               />
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <label className="flex items-start space-x-2">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 mt-1 rounded bg-white/50 border-white/50"
+                    className="w-4 h-4 mt-0.5 sm:mt-1 rounded bg-white/50 border-white/50 flex-shrink-0"
                     required
                   />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-[10px] sm:text-xs text-gray-600 leading-tight">
                     J'accepte les{' '}
                     <Link href="/terms" className="text-purple-600 hover:text-purple-700 underline">
-                      conditions d'utilisation
+                      CGU
                     </Link>{' '}
                     et la{' '}
                     <Link
                       href="/privacy"
                       className="text-purple-600 hover:text-purple-700 underline"
                     >
-                      politique de confidentialité
+                      confidentialité
                     </Link>
                   </span>
                 </label>
@@ -199,8 +204,8 @@ export default function RegisterPage() {
           </GlassCard>
 
           {/* Sign in link */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
+          <div className="mt-4 sm:mt-8 text-center">
+            <p className="text-sm sm:text-base text-gray-600">
               Déjà inscrit?{' '}
               <Link
                 href="/login"
@@ -212,15 +217,15 @@ export default function RegisterPage() {
           </div>
 
           {/* Trust badges */}
-          <div className="mt-8 flex justify-center space-x-4">
-            <div className="px-3 py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700">
-              🔒 100% Sécurisé
+          <div className="mt-4 sm:mt-8 flex flex-wrap justify-center gap-2 sm:gap-4">
+            <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700">
+              🔒 Sécurisé
             </div>
-            <div className="px-3 py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700">
+            <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700 hidden sm:inline-flex">
               ✨ Sans engagement
             </div>
-            <div className="px-3 py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700">
-              🚀 Setup rapide
+            <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/30 backdrop-blur-xl rounded-full text-xs font-medium text-gray-700">
+              🚀 Rapide
             </div>
           </div>
         </div>

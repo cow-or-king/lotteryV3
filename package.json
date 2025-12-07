@@ -12,7 +12,10 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "review:last": "git diff HEAD~1 --stat",
+    "review:show": "cat docs/CODE_REVIEW.md",
+    "review:help": "echo '\n💡 Workflow Sonnet ↔ Opus:\n\n🟢 Sonnet: Code la feature\n🔵 Opus: opusplan review [feature]\n🟢 Sonnet: Fix les problèmes\n🔵 Opus: opusplan validation finale\n\n📖 Doc: .opusplan/config.md\n'"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -30,6 +33,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "immer": "^11.0.1",
+    "lucide-react": "^0.556.0",
     "next": "16.0.7",
     "prisma": "^5.22.0",
     "react": "19.2.0",

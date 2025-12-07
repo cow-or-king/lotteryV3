@@ -17,6 +17,7 @@ import {
   GlassBadge,
   AnimatedBackground,
 } from '@/components/ui';
+import { Mail, Key } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,30 +51,34 @@ export default function LoginPage() {
   };
 
   return (
-    <AnimatedBackground className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Content */}
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="relative min-h-[100dvh] overflow-x-hidden">
+      <AnimatedBackground className="absolute inset-0" />
+      <div className="relative min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:py-12">
         <div className="w-full max-w-md">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-block p-3 bg-white/30 backdrop-blur-xl rounded-3xl mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl"></div>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-block p-2 sm:p-3 bg-white/30 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
               Review
               <span className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
                 Lottery
               </span>
             </h1>
-            <p className="mt-2 text-gray-600">L'expérience client réinventée</p>
+            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
+              L'expérience client réinventée
+            </p>
           </div>
 
           {/* Glass card */}
           <GlassCard>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Bon retour!</h2>
-                <p className="mt-1 text-sm text-gray-600">Connectez-vous pour continuer</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Bon retour!</h2>
+                <p className="mt-1 text-xs sm:text-sm text-gray-600">
+                  Connectez-vous pour continuer
+                </p>
               </div>
 
               {errors.general && (
@@ -85,7 +90,7 @@ export default function LoginPage() {
               <GlassInput
                 type="email"
                 label="Email"
-                icon="📧"
+                icon={<Mail className="w-5 h-5 text-purple-300" />}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
@@ -96,7 +101,7 @@ export default function LoginPage() {
               <GlassInput
                 type="password"
                 label="Mot de passe"
-                icon="🔑"
+                icon={<Key className="w-5 h-5 text-purple-300" />}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
@@ -124,8 +129,8 @@ export default function LoginPage() {
                 Se connecter
               </GlassButton>
 
-              {/* Social login */}
-              <div className="relative">
+              {/* Social login - hidden on very small screens */}
+              <div className="relative hidden sm:block">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300/50"></div>
                 </div>
@@ -134,41 +139,43 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 hidden sm:grid">
                 <GlassButton type="button" variant="secondary" size="sm">
-                  <span className="text-lg">🔵</span>
+                  <span className="text-base sm:text-lg">🔵</span>
                 </GlassButton>
                 <GlassButton type="button" variant="secondary" size="sm">
-                  <span className="text-lg">🔴</span>
+                  <span className="text-base sm:text-lg">🔴</span>
                 </GlassButton>
                 <GlassButton type="button" variant="secondary" size="sm">
-                  <span className="text-lg">⚫</span>
+                  <span className="text-base sm:text-lg">⚫</span>
                 </GlassButton>
               </div>
             </form>
           </GlassCard>
 
           {/* Sign up link */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
+          <div className="mt-4 sm:mt-8 text-center">
+            <p className="text-sm sm:text-base text-gray-600">
               Pas encore de compte?{' '}
               <Link
                 href="/register"
                 className="font-bold text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text hover:from-purple-700 hover:to-pink-700"
               >
-                Inscrivez-vous gratuitement
+                Inscrivez-vous
               </Link>
             </p>
           </div>
 
           {/* Floating badges */}
-          <div className="mt-8 flex justify-center space-x-4">
-            <GlassBadge>✅ RGPD Compliant</GlassBadge>
-            <GlassBadge>🏆 #1 en France</GlassBadge>
-            <GlassBadge>⭐ 4.9/5</GlassBadge>
+          <div className="mt-4 sm:mt-8 flex flex-wrap justify-center gap-2 sm:gap-4">
+            <GlassBadge className="text-xs sm:text-sm">✅ RGPD</GlassBadge>
+            <GlassBadge className="text-xs sm:text-sm hidden sm:inline-flex">
+              🏆 #1 en France
+            </GlassBadge>
+            <GlassBadge className="text-xs sm:text-sm">⭐ 4.9/5</GlassBadge>
           </div>
         </div>
       </div>
-    </AnimatedBackground>
+    </div>
   );
 }

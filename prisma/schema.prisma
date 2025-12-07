@@ -28,8 +28,8 @@ model User {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
-  subscription    Subscription?
-  stores          Store[]
+  subscription Subscription?
+  brands       Brand[]
 
   @@index([email])
   @@map("users")
@@ -57,32 +57,54 @@ model Subscription {
 }
 
 // =====================
-// STORES
+// BRANDS (Enseignes)
+// =====================
+
+model Brand {
+  id             String   @id @default(cuid())
+  name           String
+  logoUrl        String   @map("logo_url")
+  ownerId        String   @map("owner_id")
+  primaryColor   String   @default("#5B21B6") @map("primary_color")
+  secondaryColor String   @default("#FACC15") @map("secondary_color")
+  font           String   @default("inter")
+  isPaid         Boolean  @default(false) @map("is_paid") // true si c'est une enseigne payante (2ème+)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner  User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  stores Store[]
+
+  @@index([ownerId])
+  @@index([ownerId, createdAt(sort: Desc)])
+  @@map("brands")
+}
+
+// =====================
+// STORES (Commerces)
 // =====================
 
 model Store {
   id                String    @id @default(cuid())
   slug              String    @unique
+  brandId           String    @map("brand_id")
   name              String
   description       String?
-  ownerId           String    @map("owner_id")
   googlePlaceId     String?   @map("google_place_id")
-  googleBusinessUrl String?   @map("google_business_url")
-  logoUrl           String?   @map("logo_url")
-  primaryColor      String    @default("#5B21B6") @map("primary_color")
-  secondaryColor    String    @default("#FACC15") @map("secondary_color")
-  font              String    @default("inter")
+  googleBusinessUrl String    @map("google_business_url")
   isActive          Boolean   @default(true) @map("is_active")
-  isPaid            Boolean   @default(true) @map("is_paid")
+  isPaid            Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  owner     User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  brand     Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
   campaigns Campaign[]
   reviews   Review[]
 
-  @@index([ownerId])
+  @@index([brandId])
+  @@index([brandId, createdAt(sort: Desc)])
   @@index([slug])
   @@map("stores")
 }

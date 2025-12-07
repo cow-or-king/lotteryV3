@@ -74,9 +74,11 @@ export const authRouter = createTRPCRouter({
     );
 
     const result = await registerUseCase.execute({
+      id: supabaseUserId, // Use Supabase user ID
       email: input.email,
       password: 'handled-by-supabase', // On ne stocke pas le mot de passe
       name: input.name,
+      avatarUrl: undefined,
     });
 
     if (!result.success) {
@@ -86,13 +88,43 @@ export const authRouter = createTRPCRouter({
       });
     }
 
+    // 3. Connecter automatiquement l'utilisateur après registration
+    const loginResult = await supabaseAuthService.signIn(input.email, input.password);
+
+    if (!loginResult.success) {
+      // Si la connexion échoue (ex: email non vérifié), on retourne quand même le succès
+      // L'utilisateur pourra se connecter plus tard
+      return {
+        success: true,
+        data: {
+          id: supabaseUserId,
+          email: input.email,
+          name: input.name,
+          message:
+            'Registration successful. Please check your email to verify your account before logging in.',
+        },
+      };
+    }
+
+    const tokens = loginResult.data;
+
+    // 4. Créer la session avec cookies HTTP-only
+    const sessionResult = await sessionService.createSession(tokens, supabaseUserId);
+
+    if (!sessionResult.success) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create session',
+      });
+    }
+
     return {
       success: true,
       data: {
         id: supabaseUserId,
         email: input.email,
         name: input.name,
-        message: 'Registration successful. Please check your email to verify your account.',
+        message: 'Registration successful! You are now logged in.',
       },
     };
   }),
@@ -145,9 +177,11 @@ export const authRouter = createTRPCRouter({
       );
 
       await registerUseCase.execute({
+        id: userId, // Use Supabase user ID
         email: input.email,
         password: 'handled-by-supabase',
         name: undefined,
+        avatarUrl: undefined,
       });
     }
 
@@ -186,12 +220,25 @@ export const authRouter = createTRPCRouter({
       return null;
     }
 
+    // Récupérer la subscription
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.userId },
+    });
+
     return {
       id: user.id,
-      email: user.email.value,
+      email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
       emailVerified: user.emailVerified,
+      subscription: subscription
+        ? {
+            plan: subscription.plan,
+            status: subscription.status,
+            storesLimit: subscription.storesLimit,
+            campaignsLimit: subscription.campaignsLimit,
+          }
+        : null,
     };
   }),
 

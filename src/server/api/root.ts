@@ -6,6 +6,9 @@
 
 import { createTRPCRouter } from './trpc';
 import { authRouter } from './routers/auth.router';
+import { dashboardRouter } from './routers/dashboard.router';
+import { storeRouter } from './routers/store.router';
+import { brandRouter } from './routers/brand.router';
 
 /**
  * Router principal de l'API
@@ -13,8 +16,10 @@ import { authRouter } from './routers/auth.router';
  */
 export const appRouter = createTRPCRouter({
   auth: authRouter,
+  dashboard: dashboardRouter,
+  store: storeRouter,
+  brand: brandRouter,
   // TODO: Ajouter les autres routers
-  // store: storeRouter,
   // campaign: campaignRouter,
   // lottery: lotteryRouter,
   // review: reviewRouter,

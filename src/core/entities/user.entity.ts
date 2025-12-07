@@ -37,15 +37,22 @@ export interface UserSubscription {
 }
 
 export interface CreateUserProps {
+  readonly id?: UserId | undefined; // Optional: use Supabase ID if provided
   readonly email: string;
-  readonly password: string;
-  readonly acceptedTerms: boolean;
+  readonly password?: string | undefined;
+  readonly hashedPassword?: string | undefined;
+  readonly name?: string | undefined;
+  readonly avatarUrl?: string | undefined;
+  readonly acceptedTerms?: boolean | undefined;
 }
 
 export interface UserProps {
   readonly id: UserId;
   readonly email: Email;
   readonly emailVerified: boolean;
+  readonly name: string | null;
+  readonly avatarUrl: string | null;
+  readonly hashedPassword: string | null;
   readonly subscription: UserSubscription | null;
   readonly stores: ReadonlyArray<StoreId>;
   readonly createdAt: Date;
@@ -62,7 +69,7 @@ export class UserEntity {
   // Factory Methods
   static create(props: CreateUserProps): Result<UserEntity> {
     // Validation
-    if (!props.acceptedTerms) {
+    if (props.acceptedTerms !== undefined && !props.acceptedTerms) {
       return Result.fail(new InvalidUserDataError('User must accept terms'));
     }
 
@@ -70,17 +77,21 @@ export class UserEntity {
       return Result.fail(new InvalidUserDataError('Invalid email format'));
     }
 
-    if (!this.isValidPassword(props.password)) {
+    // Only validate password if provided (not needed for Supabase auth)
+    if (props.password && !this.isValidPassword(props.password)) {
       return Result.fail(new InvalidUserDataError('Password must be at least 8 characters'));
     }
 
     const now = new Date();
-    const userId = this.generateUserId();
+    const userId = props.id ?? this.generateUserId();
 
     const user = new UserEntity({
       id: userId,
       email: props.email as Email,
       emailVerified: false,
+      name: props.name ?? null,
+      avatarUrl: props.avatarUrl ?? null,
+      hashedPassword: props.hashedPassword ?? null, // Managed by Supabase
       subscription: null,
       stores: [],
       createdAt: now,
@@ -105,6 +116,18 @@ export class UserEntity {
 
   get emailVerified(): boolean {
     return this.props.emailVerified;
+  }
+
+  get name(): string | null {
+    return this.props.name;
+  }
+
+  get avatarUrl(): string | null {
+    return this.props.avatarUrl;
+  }
+
+  get hashedPassword(): string | null {
+    return this.props.hashedPassword;
   }
 
   get subscription(): UserSubscription | null {

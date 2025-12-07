@@ -53,7 +53,7 @@ export function AnimatedBackground({
   return (
     <div className={cn('relative overflow-hidden', className)} {...props}>
       {/* Animated blobs */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <div
           className={`absolute top-0 -left-20 w-96 h-96 ${colors[0]} rounded-full mix-blend-multiply filter blur-3xl ${intensityOpacity[intensity]} animate-blob`}
         ></div>

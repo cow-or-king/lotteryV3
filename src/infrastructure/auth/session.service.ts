@@ -2,14 +2,18 @@
  * Session Management Service
  * Gestion des sessions avec cookies HTTP-only
  * IMPORTANT: ZERO any types
+ * Architecture hexagonale: Implémente ISessionManager (port du domain)
  */
 
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import type { Result } from '@/shared/types/result.type';
 import type { UserId } from '@/shared/types/branded.type';
-import type { AuthTokens } from './supabase-auth.service';
-import { supabaseAuthService } from './supabase-auth.service';
+import type { ISessionManager, Session } from '@/core/ports/session.port';
+import type { IAuthProvider, AuthTokens } from '@/core/ports/auth.port';
+
+// Re-export types for backward compatibility
+export type { Session };
 
 /**
  * Configuration des cookies
@@ -24,22 +28,13 @@ const COOKIE_OPTIONS = {
 
 const ACCESS_TOKEN_COOKIE = 'rl-access-token';
 const REFRESH_TOKEN_COOKIE = 'rl-refresh-token';
-const USER_ID_COOKIE = 'rl-user-id';
-
-/**
- * Type pour la session
- */
-export interface Session {
-  userId: UserId;
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-}
 
 /**
  * Service de gestion de session
+ * Implémente le port ISessionManager
  */
-export class SessionService {
+export class SessionService implements ISessionManager {
+  constructor(private readonly authProvider: IAuthProvider) {}
   /**
    * Créer une session
    */
@@ -56,11 +51,6 @@ export class SessionService {
       cookieStore.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken, {
         ...COOKIE_OPTIONS,
         maxAge: 60 * 60 * 24 * 30, // 30 jours pour le refresh token
-      });
-
-      cookieStore.set(USER_ID_COOKIE, userId, {
-        ...COOKIE_OPTIONS,
-        httpOnly: false, // Accessible côté client pour l'UI
       });
 
       return { success: true, data: undefined };
@@ -81,14 +71,13 @@ export class SessionService {
 
       const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
       const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
-      const userId = cookieStore.get(USER_ID_COOKIE)?.value;
 
-      if (!accessToken || !refreshToken || !userId) {
+      if (!accessToken || !refreshToken) {
         return { success: true, data: null };
       }
 
-      // Vérifier que le token est valide
-      const verificationResult = await supabaseAuthService.verifyToken(accessToken);
+      // Vérifier que le token est valide et obtenir l'userId
+      const verificationResult = await this.authProvider.verifyToken(accessToken);
 
       if (!verificationResult.success) {
         // Essayer de rafraîchir le token
@@ -99,10 +88,13 @@ export class SessionService {
         return { success: true, data: refreshResult.data };
       }
 
+      // Obtenir userId depuis le token vérifié (plus sécurisé que cookie)
+      const userId = verificationResult.data.id;
+
       return {
         success: true,
         data: {
-          userId: userId as UserId,
+          userId,
           accessToken,
           refreshToken,
           expiresAt: Date.now() + 3600 * 1000, // Approximation
@@ -121,7 +113,7 @@ export class SessionService {
    */
   async refreshSession(refreshToken: string): Promise<Result<Session>> {
     try {
-      const refreshResult = await supabaseAuthService.refreshTokens(refreshToken);
+      const refreshResult = await this.authProvider.refreshTokens(refreshToken);
 
       if (!refreshResult.success) {
         return {
@@ -133,7 +125,7 @@ export class SessionService {
       const tokens = refreshResult.data;
 
       // Vérifier le nouveau token pour obtenir l'userId
-      const verifyResult = await supabaseAuthService.verifyToken(tokens.accessToken);
+      const verifyResult = await this.authProvider.verifyToken(tokens.accessToken);
 
       if (!verifyResult.success) {
         return {
@@ -175,13 +167,12 @@ export class SessionService {
       const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
       if (accessToken) {
-        await supabaseAuthService.signOut(accessToken);
+        await this.authProvider.signOut(accessToken);
       }
 
       // Supprimer les cookies
       cookieStore.delete(ACCESS_TOKEN_COOKIE);
       cookieStore.delete(REFRESH_TOKEN_COOKIE);
-      cookieStore.delete(USER_ID_COOKIE);
 
       return { success: true, data: undefined };
     } catch (err) {
@@ -204,11 +195,11 @@ export class SessionService {
     }
 
     // Vérifier le token
-    const verificationResult = await supabaseAuthService.verifyToken(accessToken);
+    const verificationResult = await this.authProvider.verifyToken(accessToken);
 
     if (!verificationResult.success) {
       // Essayer de rafraîchir
-      const refreshResult = await supabaseAuthService.refreshTokens(refreshToken);
+      const refreshResult = await this.authProvider.refreshTokens(refreshToken);
       if (!refreshResult.success) {
         return false;
       }
@@ -227,21 +218,11 @@ export class SessionService {
 
     return true;
   }
-
-  /**
-   * Obtenir l'userId depuis les cookies (côté client)
-   */
-  getUserIdFromCookies(): UserId | null {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    const match = document.cookie.match(new RegExp(`${USER_ID_COOKIE}=([^;]+)`));
-    return match ? (match[1] as UserId) : null;
-  }
 }
 
 /**
  * Instance singleton du service
+ * Note: Import supabaseAuthService ici pour éviter les dépendances circulaires
  */
-export const sessionService = new SessionService();
+import { supabaseAuthService } from './supabase-auth.service';
+export const sessionService = new SessionService(supabaseAuthService);

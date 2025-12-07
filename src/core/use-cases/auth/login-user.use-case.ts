@@ -102,7 +102,7 @@ export class LoginUserUseCase {
     // 7. Retourner les informations de l'utilisateur
     return Result.ok({
       userId: user.id,
-      email: user.email.value,
+      email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
       emailVerified: user.emailVerified,

@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         password: 'handled-by-supabase',
         name: user.user_metadata?.name as string | undefined,
+        avatarUrl: undefined,
       });
     }
 
