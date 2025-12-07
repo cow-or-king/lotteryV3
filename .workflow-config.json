@@ -1,0 +1,83 @@
+{
+  "autoWorkflow": {
+    "enabled": true,
+    "description": "Workflow automatisé Opus ↔ Sonnet pour garantir qualité maximale",
+    "triggers": {
+      "newFeature": true,
+      "newRoute": true,
+      "newModel": true,
+      "refactoring": true,
+      "majorChange": true
+    },
+    "rotation": {
+      "planning": "opus",
+      "implementation": "sonnet",
+      "review": "opus",
+      "commit": "opus"
+    },
+    "agents": {
+      "architecturePlanner": {
+        "enabled": true,
+        "when": "complex features or new architecture decisions"
+      },
+      "codeReviewer": {
+        "enabled": true,
+        "when": "always after implementation"
+      },
+      "testGenerator": {
+        "enabled": false,
+        "when": "on demand"
+      },
+      "documentationWriter": {
+        "enabled": true,
+        "when": "before commit"
+      }
+    },
+    "qualityGates": {
+      "autoCommit": true,
+      "minCoverage": 80,
+      "strictTypeCheck": true,
+      "zeroAnyTypes": true,
+      "requireBrandedTypes": true,
+      "requireResultPattern": true,
+      "requireZodValidation": true
+    },
+    "reviewCriteria": {
+      "architecture": {
+        "weight": "critical",
+        "mustPass": true
+      },
+      "codeQuality": {
+        "weight": "critical",
+        "mustPass": true
+      },
+      "tests": {
+        "weight": "critical",
+        "mustPass": true
+      },
+      "performance": {
+        "weight": "major",
+        "mustPass": false
+      },
+      "security": {
+        "weight": "critical",
+        "mustPass": true
+      },
+      "uiUx": {
+        "weight": "major",
+        "mustPass": false
+      }
+    },
+    "commitRules": {
+      "conventionalCommits": true,
+      "detailedMessage": true,
+      "includeMetrics": true,
+      "includeCoverage": true
+    },
+    "notifications": {
+      "phaseTransitions": true,
+      "reviewResults": true,
+      "commitSuccess": true
+    }
+  }
+}
