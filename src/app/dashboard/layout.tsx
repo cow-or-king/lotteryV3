@@ -21,6 +21,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -853,6 +854,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </div>
+
+      {/* Toaster pour les notifications */}
+      <Toaster />
 
       {/* CSS pour responsive et animations */}
       <style jsx global>{`

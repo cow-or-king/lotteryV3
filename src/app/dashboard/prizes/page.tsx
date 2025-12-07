@@ -26,6 +26,7 @@ import {
   Award,
   CircleDollarSign,
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 // Liste des icônes disponibles
 const availableIcons = [
@@ -43,6 +44,7 @@ const availableIcons = [
 ];
 
 export default function PrizesPage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'templates' | 'sets'>('templates');
   const [showCreateTemplateForm, setShowCreateTemplateForm] = useState(false);
   const [showCreateSetForm, setShowCreateSetForm] = useState(false);
@@ -183,7 +185,7 @@ export default function PrizesPage() {
       });
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -193,7 +195,7 @@ export default function PrizesPage() {
       setEditingTemplate(null);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -202,7 +204,7 @@ export default function PrizesPage() {
       utils.prizeTemplate.list.invalidate();
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -220,7 +222,7 @@ export default function PrizesPage() {
             });
           }
         } catch (error) {
-          alert("Erreur lors de l'ajout des gains au lot");
+          toast.error('Erreur', "Erreur lors de l'ajout des gains au lot");
         }
       }
 
@@ -230,7 +232,7 @@ export default function PrizesPage() {
       setSelectedItems([]);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -247,7 +249,7 @@ export default function PrizesPage() {
       setSelectedItems([]);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -262,7 +264,7 @@ export default function PrizesPage() {
       utils.prizeSet.list.invalidate();
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error('Erreur', error.message);
     },
   });
 
@@ -338,7 +340,7 @@ export default function PrizesPage() {
         });
       }
     } catch (error) {
-      alert('Erreur lors de la mise à jour des gains du lot');
+      toast.error('Erreur', 'Erreur lors de la mise à jour des gains du lot');
     }
   };
 
