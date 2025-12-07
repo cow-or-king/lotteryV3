@@ -324,7 +324,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 alignItems: 'center',
                 justifyContent: isCompactMode ? 'center' : 'flex-start',
                 gap: '12px',
-                padding: isCompactMode ? '14px 8px' : '14px 16px',
+                margin: '5px 0',
+                padding: isCompactMode ? '10px 8px' : '10px 16px',
                 background: activeMenu === item.id ? 'rgba(147, 51, 234, 0.15)' : 'transparent',
                 border:
                   activeMenu === item.id
@@ -346,9 +347,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   e.currentTarget.style.background = 'rgba(147, 51, 234, 0.08)';
                   e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.15)';
                   e.currentTarget.style.color = '#7c3aed';
-                  if (!isCompactMode) {
-                    e.currentTarget.style.transform = 'translateX(4px)';
-                  }
                 }
               }}
               onMouseLeave={(e) => {
@@ -356,7 +354,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   e.currentTarget.style.background = 'transparent';
                   e.currentTarget.style.borderColor = 'transparent';
                   e.currentTarget.style.color = '#4b5563';
-                  e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
             >

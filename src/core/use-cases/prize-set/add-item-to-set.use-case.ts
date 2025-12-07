@@ -31,8 +31,10 @@ export class AddItemToSetUseCase {
 
       const prizeTemplate = await this.prizeTemplateRepository.findById(input.prizeTemplateId);
       if (!prizeTemplate) return Result.fail(new Error('Gain non trouvé'));
-      if (prizeTemplate.brandId !== prizeSet.brandId)
-        return Result.fail(new Error('Le gain doit appartenir à la même enseigne'));
+
+      // Vérifier que le gain appartient à la même enseigne OU est commun (null)
+      if (prizeTemplate.brandId !== null && prizeTemplate.brandId !== prizeSet.brandId)
+        return Result.fail(new Error('Le gain doit appartenir à la même enseigne ou être commun'));
 
       const item = await this.prizeSetRepository.addItem({
         prizeSetId: input.prizeSetId,

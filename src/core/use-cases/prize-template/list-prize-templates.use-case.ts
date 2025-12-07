@@ -18,16 +18,8 @@ export class ListPrizeTemplatesUseCase {
 
   async execute(userId: string): Promise<Result<PrizeTemplateEntity[], Error>> {
     try {
-      // Récupérer tous les brands de l'utilisateur
-      const brands = await this.brandRepository.findByOwnerId(userId);
-
-      // Récupérer tous les prize templates pour chaque brand
-      const allPrizeTemplates = await Promise.all(
-        brands.map((brand) => this.prizeTemplateRepository.findManyByBrandId(brand.id)),
-      );
-
-      // Aplatir le tableau
-      const prizeTemplates = allPrizeTemplates.flat();
+      // Récupérer tous les prize templates de l'utilisateur (spécifiques + communs)
+      const prizeTemplates = await this.prizeTemplateRepository.findManyByOwnerId(userId);
 
       return Result.ok(prizeTemplates);
     } catch (error) {

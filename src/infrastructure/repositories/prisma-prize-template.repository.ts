@@ -18,8 +18,10 @@ export class PrismaPrizeTemplateRepository implements PrizeTemplateRepository {
       data: {
         name: input.name,
         brandId: input.brandId,
+        ownerId: input.ownerId,
         description: input.description || null,
-        value: input.value || null,
+        minPrice: input.minPrice || null,
+        maxPrice: input.maxPrice || null,
         color: input.color || '#8B5CF6',
         iconUrl: input.iconUrl || null,
       },
@@ -39,13 +41,21 @@ export class PrismaPrizeTemplateRepository implements PrizeTemplateRepository {
     });
   }
 
+  async findManyByOwnerId(ownerId: string): Promise<PrizeTemplateEntity[]> {
+    return await prisma.prizeTemplate.findMany({
+      where: { ownerId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async update(id: string, input: UpdatePrizeTemplateInput): Promise<PrizeTemplateEntity> {
     return await prisma.prizeTemplate.update({
       where: { id },
       data: {
         ...(input.name !== undefined && { name: input.name }),
         ...(input.description !== undefined && { description: input.description }),
-        ...(input.value !== undefined && { value: input.value }),
+        ...(input.minPrice !== undefined && { minPrice: input.minPrice }),
+        ...(input.maxPrice !== undefined && { maxPrice: input.maxPrice }),
         ...(input.color !== undefined && { color: input.color }),
         ...(input.iconUrl !== undefined && { iconUrl: input.iconUrl }),
       },

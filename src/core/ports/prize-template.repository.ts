@@ -6,10 +6,12 @@
 
 export interface PrizeTemplateEntity {
   id: string;
-  brandId: string;
+  brandId: string | null; // null = gain commun à toutes les enseignes
+  ownerId: string;
   name: string;
   description: string | null;
-  value: number | null;
+  minPrice: number | null;
+  maxPrice: number | null;
   color: string;
   iconUrl: string | null;
   createdAt: Date;
@@ -18,9 +20,11 @@ export interface PrizeTemplateEntity {
 
 export interface CreatePrizeTemplateInput {
   name: string;
-  brandId: string;
+  brandId: string | null; // null = gain commun
+  ownerId: string;
   description?: string | null;
-  value?: number | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
   color?: string;
   iconUrl?: string | null;
 }
@@ -28,7 +32,8 @@ export interface CreatePrizeTemplateInput {
 export interface UpdatePrizeTemplateInput {
   name?: string;
   description?: string | null;
-  value?: number | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
   color?: string;
   iconUrl?: string | null;
 }
@@ -37,6 +42,7 @@ export interface PrizeTemplateRepository {
   create(input: CreatePrizeTemplateInput): Promise<PrizeTemplateEntity>;
   findById(id: string): Promise<PrizeTemplateEntity | null>;
   findManyByBrandId(brandId: string): Promise<PrizeTemplateEntity[]>;
+  findManyByOwnerId(ownerId: string): Promise<PrizeTemplateEntity[]>;
   update(id: string, input: UpdatePrizeTemplateInput): Promise<PrizeTemplateEntity>;
   delete(id: string): Promise<void>;
   countByBrandId(brandId: string): Promise<number>;

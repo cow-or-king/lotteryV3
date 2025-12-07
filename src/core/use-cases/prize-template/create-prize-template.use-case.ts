@@ -14,9 +14,10 @@ import type { BrandRepository } from '@/core/ports/brand.repository';
 
 export interface CreatePrizeTemplateInput {
   name: string;
-  brandId: string;
+  brandId: string | null; // null = gain commun à toutes les enseignes
   description?: string;
-  value?: number;
+  minPrice?: number;
+  maxPrice?: number;
   color?: string;
   iconUrl?: string;
 }
@@ -32,23 +33,27 @@ export class CreatePrizeTemplateUseCase {
     userId: string,
   ): Promise<Result<PrizeTemplateEntity, Error>> {
     try {
-      // Vérifier que le brand existe et appartient à l'utilisateur
-      const brand = await this.brandRepository.findById(input.brandId);
+      // Si brandId est fourni, vérifier que le brand existe et appartient à l'utilisateur
+      if (input.brandId) {
+        const brand = await this.brandRepository.findById(input.brandId);
 
-      if (!brand) {
-        return Result.fail(new Error('Enseigne non trouvée'));
-      }
+        if (!brand) {
+          return Result.fail(new Error('Enseigne non trouvée'));
+        }
 
-      if (brand.ownerId !== userId) {
-        return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
+        if (brand.ownerId !== userId) {
+          return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
+        }
       }
 
       // Créer le prize template
       const prizeTemplate = await this.prizeTemplateRepository.create({
         name: input.name,
         brandId: input.brandId,
+        ownerId: userId,
         description: input.description || null,
-        value: input.value || null,
+        minPrice: input.minPrice || null,
+        maxPrice: input.maxPrice || null,
         color: input.color || '#8B5CF6',
         iconUrl: input.iconUrl || null,
       });

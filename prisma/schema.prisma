@@ -28,8 +28,9 @@ model User {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
-  subscription Subscription?
-  brands       Brand[]
+  subscription   Subscription?
+  brands         Brand[]
+  prizeTemplates PrizeTemplate[]
 
   @@index([email])
   @@map("users")
@@ -248,21 +249,26 @@ model Review {
 
 model PrizeTemplate {
   id          String   @id @default(cuid())
-  brandId     String   @map("brand_id")
+  brandId     String?  @map("brand_id") // null = gain commun à toutes les enseignes
+  ownerId     String   @map("owner_id") // Propriétaire du gain
   name        String // "Café offert", "-10% sur votre commande"
   description String?
-  value       Float? // Valeur monétaire optionnelle
+  minPrice    Float?   @map("min_price") // Prix minimum (optionnel)
+  maxPrice    Float?   @map("max_price") // Prix maximum (optionnel)
   color       String   @default("#8B5CF6") // Couleur par défaut
   iconUrl     String?  @map("icon_url")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  brand     Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  brand     Brand?         @relation(fields: [brandId], references: [id], onDelete: Cascade)
   prizeSets PrizeSetItem[]
 
   @@index([brandId])
+  @@index([ownerId])
   @@index([brandId, createdAt(sort: Desc)])
+  @@index([ownerId, createdAt(sort: Desc)])
   @@map("prize_templates")
 }
 

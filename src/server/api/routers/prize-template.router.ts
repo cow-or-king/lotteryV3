@@ -93,15 +93,16 @@ export const prizeTemplateRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        brandId: z.string(),
+        brandId: z.string().nullable(), // null = gain commun à toutes les enseignes
         name: z.string().min(2, 'Le nom du gain doit contenir au moins 2 caractères'),
         description: z.string().optional(),
-        value: z.number().positive().optional(),
+        minPrice: z.number().positive().optional(),
+        maxPrice: z.number().positive().optional(),
         color: z
           .string()
           .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Couleur invalide')
           .optional(),
-        iconUrl: z.string().url('URL invalide').optional(),
+        iconUrl: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -135,12 +136,13 @@ export const prizeTemplateRouter = createTRPCRouter({
         id: z.string(),
         name: z.string().min(2).optional(),
         description: z.string().optional(),
-        value: z.number().positive().optional(),
+        minPrice: z.number().positive().optional(),
+        maxPrice: z.number().positive().optional(),
         color: z
           .string()
           .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
           .optional(),
-        iconUrl: z.string().url().optional(),
+        iconUrl: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -14,7 +14,8 @@ export interface UpdatePrizeTemplateInput {
   id: string;
   name?: string;
   description?: string;
-  value?: number;
+  minPrice?: number;
+  maxPrice?: number;
   color?: string;
   iconUrl?: string;
 }
@@ -52,7 +53,8 @@ export class UpdatePrizeTemplateUseCase {
       const updatedPrizeTemplate = await this.prizeTemplateRepository.update(input.id, {
         name: input.name,
         description: input.description,
-        value: input.value,
+        minPrice: input.minPrice,
+        maxPrice: input.maxPrice,
         color: input.color,
         iconUrl: input.iconUrl,
       });

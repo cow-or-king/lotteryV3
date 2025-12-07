@@ -32,6 +32,9 @@ export class PrismaPrizeSetRepository implements PrizeSetRepository {
       where: { id },
       include: {
         items: {
+          include: {
+            prizeTemplate: true,
+          },
           orderBy: { createdAt: 'asc' },
         },
       },
@@ -45,6 +48,9 @@ export class PrismaPrizeSetRepository implements PrizeSetRepository {
       where: { brandId },
       include: {
         items: {
+          include: {
+            prizeTemplate: true,
+          },
           orderBy: { createdAt: 'asc' },
         },
       },

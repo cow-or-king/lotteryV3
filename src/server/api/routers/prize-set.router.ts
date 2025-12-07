@@ -170,7 +170,7 @@ export const prizeSetRouter = createTRPCRouter({
         prizeSetId: z.string(),
         prizeTemplateId: z.string(),
         probability: z.number().min(0).max(100, 'La probabilité doit être entre 0 et 100'),
-        quantity: z.number().int().positive('La quantité doit être positive'),
+        quantity: z.number().int().min(0, 'La quantité doit être positive ou 0 pour illimité'),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -350,9 +350,9 @@ export default function StoresPage() {
                   <img
                     src={brand.logoUrl}
                     alt={brand.brandName}
-                    className="w-10 h-10 rounded-xl object-cover border border-purple-600/30"
+                    className="w-10 h-10 rounded-xl object-cover"
                   />
-                  <h2 className="text-2xl font-bold text-gray-800">{brand.brandName}</h2>
+                  <h2 className="text-2xl font-bold text-purple-600">{brand.brandName}</h2>
 
                   {/* Menu 3 points pour l'enseigne */}
                   <button
@@ -837,7 +837,19 @@ export default function StoresPage() {
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 rounded-3xl">
           <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-8 max-w-md w-full shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Modifier le commerce</h2>
+              <div className="flex items-center gap-3">
+                <img
+                  src={
+                    stores?.find((s) => s.id === editingStore.id)?.logoUrl ||
+                    'https://via.placeholder.com/40'
+                  }
+                  alt="Logo"
+                  className="w-10 h-10 rounded-xl object-cover"
+                />
+                <h2 className="text-2xl font-bold text-purple-600">
+                  {stores?.find((s) => s.id === editingStore.id)?.brandName || 'Modifier'}
+                </h2>
+              </div>
               <button
                 onClick={() => setEditingStore(null)}
                 className="text-gray-600 hover:text-gray-800 transition-colors"
@@ -868,9 +880,17 @@ export default function StoresPage() {
               <div>
                 <label
                   htmlFor="edit-store-url"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
                 >
                   URL Google Business *
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleUrlHelp(true)}
+                    className="text-purple-600 hover:text-purple-700 transition-colors"
+                    title="Comment trouver mon URL ?"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
                 </label>
                 <input
                   type="url"
@@ -883,6 +903,9 @@ export default function StoresPage() {
                   placeholder="https://g.page/..."
                   required
                 />
+                <p className="text-xs text-gray-600 mt-1">
+                  URL de votre page Google Business (pour laisser un avis)
+                </p>
               </div>
 
               <div>
@@ -903,7 +926,7 @@ export default function StoresPage() {
                 <input
                   type="text"
                   id="edit-store-place-id"
-                  value={editingStore.googlePlaceId}
+                  value={editingStore.googlePlaceId || ''}
                   onChange={(e) =>
                     setEditingStore({ ...editingStore, googlePlaceId: e.target.value })
                   }
@@ -911,6 +934,9 @@ export default function StoresPage() {
                   placeholder="Ex: ChIJ..."
                   required
                 />
+                <p className="text-xs text-gray-600 mt-1">
+                  Permet de récupérer automatiquement les avis Google
+                </p>
               </div>
 
               {/* Buttons */}

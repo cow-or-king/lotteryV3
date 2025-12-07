@@ -4,6 +4,8 @@
  * Architecture hexagonale: Port dans le core, Adapter dans l'infrastructure
  */
 
+import type { PrizeTemplateEntity } from './prize-template.repository';
+
 export interface PrizeSetItemEntity {
   id: string;
   prizeSetId: string;
@@ -11,6 +13,7 @@ export interface PrizeSetItemEntity {
   probability: number;
   quantity: number;
   createdAt: Date;
+  prizeTemplate: PrizeTemplateEntity;
 }
 
 export interface PrizeSetEntity {

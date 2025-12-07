@@ -177,7 +177,7 @@ export const storeRouter = createTRPCRouter({
         // Infos du commerce (toujours requis)
         name: z.string().min(2, 'Le nom du commerce doit contenir au moins 2 caractères'),
         googleBusinessUrl: z.string().url('URL Google Business invalide'),
-        googlePlaceId: z.string().optional(),
+        googlePlaceId: z.string().min(1, 'Le Google Place ID est obligatoire'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
