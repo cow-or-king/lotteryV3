@@ -1,141 +1,113 @@
 /**
- * Create Store Use Case
- * Gère la création d'un nouveau store
- * IMPORTANT: Pure business logic, pas de dépendance au framework
+ * CreateStoreUseCase
+ * Use case pour créer un nouveau commerce
+ * Logique métier pure sans dépendances externes
+ * Architecture hexagonale: Core business logic
  */
 
 import { Result } from '@/shared/types/result.type';
-import { StoreId, UserId } from '@/shared/types/branded.type';
-import { StoreEntity } from '@/core/entities/store.entity';
-import { IStoreRepository } from '@/core/repositories/store.repository.interface';
-import { IUserRepository } from '@/core/repositories/user.repository.interface';
-import { ISubscriptionRepository } from '@/core/repositories/subscription.repository.interface';
+import type { StoreRepository, StoreEntity } from '@/core/ports/store.repository';
+import type { BrandRepository } from '@/core/ports/brand.repository';
 
-// DTO pour l'input
 export interface CreateStoreInput {
-  readonly name: string;
-  readonly slug: string;
-  readonly description?: string;
-  readonly ownerId: UserId;
-  readonly googlePlaceId?: string;
-  readonly googleBusinessUrl?: string;
-  readonly logoUrl?: string;
-  readonly primaryColor?: string;
-  readonly secondaryColor?: string;
-  readonly font?: string;
+  // Option 1: Brand existant
+  brandId?: string;
+  // Option 2: Créer nouveau brand
+  brandName?: string;
+  logoUrl?: string;
+  // Infos du commerce
+  name: string;
+  googleBusinessUrl: string;
+  description?: string;
 }
 
-// DTO pour l'output
-export interface CreateStoreOutput {
-  readonly storeId: StoreId;
-  readonly slug: string;
-  readonly name: string;
-  readonly isActive: boolean;
-}
-
-// Domain Errors
-export class SlugAlreadyExistsError extends Error {
-  constructor(slug: string) {
-    super(`Slug ${slug} already exists`);
-    this.name = 'SlugAlreadyExistsError';
-  }
-}
-
-export class StoreCreationLimitExceededError extends Error {
-  constructor(limit: number) {
-    super(`Store creation limit exceeded. Maximum ${limit} stores allowed.`);
-    this.name = 'StoreCreationLimitExceededError';
-  }
-}
-
-export class UserNotFoundError extends Error {
-  constructor(userId: UserId) {
-    super(`User ${userId} not found`);
-    this.name = 'UserNotFoundError';
-  }
-}
-
-export class SubscriptionLimitError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SubscriptionLimitError';
-  }
-}
-
-/**
- * Use Case: Create Store
- */
 export class CreateStoreUseCase {
   constructor(
-    private readonly storeRepository: IStoreRepository,
-    private readonly userRepository: IUserRepository,
-    private readonly subscriptionRepository: ISubscriptionRepository,
+    private readonly storeRepository: StoreRepository,
+    private readonly brandRepository: BrandRepository,
   ) {}
 
-  async execute(input: CreateStoreInput): Promise<Result<CreateStoreOutput>> {
-    // 1. Vérifier que l'utilisateur existe
-    const user = await this.userRepository.findById(input.ownerId);
-    if (!user) {
-      return Result.fail(new UserNotFoundError(input.ownerId));
+  async execute(input: CreateStoreInput, userId: string): Promise<Result<StoreEntity, Error>> {
+    try {
+      let brandId: string;
+
+      // Cas 1: Brand existant fourni
+      if (input.brandId) {
+        const brand = await this.brandRepository.findById(input.brandId);
+
+        if (!brand) {
+          return Result.fail(new Error('Enseigne non trouvée'));
+        }
+
+        if (brand.ownerId !== userId) {
+          return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
+        }
+
+        brandId = brand.id;
+      }
+      // Cas 2: Créer un nouveau brand
+      else if (input.brandName && input.logoUrl) {
+        const brandsCount = await this.brandRepository.countByOwnerId(userId);
+
+        const newBrand = await this.brandRepository.create({
+          name: input.brandName,
+          logoUrl: input.logoUrl,
+          ownerId: userId,
+          isPaid: brandsCount > 0, // Le 2ème brand et suivants sont payants
+        });
+
+        brandId = newBrand.id;
+      }
+      // Erreur: ni brandId ni brandName+logoUrl
+      else {
+        return Result.fail(
+          new Error(
+            'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName + logoUrl)',
+          ),
+        );
+      }
+
+      // Récupérer le brand pour générer le slug
+      const brand = await this.brandRepository.findById(brandId);
+
+      if (!brand) {
+        return Result.fail(new Error("Erreur lors de la récupération de l'enseigne"));
+      }
+
+      // Générer un slug unique depuis brandName + name
+      const combinedName = `${brand.name} ${input.name}`;
+      const baseSlug = combinedName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      let slug = baseSlug;
+      let counter = 1;
+
+      // Vérifier si le slug existe déjà
+      while (await this.storeRepository.findBySlug(slug)) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+
+      // Compter les stores existants pour ce brand
+      const storesCount = await this.storeRepository.countByBrandId(brandId);
+
+      // Créer le store
+      const store = await this.storeRepository.create({
+        name: input.name,
+        slug,
+        googleBusinessUrl: input.googleBusinessUrl,
+        description: input.description,
+        brandId,
+        isPaid: storesCount > 0, // Le 2ème commerce et suivants sont payants
+      });
+
+      return Result.ok(store);
+    } catch (error) {
+      return Result.fail(error instanceof Error ? error : new Error('Erreur inconnue'));
     }
-
-    // 2. Vérifier les limites de l'abonnement
-    const subscription = await this.subscriptionRepository.findByUser(input.ownerId);
-    if (!subscription) {
-      return Result.fail(new Error('No subscription found for user'));
-    }
-
-    // Vérifier que l'abonnement est actif
-    if (!subscription.isActive()) {
-      return Result.fail(new SubscriptionLimitError('Subscription is not active'));
-    }
-
-    // Compter les stores existants de l'utilisateur
-    const userStoresCount = await this.userRepository.countUserStores(input.ownerId);
-    if (userStoresCount >= subscription.storesLimit) {
-      return Result.fail(new StoreCreationLimitExceededError(subscription.storesLimit));
-    }
-
-    // 3. Vérifier que le slug est unique
-    const slugExists = await this.storeRepository.slugExists(input.slug);
-    if (slugExists) {
-      return Result.fail(new SlugAlreadyExistsError(input.slug));
-    }
-
-    // 4. Créer l'entité Store
-    const storeResult = StoreEntity.create({
-      name: input.name,
-      slug: input.slug,
-      description: input.description,
-      ownerId: input.ownerId,
-      googlePlaceId: input.googlePlaceId,
-      googleBusinessUrl: input.googleBusinessUrl,
-      logoUrl: input.logoUrl,
-      primaryColor: input.primaryColor,
-      secondaryColor: input.secondaryColor,
-      font: input.font,
-      // Le store est payant si l'abonnement n'est pas FREE
-      isPaid: subscription.plan !== 'FREE',
-    });
-
-    if (!storeResult.success) {
-      return Result.fail(storeResult.error);
-    }
-
-    const store = storeResult.data;
-
-    // 5. Sauvegarder le store
-    const saveResult = await this.storeRepository.save(store);
-    if (!saveResult.success) {
-      return Result.fail(new Error('Failed to save store'));
-    }
-
-    // 6. Retourner le résultat
-    return Result.ok({
-      storeId: store.id,
-      slug: store.slug,
-      name: store.name,
-      isActive: store.isActive,
-    });
   }
 }

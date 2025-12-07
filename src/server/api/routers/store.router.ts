@@ -2,13 +2,37 @@
  * Store Router
  * Routes tRPC pour la gestion des commerces
  * IMPORTANT: ZERO any types
- * Utilise le nouveau modèle Brand pour les enseignes
+ * Architecture Hexagonale: Router → Use Cases → Repositories
  */
 
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { prisma } from '@/infrastructure/database/prisma-client';
 import { TRPCError } from '@trpc/server';
+import { prisma } from '@/infrastructure/database/prisma-client';
+
+// Use Cases
+import {
+  CreateStoreUseCase,
+  UpdateStoreUseCase,
+  DeleteStoreUseCase,
+  ListStoresUseCase,
+  GetStoreByIdUseCase,
+} from '@/core/use-cases/store';
+
+// Repositories (Adapters)
+import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
+import { PrismaBrandRepository } from '@/infrastructure/repositories/prisma-brand.repository';
+
+// Instancier les repositories
+const storeRepository = new PrismaStoreRepository();
+const brandRepository = new PrismaBrandRepository();
+
+// Instancier les use cases
+const createStoreUseCase = new CreateStoreUseCase(storeRepository, brandRepository);
+const updateStoreUseCase = new UpdateStoreUseCase(storeRepository, brandRepository);
+const deleteStoreUseCase = new DeleteStoreUseCase(storeRepository, brandRepository);
+const listStoresUseCase = new ListStoresUseCase(storeRepository);
+const getStoreByIdUseCase = new GetStoreByIdUseCase(storeRepository, brandRepository);
 
 export const storeRouter = createTRPCRouter({
   /**
@@ -70,62 +94,40 @@ export const storeRouter = createTRPCRouter({
   }),
 
   /**
-   * Liste tous les stores de l'utilisateur connecté (via Brand)
+   * Liste tous les stores de l'utilisateur connecté
+   * Architecture Hexagonale: Router → ListStoresUseCase → StoreRepository
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    // Récupérer les brands de l'utilisateur avec leurs stores
-    const brands = await prisma.brand.findMany({
-      where: {
-        ownerId: ctx.user.id,
-      },
-      include: {
-        stores: {
-          orderBy: {
-            createdAt: 'desc',
-          },
-          include: {
-            _count: {
-              select: {
-                campaigns: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const result = await listStoresUseCase.execute(ctx.user.id);
 
-    // Aplatir les stores avec les infos de brand
-    const stores = brands.flatMap((brand) =>
-      brand.stores.map((store) => ({
-        id: store.id,
-        name: store.name,
-        slug: store.slug,
-        description: store.description,
-        googleBusinessUrl: store.googleBusinessUrl,
-        isActive: store.isActive,
-        isPaid: store.isPaid,
-        createdAt: store.createdAt,
-        updatedAt: store.updatedAt,
-        // Infos du brand
-        brandId: brand.id,
-        brandName: brand.name,
-        logoUrl: brand.logoUrl,
-        primaryColor: brand.primaryColor,
-        secondaryColor: brand.secondaryColor,
-        font: brand.font,
-        // Count
-        _count: store._count,
-      })),
+    if (!result.success) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: result.error.message,
+      });
+    }
+
+    // Enrichir avec brandName et logoUrl pour l'UI
+    const storesWithBrandInfo = await Promise.all(
+      result.data.map(async (store) => {
+        const brand = await prisma.brand.findUnique({
+          where: { id: store.brandId },
+          select: { name: true, logoUrl: true },
+        });
+        return {
+          ...store,
+          brandName: brand?.name || '',
+          logoUrl: brand?.logoUrl || '',
+        };
+      }),
     );
 
-    return stores;
+    return storesWithBrandInfo;
   }),
 
   /**
    * Récupère un store par son ID
+   * Architecture Hexagonale: Router → GetStoreByIdUseCase → StoreRepository
    */
   getById: protectedProcedure
     .input(
@@ -134,40 +136,29 @@ export const storeRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const store = await prisma.store.findFirst({
-        where: {
-          id: input.id,
-          brand: {
-            ownerId: ctx.user.id, // Sécurité via Brand
-          },
-        },
-        include: {
-          brand: true,
-          campaigns: {
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-          _count: {
-            select: {
-              campaigns: true,
-            },
-          },
-        },
-      });
+      const result = await getStoreByIdUseCase.execute({ id: input.id }, ctx.user.id);
 
-      if (!store) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Commerce non trouvé',
+          message: result.error.message,
         });
       }
 
-      return store;
+      // Enrichir avec les infos Brand pour l'UI
+      const brand = await prisma.brand.findUnique({
+        where: { id: result.data.brandId },
+      });
+
+      return {
+        ...result.data,
+        brand,
+      };
     }),
 
   /**
    * Crée un nouveau store
+   * Architecture Hexagonale: Router → CreateStoreUseCase → StoreRepository
    * Workflow:
    * 1. Si brandId fourni: utiliser ce brand existant
    * 2. Sinon: créer un nouveau brand avec brandName + logoUrl
@@ -186,147 +177,50 @@ export const storeRouter = createTRPCRouter({
         // Infos du commerce (toujours requis)
         name: z.string().min(2, 'Le nom du commerce doit contenir au moins 2 caractères'),
         googleBusinessUrl: z.string().url('URL Google Business invalide'),
+        googlePlaceId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      let brandId: string;
+      const result = await createStoreUseCase.execute(input, ctx.user.id);
 
-      // Cas 1: Brand existant fourni
-      if (input.brandId) {
-        // Vérifier que le brand appartient à l'utilisateur
-        const brand = await prisma.brand.findFirst({
-          where: {
-            id: input.brandId,
-            ownerId: ctx.user.id,
-          },
-        });
+      if (!result.success) {
+        const errorMessage = result.error.message;
 
-        if (!brand) {
+        // Mapper les erreurs métier vers les codes HTTP appropriés
+        if (errorMessage.includes('non trouvée') || errorMessage.includes('appartient pas')) {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Enseigne non trouvée',
+            message: errorMessage,
           });
         }
 
-        brandId = brand.id;
-      }
-      // Cas 2: Créer un nouveau brand
-      else if (input.brandName && input.logoUrl) {
-        // Compter les brands existants
-        const brandsCount = await prisma.brand.count({
-          where: {
-            ownerId: ctx.user.id,
-          },
-        });
+        if (errorMessage.includes('devez soit')) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: errorMessage,
+          });
+        }
 
-        // DÉSACTIVÉ TEMPORAIREMENT POUR TESTS
-        // Vérifier la limite de brands (1 gratuit pour FREE plan)
-        // const subscription = await prisma.subscription.findUnique({
-        //   where: {
-        //     userId: ctx.user.id,
-        //   },
-        // });
-
-        // Plan FREE: 1 seul brand gratuit
-        // if (subscription?.plan === 'FREE' && brandsCount >= 1) {
-        //   throw new TRPCError({
-        //     code: 'FORBIDDEN',
-        //     message: 'Limite d\'enseignes atteinte (1 max en version gratuite). Passez à un plan payant pour créer plusieurs enseignes.',
-        //   });
-        // }
-
-        // Créer le nouveau brand
-        const newBrand = await prisma.brand.create({
-          data: {
-            name: input.brandName,
-            logoUrl: input.logoUrl,
-            ownerId: ctx.user.id,
-            isPaid: brandsCount > 0, // Le 2ème brand et suivants sont payants
-          },
-        });
-
-        brandId = newBrand.id;
-      }
-      // Erreur: ni brandId ni brandName+logoUrl
-      else {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message:
-            'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName + logoUrl)',
-        });
-      }
-
-      // DÉSACTIVÉ TEMPORAIREMENT POUR TESTS
-      // Vérifier la limite de stores pour ce brand
-      const storesCount = await prisma.store.count({
-        where: {
-          brandId,
-        },
-      });
-
-      // const subscription = await prisma.subscription.findUnique({
-      //   where: {
-      //     userId: ctx.user.id,
-      //   },
-      // });
-
-      // Plan FREE: 1 seul commerce gratuit
-      // if (subscription?.plan === 'FREE' && storesCount >= 1) {
-      //   throw new TRPCError({
-      //     code: 'FORBIDDEN',
-      //     message: 'Limite de commerces atteinte (1 max en version gratuite). Passez à un plan payant pour ajouter d\'autres commerces.',
-      //   });
-      // }
-
-      // Récupérer le brand pour générer le slug
-      const brand = await prisma.brand.findUnique({
-        where: { id: brandId },
-      });
-
-      if (!brand) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: "Erreur lors de la récupération de l'enseigne",
+          message: errorMessage,
         });
       }
 
-      // Générer un slug unique depuis brandName + name
-      const combinedName = `${brand.name} ${input.name}`;
-      const baseSlug = combinedName
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-
-      let slug = baseSlug;
-      let counter = 1;
-
-      // Vérifier si le slug existe déjà
-      while (await prisma.store.findUnique({ where: { slug } })) {
-        slug = `${baseSlug}-${counter}`;
-        counter++;
-      }
-
-      // Créer le store
-      const store = await prisma.store.create({
-        data: {
-          name: input.name,
-          slug,
-          googleBusinessUrl: input.googleBusinessUrl,
-          brandId,
-          isPaid: storesCount > 0, // Le 2ème commerce et suivants sont payants
-        },
-        include: {
-          brand: true,
-        },
+      // Enrichir avec les infos Brand pour l'UI
+      const brand = await prisma.brand.findUnique({
+        where: { id: result.data.brandId },
       });
 
-      return store;
+      return {
+        ...result.data,
+        brand,
+      };
     }),
 
   /**
    * Met à jour un store
+   * Architecture Hexagonale: Router → UpdateStoreUseCase → StoreRepository
    */
   update: protectedProcedure
     .input(
@@ -338,41 +232,21 @@ export const storeRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Vérifier que le store appartient à l'utilisateur (via Brand)
-      const existingStore = await prisma.store.findFirst({
-        where: {
-          id: input.id,
-          brand: {
-            ownerId: ctx.user.id,
-          },
-        },
-      });
+      const result = await updateStoreUseCase.execute(input, ctx.user.id);
 
-      if (!existingStore) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Commerce non trouvé',
+          message: result.error.message,
         });
       }
 
-      const { id, ...data } = input;
-
-      const store = await prisma.store.update({
-        where: { id },
-        data: {
-          ...data,
-          googlePlaceId: data.googlePlaceId || null,
-        },
-        include: {
-          brand: true,
-        },
-      });
-
-      return store;
+      return result.data;
     }),
 
   /**
    * Supprime un store
+   * Architecture Hexagonale: Router → DeleteStoreUseCase → StoreRepository
    */
   delete: protectedProcedure
     .input(
@@ -381,26 +255,14 @@ export const storeRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Vérifier que le store appartient à l'utilisateur (via Brand)
-      const store = await prisma.store.findFirst({
-        where: {
-          id: input.id,
-          brand: {
-            ownerId: ctx.user.id,
-          },
-        },
-      });
+      const result = await deleteStoreUseCase.execute({ id: input.id }, ctx.user.id);
 
-      if (!store) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Commerce non trouvé',
+          message: result.error.message,
         });
       }
-
-      await prisma.store.delete({
-        where: { id: input.id },
-      });
 
       return { success: true };
     }),

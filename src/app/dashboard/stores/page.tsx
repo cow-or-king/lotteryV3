@@ -20,6 +20,7 @@ import {
   MoreVertical,
   Edit2,
   Trash2,
+  HelpCircle,
 } from 'lucide-react';
 
 export default function StoresPage() {
@@ -27,12 +28,14 @@ export default function StoresPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isNewBrand, setIsNewBrand] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
+  const [showGoogleUrlHelp, setShowGoogleUrlHelp] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [openBrandMenuId, setOpenBrandMenuId] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState<{
     id: string;
     name: string;
     googleBusinessUrl: string;
+    googlePlaceId: string;
   } | null>(null);
   const [editingBrand, setEditingBrand] = useState<{
     id: string;
@@ -66,12 +69,14 @@ export default function StoresPage() {
     logoUrl: '',
     name: '',
     googleBusinessUrl: '',
+    googlePlaceId: '',
   });
   const [errors, setErrors] = useState<{
     brandName?: string;
     logoUrl?: string;
     name?: string;
     googleBusinessUrl?: string;
+    googlePlaceId?: string;
   }>({});
 
   // Récupérer la liste des stores
@@ -111,7 +116,13 @@ export default function StoresPage() {
       // Rafraîchir la liste
       utils.store.list.invalidate();
       // Réinitialiser le formulaire
-      setFormData({ brandName: '', logoUrl: '', name: '', googleBusinessUrl: '' });
+      setFormData({
+        brandName: '',
+        logoUrl: '',
+        name: '',
+        googleBusinessUrl: '',
+        googlePlaceId: '',
+      });
       setErrors({});
       setShowCreateForm(false);
       setIsNewBrand(false);
@@ -188,6 +199,7 @@ export default function StoresPage() {
       id: editingStore.id,
       name: editingStore.name,
       googleBusinessUrl: editingStore.googleBusinessUrl,
+      googlePlaceId: editingStore.googlePlaceId,
     });
   };
 
@@ -212,6 +224,7 @@ export default function StoresPage() {
       logoUrl?: string;
       name?: string;
       googleBusinessUrl?: string;
+      googlePlaceId?: string;
     } = {};
 
     if (formData.brandName.length < 2) {
@@ -235,6 +248,11 @@ export default function StoresPage() {
     ) {
       newErrors.googleBusinessUrl = 'URL Google Business invalide';
     }
+    if (!formData.googlePlaceId.trim()) {
+      newErrors.googlePlaceId = 'Le Google Place ID est obligatoire';
+    } else if (!formData.googlePlaceId.startsWith('ChIJ')) {
+      newErrors.googlePlaceId = 'Le Place ID doit commencer par "ChIJ"';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -242,11 +260,12 @@ export default function StoresPage() {
     }
 
     // Si on utilise une enseigne existante, on passe le brandId
-    if (selectedBrand && !isNewBrand) {
+    if (selectedBrandId && !isNewBrand) {
       createStore.mutate({
-        brandId: selectedBrand.brandId,
+        brandId: selectedBrandId,
         name: formData.name,
         googleBusinessUrl: formData.googleBusinessUrl,
+        googlePlaceId: formData.googlePlaceId,
       });
     } else {
       // Sinon on crée une nouvelle enseigne
@@ -255,6 +274,7 @@ export default function StoresPage() {
         name: formData.name,
         logoUrl: formData.logoUrl,
         googleBusinessUrl: formData.googleBusinessUrl,
+        googlePlaceId: formData.googlePlaceId,
       });
     }
   };
@@ -426,6 +446,7 @@ export default function StoresPage() {
                                 id: store.id,
                                 name: store.name,
                                 googleBusinessUrl: store.googleBusinessUrl,
+                                googlePlaceId: store.googlePlaceId || '',
                               });
                               setOpenMenuId(null);
                             }}
@@ -712,9 +733,17 @@ export default function StoresPage() {
               <div>
                 <label
                   htmlFor="googleBusinessUrl"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
                 >
                   URL Google Business Profile *
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleUrlHelp(true)}
+                    className="text-purple-600 hover:text-purple-700 transition-colors"
+                    title="Comment trouver mon URL ?"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
                 </label>
                 <input
                   type="url"
@@ -722,38 +751,81 @@ export default function StoresPage() {
                   value={formData.googleBusinessUrl}
                   onChange={(e) => setFormData({ ...formData, googleBusinessUrl: e.target.value })}
                   className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
-                  placeholder="https://maps.app.goo.gl/..."
+                  placeholder="Ex: https://g.page/r/ABC123.../review"
                 />
                 {errors.googleBusinessUrl && (
                   <p className="text-red-600 text-sm mt-1">{errors.googleBusinessUrl}</p>
                 )}
                 <p className="text-xs text-gray-600 mt-1">
-                  URL de votre page Google Business (pour récupérer les avis)
+                  URL de votre page Google Business (pour laisser un avis)
+                </p>
+              </div>
+
+              {/* Google Place ID (obligatoire) */}
+              <div>
+                <label
+                  htmlFor="googlePlaceId"
+                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                >
+                  Google Place ID *
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleUrlHelp(true)}
+                    className="text-purple-600 hover:text-purple-700 transition-colors"
+                    title="Comment trouver mon Place ID ?"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
+                </label>
+                <input
+                  type="text"
+                  id="googlePlaceId"
+                  value={formData.googlePlaceId}
+                  onChange={(e) => setFormData({ ...formData, googlePlaceId: e.target.value })}
+                  className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                  placeholder="Ex: ChIJ..."
+                />
+                {errors.googlePlaceId && (
+                  <p className="text-red-600 text-sm mt-1">{errors.googlePlaceId}</p>
+                )}
+                <p className="text-xs text-gray-600 mt-1">
+                  Permet de récupérer automatiquement les avis Google de votre établissement
                 </p>
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setFormData({ brandName: '', logoUrl: '', name: '', googleBusinessUrl: '' });
-                    setErrors({});
-                    setIsNewBrand(false);
-                    setSelectedBrandId(null);
-                  }}
-                  className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={createStore.isPending}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {createStore.isPending ? 'Création...' : 'Créer'}
-                </button>
+              <div className="pt-4">
+                <p className="text-xs text-gray-600 italic text-right mb-2">
+                  * Champs obligatoires
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setFormData({
+                        brandName: '',
+                        logoUrl: '',
+                        name: '',
+                        googleBusinessUrl: '',
+                        googlePlaceId: '',
+                      });
+                      setErrors({});
+                      setIsNewBrand(false);
+                      setSelectedBrandId(null);
+                    }}
+                    className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createStore.isPending}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {createStore.isPending ? 'Création...' : 'Créer'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -813,21 +885,55 @@ export default function StoresPage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setEditingStore(null)}
-                  className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
+              <div>
+                <label
+                  htmlFor="edit-store-place-id"
+                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
                 >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateStore.isPending}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {updateStore.isPending ? 'Modification...' : 'Modifier'}
-                </button>
+                  Google Place ID *
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleUrlHelp(true)}
+                    className="text-purple-600 hover:text-purple-700 transition-colors"
+                    title="Comment trouver mon Place ID ?"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
+                </label>
+                <input
+                  type="text"
+                  id="edit-store-place-id"
+                  value={editingStore.googlePlaceId}
+                  onChange={(e) =>
+                    setEditingStore({ ...editingStore, googlePlaceId: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                  placeholder="Ex: ChIJ..."
+                  required
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="pt-4">
+                <p className="text-xs text-gray-600 italic text-right mb-2">
+                  * Champs obligatoires
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingStore(null)}
+                    className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateStore.isPending}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {updateStore.isPending ? 'Modification...' : 'Modifier'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -888,23 +994,128 @@ export default function StoresPage() {
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setEditingBrand(null)}
-                  className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateBrand.isPending}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {updateBrand.isPending ? 'Modification...' : 'Modifier'}
-                </button>
+              {/* Buttons */}
+              <div className="pt-4">
+                <p className="text-xs text-gray-600 italic text-right mb-2">
+                  * Champs obligatoires
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingBrand(null)}
+                    className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateBrand.isPending}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {updateBrand.isPending ? 'Modification...' : 'Modifier'}
+                  </button>
+                </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'aide pour trouver l'URL Google Business */}
+      {showGoogleUrlHelp && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Comment trouver mon URL Google Business ?
+                </h3>
+                <button
+                  onClick={() => setShowGoogleUrlHelp(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6 text-gray-700">
+                <div>
+                  <h4 className="font-semibold text-lg mb-3 text-purple-600">
+                    ⭐ URL pour poster un avis
+                  </h4>
+                  <ol className="list-decimal list-inside space-y-2 pl-2">
+                    <li>
+                      Cherchez votre commerce sur <strong>Google</strong>
+                    </li>
+                    <li>
+                      Avec votre compte <strong>Google Business</strong>, allez sur{' '}
+                      <strong>Avis</strong>
+                    </li>
+                    <li>
+                      Cliquez sur <strong>"Recueillir plus d'avis"</strong>
+                    </li>
+                    <li>
+                      Copiez le lien (type :{' '}
+                      <code className="bg-purple-100 px-1.5 py-0.5 rounded text-xs">
+                        https://g.page/r/.../review
+                      </code>
+                      )
+                    </li>
+                  </ol>
+                  <div className="bg-gray-50 p-3 rounded-lg mt-3">
+                    <p className="text-sm font-mono text-gray-700">
+                      Exemple : https://g.page/r/AbC123XyZ456DeF/review
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-lg mb-3 text-purple-600">
+                    🔑 Google Place ID (obligatoire)
+                  </h4>
+                  <p className="mb-3">Pour récupérer automatiquement vos avis Google :</p>
+                  <ol className="list-decimal list-inside space-y-2 pl-2 mb-3">
+                    <li>
+                      Allez sur{' '}
+                      <a
+                        href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:underline"
+                      >
+                        Place ID Finder
+                      </a>
+                    </li>
+                    <li>Recherchez votre établissement</li>
+                    <li>Cliquez sur le marqueur sur la carte</li>
+                    <li>
+                      Copiez le <strong>Place ID</strong> (commence par "ChIJ...")
+                    </li>
+                  </ol>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm font-mono text-gray-700">
+                      Exemple : ChIJAbCdEfGhIjKlMnOpQrStUvWx
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>Astuce :</strong> Le Place ID permet de récupérer automatiquement les
+                    avis, les photos et les informations de votre établissement depuis Google.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowGoogleUrlHelp(false)}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                >
+                  Compris !
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

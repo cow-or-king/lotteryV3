@@ -2,16 +2,30 @@
  * Brand Router
  * Routes tRPC pour la gestion des enseignes
  * IMPORTANT: ZERO any types
+ * Architecture Hexagonale: Router → Use Cases → Repositories
  */
 
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { prisma } from '@/infrastructure/database/prisma-client';
 import { TRPCError } from '@trpc/server';
+
+// Use Cases
+import { UpdateBrandUseCase, DeleteBrandUseCase } from '@/core/use-cases/brand';
+
+// Repositories (Adapters)
+import { PrismaBrandRepository } from '@/infrastructure/repositories/prisma-brand.repository';
+
+// Instancier les repositories
+const brandRepository = new PrismaBrandRepository();
+
+// Instancier les use cases
+const updateBrandUseCase = new UpdateBrandUseCase(brandRepository);
+const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository);
 
 export const brandRouter = createTRPCRouter({
   /**
    * Met à jour une enseigne
+   * Architecture Hexagonale: Router → UpdateBrandUseCase → BrandRepository
    */
   update: protectedProcedure
     .input(
@@ -22,33 +36,21 @@ export const brandRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Vérifier que le brand appartient à l'utilisateur
-      const existingBrand = await prisma.brand.findFirst({
-        where: {
-          id: input.id,
-          ownerId: ctx.user.id,
-        },
-      });
+      const result = await updateBrandUseCase.execute(input, ctx.user.id);
 
-      if (!existingBrand) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Enseigne non trouvée',
+          message: result.error.message,
         });
       }
 
-      const { id, ...data } = input;
-
-      const brand = await prisma.brand.update({
-        where: { id },
-        data,
-      });
-
-      return brand;
+      return result.data;
     }),
 
   /**
    * Supprime une enseigne et tous ses commerces
+   * Architecture Hexagonale: Router → DeleteBrandUseCase → BrandRepository
    */
   delete: protectedProcedure
     .input(
@@ -57,25 +59,14 @@ export const brandRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Vérifier que le brand appartient à l'utilisateur
-      const brand = await prisma.brand.findFirst({
-        where: {
-          id: input.id,
-          ownerId: ctx.user.id,
-        },
-      });
+      const result = await deleteBrandUseCase.execute({ id: input.id }, ctx.user.id);
 
-      if (!brand) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Enseigne non trouvée',
+          message: result.error.message,
         });
       }
-
-      // La suppression en cascade supprimera automatiquement tous les stores
-      await prisma.brand.delete({
-        where: { id: input.id },
-      });
 
       return { success: true };
     }),
