@@ -8,7 +8,6 @@ import { Result } from '@/shared/types/result.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { ReviewVerificationError } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
-import { IParticipantRepository } from '@/core/repositories/participant.repository.interface';
 import { StoreId, CampaignId, ParticipantId, ReviewId } from '@/shared/types/branded.type';
 
 // DTO pour l'input
@@ -42,10 +41,7 @@ export class ReviewNotFoundError extends Error {
  * V�rifie qu'un participant a bien laiss� un avis Google avant de participer � la loterie
  */
 export class VerifyReviewParticipantUseCase {
-  constructor(
-    private readonly reviewRepository: IReviewRepository,
-    private readonly participantRepository: IParticipantRepository,
-  ) {}
+  constructor(private readonly reviewRepository: IReviewRepository) {}
 
   async execute(
     input: VerifyReviewParticipantInput,

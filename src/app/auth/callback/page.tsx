@@ -6,10 +6,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedBackground } from '@/components/ui/AnimatedBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function AuthCallbackPage() {
   const router = useRouter();

@@ -11,6 +11,8 @@ import { storeRouter } from './routers/store.router';
 import { brandRouter } from './routers/brand.router';
 import { prizeTemplateRouter } from './routers/prize-template.router';
 import { prizeSetRouter } from './routers/prize-set.router';
+import { reviewRouter } from './routers/review.router';
+import { responseTemplateRouter } from './routers/response-template.router';
 
 /**
  * Router principal de l'API
@@ -23,10 +25,11 @@ export const appRouter = createTRPCRouter({
   brand: brandRouter,
   prizeTemplate: prizeTemplateRouter,
   prizeSet: prizeSetRouter,
+  review: reviewRouter,
+  responseTemplate: responseTemplateRouter,
   // TODO: Ajouter les autres routers
   // campaign: campaignRouter,
   // lottery: lotteryRouter,
-  // review: reviewRouter,
 });
 
 /**

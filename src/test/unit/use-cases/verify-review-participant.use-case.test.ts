@@ -10,14 +10,12 @@ import {
 } from '@/core/use-cases/review/verify-review-participant.use-case';
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
-import { IParticipantRepository } from '@/core/repositories/participant.repository.interface';
 import { StoreId, ParticipantId, CampaignId } from '@/shared/types/branded.type';
 import { Result } from '@/shared/types/result.type';
 
 describe('VerifyReviewParticipantUseCase', () => {
   let useCase: VerifyReviewParticipantUseCase;
   let mockReviewRepo: IReviewRepository;
-  let mockParticipantRepo: IParticipantRepository;
 
   const storeId = 'store123' as StoreId;
   const participantId = 'participant123' as ParticipantId;
@@ -31,12 +29,7 @@ describe('VerifyReviewParticipantUseCase', () => {
       save: vi.fn(),
     } as unknown as IReviewRepository;
 
-    mockParticipantRepo = {
-      findByEmailAndCampaign: vi.fn(),
-      update: vi.fn(),
-    } as unknown as IParticipantRepository;
-
-    useCase = new VerifyReviewParticipantUseCase(mockReviewRepo, mockParticipantRepo);
+    useCase = new VerifyReviewParticipantUseCase(mockReviewRepo);
   });
 
   describe('execute', () => {
