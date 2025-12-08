@@ -7,7 +7,7 @@
  * - En prod: Utiliser le vrai service avec API keys
  */
 
-import { Result } from '@/core/shared/result';
+import { Result } from '@/shared/types/result.type';
 import type {
   IGoogleMyBusinessService,
   GoogleReviewData,
