@@ -146,6 +146,22 @@ export class ResponseTemplateEntity {
     });
   }
 
+  updateName(newName: string): Result<ResponseTemplateEntity> {
+    const trimmedName = newName.trim();
+
+    if (trimmedName.length === 0) {
+      return Result.fail(new InvalidTemplateDataError('Template name is required'));
+    }
+
+    const updatedTemplate = new ResponseTemplateEntity({
+      ...this.props,
+      name: trimmedName,
+      updatedAt: new Date(),
+    });
+
+    return Result.ok(updatedTemplate);
+  }
+
   updateContent(newContent: string): Result<ResponseTemplateEntity> {
     const trimmedContent = newContent.trim();
 
@@ -168,6 +184,25 @@ export class ResponseTemplateEntity {
     const updatedTemplate = new ResponseTemplateEntity({
       ...this.props,
       content: trimmedContent,
+      updatedAt: new Date(),
+    });
+
+    return Result.ok(updatedTemplate);
+  }
+
+  updateCategory(newCategory: TemplateCategory): Result<ResponseTemplateEntity> {
+    const validCategories: TemplateCategory[] = ['positive', 'neutral', 'negative'];
+    if (!validCategories.includes(newCategory)) {
+      return Result.fail(
+        new InvalidTemplateDataError(
+          `Invalid category: ${newCategory}. Must be one of: ${validCategories.join(', ')}`,
+        ),
+      );
+    }
+
+    const updatedTemplate = new ResponseTemplateEntity({
+      ...this.props,
+      category: newCategory,
       updatedAt: new Date(),
     });
 
