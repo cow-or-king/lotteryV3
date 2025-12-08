@@ -255,6 +255,7 @@ model Review {
   aiSuggestion    Json?     @map("ai_suggestion")
   aiSentiment     String?   @map("ai_sentiment")
   reviewUrl       String    @map("review_url")
+  googlePlaceId   String    @map("google_place_id")
   photoUrl        String?   @map("photo_url")
   status          String    @default("NEW")
   sentiment       String?

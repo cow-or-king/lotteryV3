@@ -10,6 +10,7 @@ export interface StoreEntity {
   slug: string;
   googleBusinessUrl: string;
   googlePlaceId: string | null;
+  googleApiKeyStatus: string | null;
   description: string | null;
   isActive: boolean;
   isPaid: boolean;
@@ -33,6 +34,7 @@ export interface UpdateStoreInput {
   name?: string;
   googleBusinessUrl?: string;
   googlePlaceId?: string | null;
+  googleApiKey?: string | null; // API key chiffrée (AES-256-GCM)
   description?: string | null;
   isActive?: boolean;
 }

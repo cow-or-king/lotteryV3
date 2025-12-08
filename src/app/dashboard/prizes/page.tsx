@@ -6,27 +6,27 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
 import {
-  Gift,
-  Plus,
-  X,
-  Edit2,
-  Trash2,
-  Package,
-  Coffee,
-  Utensils,
-  ShoppingBag,
-  Percent,
-  Star,
-  Heart,
-  Sparkles,
-  TrendingUp,
   Award,
   CircleDollarSign,
+  Coffee,
+  Edit2,
+  Gift,
+  Heart,
+  Package,
+  Percent,
+  Plus,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Trash2,
+  TrendingUp,
+  Utensils,
+  X,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useMemo, useState } from 'react';
 
 // Liste des icônes disponibles
 const availableIcons = [
@@ -185,7 +185,7 @@ export default function PrizesPage() {
       });
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -195,7 +195,7 @@ export default function PrizesPage() {
       setEditingTemplate(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -204,7 +204,7 @@ export default function PrizesPage() {
       utils.prizeTemplate.list.invalidate();
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -222,7 +222,11 @@ export default function PrizesPage() {
             });
           }
         } catch (error) {
-          toast.error('Erreur', "Erreur lors de l'ajout des gains au lot");
+          toast({
+            title: 'Erreur',
+            description: "Erreur lors de l'ajout des gains au lot",
+            variant: 'error',
+          });
         }
       }
 
@@ -232,7 +236,7 @@ export default function PrizesPage() {
       setSelectedItems([]);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -249,7 +253,7 @@ export default function PrizesPage() {
       setSelectedItems([]);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -264,7 +268,7 @@ export default function PrizesPage() {
       utils.prizeSet.list.invalidate();
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -340,7 +344,11 @@ export default function PrizesPage() {
         });
       }
     } catch (error) {
-      toast.error('Erreur', 'Erreur lors de la mise à jour des gains du lot');
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la mise à jour des gains du lot',
+        variant: 'error',
+      });
     }
   };
 
@@ -390,7 +398,7 @@ export default function PrizesPage() {
           <div className="flex justify-end mb-4">
             <button
               onClick={handleOpenCreateTemplateForm}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+              className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
             >
               <Plus className="w-5 h-5" />
               Créer un gain
@@ -423,7 +431,7 @@ export default function PrizesPage() {
                     {/* Header avec logo, titre et icône */}
                     <div className="flex items-center gap-3 mb-4">
                       {/* Brand indicator left */}
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         {template.brandId === null ? (
                           <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-base border-2 border-white shadow-md">
                             C
@@ -450,7 +458,7 @@ export default function PrizesPage() {
                       </div>
 
                       {/* Icon right */}
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         {template.iconUrl ? (
                           <div
                             className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -476,7 +484,7 @@ export default function PrizesPage() {
                       </div>
                     </div>
 
-                    <div className="text-2xl font-bold text-purple-600 mb-4 min-h-[2.5rem]">
+                    <div className="text-2xl font-bold text-purple-600 mb-4 min-h-10">
                       {(template.minPrice !== null || template.maxPrice !== null) && (
                         <>
                           {template.minPrice !== null && template.maxPrice !== null
@@ -522,7 +530,7 @@ export default function PrizesPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
+              <div className="w-24 h-24 bg-linear-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
                 <Gift className="w-12 h-12 text-purple-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">Aucun gain</h3>
@@ -531,7 +539,7 @@ export default function PrizesPage() {
               </p>
               <button
                 onClick={handleOpenCreateTemplateForm}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 Créer mon premier gain
@@ -546,7 +554,7 @@ export default function PrizesPage() {
           <div className="flex justify-end mb-4">
             <button
               onClick={handleOpenCreateSetForm}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+              className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
             >
               <Plus className="w-5 h-5" />
               Créer un lot
@@ -577,7 +585,7 @@ export default function PrizesPage() {
                       {set.name}
                     </h3>
                     {set.description && (
-                      <p className="text-sm text-gray-600 text-right flex-shrink-0 max-w-[50%]">
+                      <p className="text-sm text-gray-600 text-right shrink-0 max-w-[50%]">
                         {set.description}
                       </p>
                     )}
@@ -599,7 +607,7 @@ export default function PrizesPage() {
                               <span className="font-medium text-gray-700 flex-1 truncate">
                                 {item.prizeTemplate.name}
                               </span>
-                              <span className="text-gray-600 flex-shrink-0 flex items-center gap-1">
+                              <span className="text-gray-600 shrink-0 flex items-center gap-1">
                                 <span className="w-6 text-right">
                                   {item.quantity === 0 ? '∞' : item.quantity}
                                 </span>
@@ -663,7 +671,7 @@ export default function PrizesPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
+              <div className="w-24 h-24 bg-linear-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
                 <Package className="w-12 h-12 text-purple-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">Aucun lot</h3>
@@ -672,7 +680,7 @@ export default function PrizesPage() {
               </p>
               <button
                 onClick={handleOpenCreateSetForm}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 Créer mon premier lot
@@ -857,7 +865,7 @@ export default function PrizesPage() {
                   <button
                     type="submit"
                     disabled={createTemplate.isPending}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {createTemplate.isPending ? 'Création...' : 'Créer'}
                   </button>
@@ -1025,7 +1033,7 @@ export default function PrizesPage() {
                   <button
                     type="submit"
                     disabled={updateTemplate.isPending}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {updateTemplate.isPending ? 'Modification...' : 'Modifier'}
                   </button>
@@ -1234,7 +1242,7 @@ export default function PrizesPage() {
                   <button
                     type="submit"
                     disabled={createSet.isPending || totalProbability !== 100}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {createSet.isPending ? 'Création...' : 'Créer'}
                   </button>
@@ -1421,7 +1429,7 @@ export default function PrizesPage() {
                   <button
                     type="submit"
                     disabled={updateSet.isPending || totalProbability !== 100}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {updateSet.isPending ? 'Modification...' : 'Modifier'}
                   </button>

@@ -5,6 +5,7 @@
 
 import { Result } from '@/shared/types/result.type';
 import type { BrandRepository } from '@/core/ports/brand.repository';
+import { prisma } from '@/infrastructure/database/prisma-client';
 
 export interface DeleteBrandInput {
   id: string;
@@ -32,7 +33,16 @@ export class DeleteBrandUseCase {
       return Result.fail(new Error('Cette enseigne ne vous appartient pas'));
     }
 
-    // 3. Supprimer le brand (cascade supprime les stores automatiquement)
+    // 3. Supprimer manuellement les stores d'abord (Supabase RLS bloque le cascade)
+    try {
+      await prisma.store.deleteMany({
+        where: { brandId: input.id },
+      });
+    } catch (error) {
+      return Result.fail(error instanceof Error ? error : new Error('Failed to delete stores'));
+    }
+
+    // 4. Supprimer le brand
     const deleteResult = await this.brandRepository.delete(input.id);
 
     if (!deleteResult.success) {

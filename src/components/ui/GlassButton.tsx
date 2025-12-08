@@ -6,8 +6,8 @@
 
 'use client';
 
-import { type ButtonHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
+import { type ButtonHTMLAttributes, forwardRef } from 'react';
 
 interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -38,12 +38,12 @@ export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
 
     const variants = {
       primary:
-        'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-xl focus:ring-purple-400',
+        'bg-linear-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-xl focus:ring-purple-400',
       secondary:
         'bg-white/50 backdrop-blur text-gray-800 hover:bg-white/70 border border-white/50 focus:ring-white',
       ghost: 'bg-transparent text-gray-700 hover:bg-white/20 backdrop-blur focus:ring-gray-400',
       danger:
-        'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-xl focus:ring-red-400',
+        'bg-linear-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-xl focus:ring-red-400',
     };
 
     const sizes = {

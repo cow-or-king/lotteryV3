@@ -6,8 +6,8 @@
 
 'use client';
 
-import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { type ReactNode } from 'react';
 
 interface StatCardProps {
   title: string;
@@ -47,12 +47,12 @@ export function StatCard({
     >
       {/* Icon background gradient */}
       <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-        <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl"></div>
+        <div className="w-full h-full bg-linear-to-br from-purple-500 to-pink-500 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative">
         {/* Icon */}
-        <div className="inline-flex items-center justify-center w-12 h-12 mb-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl">
+        <div className="inline-flex items-center justify-center w-12 h-12 mb-4 bg-linear-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl">
           <div className="text-purple-400">{icon}</div>
         </div>
 

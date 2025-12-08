@@ -6,23 +6,25 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
 import {
-  Store,
-  Plus,
-  MapPin,
-  Calendar,
-  X,
-  Crown,
   AlertCircle,
-  MoreVertical,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  Crown,
   Edit2,
-  Trash2,
   HelpCircle,
+  MapPin,
+  MoreVertical,
+  Plus,
+  Store,
+  Trash2,
+  X,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function StoresPage() {
   const { toast } = useToast();
@@ -31,19 +33,22 @@ export default function StoresPage() {
   const [isNewBrand, setIsNewBrand] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [showGoogleUrlHelp, setShowGoogleUrlHelp] = useState(false);
+  const [showPlaceIdHelp, setShowPlaceIdHelp] = useState(false);
+  const [showGoogleApiHelp, setShowGoogleApiHelp] = useState(false);
+  const [showGoogleApiAccordion, setShowGoogleApiAccordion] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [openBrandMenuId, setOpenBrandMenuId] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState<{
     id: string;
     name: string;
     googleBusinessUrl: string;
-    googlePlaceId: string;
   } | null>(null);
   const [editingBrand, setEditingBrand] = useState<{
     id: string;
     name: string;
     logoUrl: string;
   } | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fermer le menu si on clique ailleurs
   useEffect(() => {
@@ -72,6 +77,7 @@ export default function StoresPage() {
     name: '',
     googleBusinessUrl: '',
     googlePlaceId: '',
+    googleApiKey: '',
   });
   const [errors, setErrors] = useState<{
     brandName?: string;
@@ -79,6 +85,7 @@ export default function StoresPage() {
     name?: string;
     googleBusinessUrl?: string;
     googlePlaceId?: string;
+    googleApiKey?: string;
   }>({});
 
   // Récupérer la liste des stores
@@ -124,6 +131,7 @@ export default function StoresPage() {
         name: '',
         googleBusinessUrl: '',
         googlePlaceId: '',
+        googleApiKey: '',
       });
       setErrors({});
       setShowCreateForm(false);
@@ -131,7 +139,7 @@ export default function StoresPage() {
       setSelectedBrandId(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -142,7 +150,7 @@ export default function StoresPage() {
       setOpenMenuId(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -152,7 +160,7 @@ export default function StoresPage() {
       setEditingStore(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -163,7 +171,7 @@ export default function StoresPage() {
       setOpenBrandMenuId(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -173,7 +181,7 @@ export default function StoresPage() {
       setEditingBrand(null);
     },
     onError: (error) => {
-      toast.error('Erreur', error.message);
+      toast({ title: 'Erreur', description: error.message, variant: 'error' });
     },
   });
 
@@ -201,7 +209,6 @@ export default function StoresPage() {
       id: editingStore.id,
       name: editingStore.name,
       googleBusinessUrl: editingStore.googleBusinessUrl,
-      googlePlaceId: editingStore.googlePlaceId,
     });
   };
 
@@ -250,9 +257,8 @@ export default function StoresPage() {
     ) {
       newErrors.googleBusinessUrl = 'URL Google Business invalide';
     }
-    if (!formData.googlePlaceId.trim()) {
-      newErrors.googlePlaceId = 'Le Google Place ID est obligatoire';
-    } else if (!formData.googlePlaceId.startsWith('ChIJ')) {
+    // Google Place ID est maintenant optionnel
+    if (formData.googlePlaceId.trim() && !formData.googlePlaceId.startsWith('ChIJ')) {
       newErrors.googlePlaceId = 'Le Place ID doit commencer par "ChIJ"';
     }
 
@@ -267,7 +273,7 @@ export default function StoresPage() {
         brandId: selectedBrandId,
         name: formData.name,
         googleBusinessUrl: formData.googleBusinessUrl,
-        googlePlaceId: formData.googlePlaceId,
+        googlePlaceId: formData.googlePlaceId.trim() || undefined,
       });
     } else {
       // Sinon on crée une nouvelle enseigne
@@ -276,7 +282,7 @@ export default function StoresPage() {
         name: formData.name,
         logoUrl: formData.logoUrl,
         googleBusinessUrl: formData.googleBusinessUrl,
-        googlePlaceId: formData.googlePlaceId,
+        googlePlaceId: formData.googlePlaceId.trim() || undefined,
       });
     }
   };
@@ -318,7 +324,7 @@ export default function StoresPage() {
               setIsNewBrand(true);
               setShowCreateForm(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer une enseigne
@@ -408,7 +414,7 @@ export default function StoresPage() {
                     setIsNewBrand(false);
                     setShowCreateForm(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-sm hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-md"
+                  className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-sm hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-md"
                 >
                   <Plus className="w-4 h-4" />
                   Ajouter un commerce
@@ -448,7 +454,6 @@ export default function StoresPage() {
                                 id: store.id,
                                 name: store.name,
                                 googleBusinessUrl: store.googleBusinessUrl,
-                                googlePlaceId: store.googlePlaceId || '',
                               });
                               setOpenMenuId(null);
                             }}
@@ -479,23 +484,59 @@ export default function StoresPage() {
                       <p className="text-xs text-gray-500">/{store.slug}</p>
                     </div>
 
-                    {/* Google Business URL */}
-                    <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
-                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <a
-                        href={store.googleBusinessUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="line-clamp-1 hover:text-purple-600 transition-colors"
-                      >
-                        Google Business Profile
-                      </a>
+                    {/* Google Business URL avec badge Avis vérifié/non vérifié */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <a
+                          href={store.googleBusinessUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="line-clamp-1 hover:text-purple-600 transition-colors"
+                        >
+                          Google Business Profile
+                        </a>
+                      </div>
+
+                      {/* Badge Avis vérifié/non vérifié - cliquable si non configuré */}
+                      {!store.googlePlaceId || store.googlePlaceId.trim().length === 0 ? (
+                        <a
+                          href="/dashboard/reviews"
+                          title="Cliquez pour configurer l'API Google et vérifier les avis"
+                          className="flex items-center gap-1 px-2 py-1 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors cursor-pointer"
+                        >
+                          <AlertCircle className="w-3 h-3 text-orange-600 shrink-0" />
+                          <span className="text-xs text-orange-800 font-medium">
+                            Avis non vérifiés
+                          </span>
+                        </a>
+                      ) : (
+                        <div
+                          title="API Google configurée - Les avis sont vérifiés"
+                          className="flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded-md"
+                        >
+                          <CheckCircle2 className="w-3 h-3 text-green-600 shrink-0" />
+                          <span className="text-xs text-green-800 font-medium">Avis vérifiés</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Date */}
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Créé le {new Date(store.createdAt).toLocaleDateString('fr-FR')}</span>
+                    {/* Date + Badge IA */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Créé le {new Date(store.createdAt).toLocaleDateString('fr-FR')}</span>
+                      </div>
+
+                      {/* Badge IA - bientôt disponible */}
+                      <div
+                        title="L'assistance IA sera bientôt disponible"
+                        className="flex items-center gap-1 px-2 py-1 bg-purple-50 border border-purple-200 rounded-md"
+                      >
+                        <span className="text-xs text-purple-600 font-medium">
+                          IA bientôt dispo
+                        </span>
+                      </div>
                     </div>
 
                     {/* Stats */}
@@ -518,7 +559,7 @@ export default function StoresPage() {
       ) : (
         // Empty state (0 enseigne, 0 commerce)
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-24 h-24 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
+          <div className="w-24 h-24 bg-linear-to-br from-purple-600/20 to-pink-600/20 border border-purple-600/30 rounded-full flex items-center justify-center mb-6">
             <Store className="w-12 h-12 text-purple-600" />
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3">Aucune enseigne</h3>
@@ -531,7 +572,7 @@ export default function StoresPage() {
               setIsNewBrand(true);
               setShowCreateForm(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer ma première enseigne
@@ -557,6 +598,7 @@ export default function StoresPage() {
                     name: '',
                     googleBusinessUrl: '',
                     googlePlaceId: '',
+                    googleApiKey: '',
                   });
                   setErrors({});
                   setIsNewBrand(false);
@@ -568,9 +610,9 @@ export default function StoresPage() {
               </button>
             </div>
 
-            {/* Limites du plan FREE */}
+            {/* Limites du plan FREE (mode dev: affichage informatif sans blocage) */}
             {limits && limits.plan === 'FREE' && !limits.canCreateStore && (
-              <div className="mb-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
+              <div className="mb-6 p-6 bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
                     <AlertCircle className="w-6 h-6 text-yellow-600" />
@@ -582,10 +624,9 @@ export default function StoresPage() {
                     Vous avez atteint la limite de {limits.maxBrands} enseigne et{' '}
                     {limits.maxStoresPerBrand} commerce en version gratuite.
                   </p>
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-semibold text-sm hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 hover:scale-105 shadow-lg">
-                    <Crown className="w-4 h-4" />
-                    Passer au plan payant
-                  </button>
+                  <p className="text-xs text-purple-700 italic">
+                    (Mode développement : création autorisée pour test)
+                  </p>
                 </div>
               </div>
             )}
@@ -595,7 +636,7 @@ export default function StoresPage() {
               limits.plan === 'FREE' &&
               limits.canCreateStore &&
               limits.brandsCount > 0 && (
-                <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
+                <div className="mb-6 p-5 bg-linear-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
                   <div className="flex flex-col items-center text-center">
                     <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mb-3">
                       <AlertCircle className="w-5 h-5 text-purple-600" />
@@ -610,10 +651,6 @@ export default function StoresPage() {
                         Pour créer une nouvelle enseigne, vous devez passer à un plan payant.
                       </p>
                     )}
-                    <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-md">
-                      <Crown className="w-3.5 h-3.5" />
-                      Voir les plans payants
-                    </button>
                   </div>
                 </div>
               )}
@@ -622,7 +659,7 @@ export default function StoresPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Bouton Nouvelle enseigne - affiché seulement si une enseigne existe */}
               {selectedBrand && !isNewBrand && (
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
+                <div className="p-4 bg-linear-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <img
@@ -640,7 +677,7 @@ export default function StoresPage() {
                     <button
                       type="button"
                       onClick={() => setIsNewBrand(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-sm"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-sm"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Nouvelle enseigne
@@ -651,7 +688,7 @@ export default function StoresPage() {
 
               {/* Message nouvelle enseigne payante */}
               {isNewBrand && (
-                <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
+                <div className="p-4 bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
                   <div className="flex flex-col items-center text-center">
                     <Crown className="w-8 h-8 text-yellow-600 mb-2" />
                     <h3 className="text-sm font-bold text-gray-800 mb-1">
@@ -741,7 +778,7 @@ export default function StoresPage() {
               <div>
                 <label
                   htmlFor="googleBusinessUrl"
-                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                  className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
                 >
                   URL Google Business Profile *
                   <button
@@ -769,36 +806,146 @@ export default function StoresPage() {
                 </p>
               </div>
 
-              {/* Google Place ID (obligatoire) */}
-              <div>
-                <label
-                  htmlFor="googlePlaceId"
-                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+              {/* Google API Configuration - Accordion */}
+              <div className="border border-purple-600/20 rounded-2xl overflow-hidden">
+                {/* Accordion Header */}
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleApiAccordion(!showGoogleApiAccordion)}
+                  className="w-full p-4 bg-linear-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all flex items-center justify-between gap-3"
                 >
-                  Google Place ID *
-                  <button
-                    type="button"
-                    onClick={() => setShowGoogleUrlHelp(true)}
-                    className="text-purple-600 hover:text-purple-700 transition-colors"
-                    title="Comment trouver mon Place ID ?"
-                  >
-                    <HelpCircle className="w-4 h-4" />
-                  </button>
-                </label>
-                <input
-                  type="text"
-                  id="googlePlaceId"
-                  value={formData.googlePlaceId}
-                  onChange={(e) => setFormData({ ...formData, googlePlaceId: e.target.value })}
-                  className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
-                  placeholder="Ex: ChIJ..."
-                />
-                {errors.googlePlaceId && (
-                  <p className="text-red-600 text-sm mt-1">{errors.googlePlaceId}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
+                      <HelpCircle className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-sm font-bold text-gray-800">
+                        Configuration API Google (optionnel)
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        {showGoogleApiAccordion ? 'Cliquez pour fermer' : 'Cliquez pour configurer'}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 text-purple-600 transition-transform ${
+                      showGoogleApiAccordion ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Warning when CLOSED */}
+                {!showGoogleApiAccordion && (
+                  <div className="p-4 bg-yellow-50 border-t border-yellow-200">
+                    <p className="text-sm text-gray-700">
+                      ⚠️ <strong>Sans API :</strong> Vous pourrez lancer des loteries, mais les
+                      gains seront distribués sans vérifier qu'un avis a été publié. Avec l'API,
+                      vous validez que chaque gagnant a bien laissé un avis Google.
+                    </p>
+                  </div>
                 )}
-                <p className="text-xs text-gray-600 mt-1">
-                  Permet de récupérer automatiquement les avis Google de votre établissement
-                </p>
+
+                {/* Accordion Content when OPEN */}
+                {showGoogleApiAccordion && (
+                  <div className="p-4 bg-white/50 space-y-4">
+                    {/* Info box with benefits */}
+                    <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                      <h5 className="text-sm font-bold text-gray-800 mb-2">Avantages de l'API :</h5>
+                      <ul className="text-xs text-gray-700 space-y-1 pl-4">
+                        <li className="list-disc">
+                          <strong>Vérification :</strong> Validez que chaque gagnant a publié un
+                          avis
+                        </li>
+                        <li className="list-disc">
+                          <strong>Synchronisation :</strong> Importez automatiquement vos avis
+                          Google
+                        </li>
+                        <li className="list-disc">
+                          <strong>Réponse :</strong> Répondez aux avis directement depuis
+                          ReviewLottery
+                        </li>
+                        <li className="list-disc">
+                          <strong>IA (bientôt) :</strong> Réponses automatiques et analyses
+                          intelligentes
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Google Place ID field */}
+                    <div>
+                      <label
+                        htmlFor="googlePlaceId"
+                        className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                      >
+                        Google Place ID
+                        <button
+                          type="button"
+                          onClick={() => setShowPlaceIdHelp(true)}
+                          className="text-purple-600 hover:text-purple-700 transition-colors"
+                          title="Comment trouver mon Place ID ?"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        id="googlePlaceId"
+                        value={formData.googlePlaceId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, googlePlaceId: e.target.value })
+                        }
+                        className="w-full px-4 py-3 bg-white border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                        placeholder="Ex: ChIJ..."
+                      />
+                      {errors.googlePlaceId && (
+                        <p className="text-red-600 text-sm mt-1">{errors.googlePlaceId}</p>
+                      )}
+                      <p className="text-xs text-gray-600 mt-1">
+                        Permet de récupérer automatiquement les avis Google de votre établissement
+                      </p>
+                    </div>
+
+                    {/* Google API Key field */}
+                    <div>
+                      <label
+                        htmlFor="googleApiKey"
+                        className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                      >
+                        Google API Key
+                        <button
+                          type="button"
+                          onClick={() => setShowGoogleApiHelp(true)}
+                          className="text-purple-600 hover:text-purple-700 transition-colors"
+                          title="Comment obtenir une clé API ?"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                        </button>
+                      </label>
+                      <input
+                        type="password"
+                        id="googleApiKey"
+                        value={formData.googleApiKey}
+                        onChange={(e) => setFormData({ ...formData, googleApiKey: e.target.value })}
+                        className="w-full px-4 py-3 bg-white border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                        placeholder="Votre clé API Google (optionnel)"
+                      />
+                      {errors.googleApiKey && (
+                        <p className="text-red-600 text-sm mt-1">{errors.googleApiKey}</p>
+                      )}
+                      <p className="text-xs text-gray-600 mt-2">
+                        🔒 Votre clé sera chiffrée (AES-256-GCM) avant stockage
+                      </p>
+                    </div>
+
+                    {/* Yellow note */}
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                      <p className="text-xs text-gray-700">
+                        💡 Vous pouvez configurer cela plus tard depuis la section "Avis Google" si
+                        vous voulez d'abord tester sans API.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Buttons */}
@@ -817,6 +964,7 @@ export default function StoresPage() {
                         name: '',
                         googleBusinessUrl: '',
                         googlePlaceId: '',
+                        googleApiKey: '',
                       });
                       setErrors({});
                       setIsNewBrand(false);
@@ -829,7 +977,7 @@ export default function StoresPage() {
                   <button
                     type="submit"
                     disabled={createStore.isPending}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {createStore.isPending ? 'Création...' : 'Créer'}
                   </button>
@@ -888,7 +1036,7 @@ export default function StoresPage() {
               <div>
                 <label
                   htmlFor="edit-store-url"
-                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                  className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
                 >
                   URL Google Business *
                   <button
@@ -916,34 +1064,12 @@ export default function StoresPage() {
                 </p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="edit-store-place-id"
-                  className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
-                >
-                  Google Place ID *
-                  <button
-                    type="button"
-                    onClick={() => setShowGoogleUrlHelp(true)}
-                    className="text-purple-600 hover:text-purple-700 transition-colors"
-                    title="Comment trouver mon Place ID ?"
-                  >
-                    <HelpCircle className="w-4 h-4" />
-                  </button>
-                </label>
-                <input
-                  type="text"
-                  id="edit-store-place-id"
-                  value={editingStore.googlePlaceId || ''}
-                  onChange={(e) =>
-                    setEditingStore({ ...editingStore, googlePlaceId: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
-                  placeholder="Ex: ChIJ..."
-                  required
-                />
-                <p className="text-xs text-gray-600 mt-1">
-                  Permet de récupérer automatiquement les avis Google
+              {/* Info pour configurer Place ID dans /reviews */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-sm text-blue-800">
+                  💡 Pour configurer le <strong>Google Place ID</strong> et l'
+                  <strong>API Google</strong>, rendez-vous dans la section{' '}
+                  <strong>Avis Google</strong>.
                 </p>
               </div>
 
@@ -963,7 +1089,7 @@ export default function StoresPage() {
                   <button
                     type="submit"
                     disabled={updateStore.isPending}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {updateStore.isPending ? 'Modification...' : 'Modifier'}
                   </button>
@@ -1044,7 +1170,7 @@ export default function StoresPage() {
                   <button
                     type="submit"
                     disabled={updateBrand.isPending}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {updateBrand.isPending ? 'Modification...' : 'Modifier'}
                   </button>
@@ -1055,11 +1181,12 @@ export default function StoresPage() {
         </div>
       )}
 
-      {/* Modal d'aide pour trouver l'URL Google Business */}
+      {/* Modal: URL Google Business */}
       {showGoogleUrlHelp && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-3xl"></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto flex-1">
               <div className="flex justify-between items-start mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">
                   Comment trouver mon URL Google Business ?
@@ -1086,7 +1213,7 @@ export default function StoresPage() {
                       <strong>Avis</strong>
                     </li>
                     <li>
-                      Cliquez sur <strong>"Recueillir plus d'avis"</strong>
+                      Cliquez sur <strong>&quot;Recueillir plus d&apos;avis&quot;</strong>
                     </li>
                     <li>
                       Copiez le lien (type :{' '}
@@ -1096,17 +1223,55 @@ export default function StoresPage() {
                       )
                     </li>
                   </ol>
-                  <div className="bg-gray-50 p-3 rounded-lg mt-3">
+                  <div className="bg-gray-50 p-3 rounded-2xl mt-3">
                     <p className="text-sm font-mono text-gray-700">
                       Exemple : https://g.page/r/AbC123XyZ456DeF/review
                     </p>
                   </div>
                 </div>
 
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>Astuce :</strong> Cette URL permet à vos clients de laisser un avis
+                    Google directement après avoir participé à votre loterie.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowGoogleUrlHelp(false)}
+                  className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                >
+                  Compris !
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Google Place ID */}
+      {showPlaceIdHelp && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-3xl"></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Comment trouver mon Google Place ID ?
+                </h3>
+                <button
+                  onClick={() => setShowPlaceIdHelp(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6 text-gray-700">
                 <div>
-                  <h4 className="font-semibold text-lg mb-3 text-purple-600">
-                    🔑 Google Place ID (obligatoire)
-                  </h4>
+                  <h4 className="font-semibold text-lg mb-3 text-purple-600">🔑 Google Place ID</h4>
                   <p className="mb-3">Pour récupérer automatiquement vos avis Google :</p>
                   <ol className="list-decimal list-inside space-y-2 pl-2 mb-3">
                     <li>
@@ -1123,17 +1288,17 @@ export default function StoresPage() {
                     <li>Recherchez votre établissement</li>
                     <li>Cliquez sur le marqueur sur la carte</li>
                     <li>
-                      Copiez le <strong>Place ID</strong> (commence par "ChIJ...")
+                      Copiez le <strong>Place ID</strong> (commence par &quot;ChIJ...&quot;)
                     </li>
                   </ol>
-                  <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="bg-gray-50 p-3 rounded-2xl">
                     <p className="text-sm font-mono text-gray-700">
                       Exemple : ChIJAbCdEfGhIjKlMnOpQrStUvWx
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                   <p className="text-sm text-blue-800">
                     💡 <strong>Astuce :</strong> Le Place ID permet de récupérer automatiquement les
                     avis, les photos et les informations de votre établissement depuis Google.
@@ -1143,10 +1308,179 @@ export default function StoresPage() {
 
               <div className="mt-6 flex justify-end">
                 <button
-                  onClick={() => setShowGoogleUrlHelp(false)}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                  onClick={() => setShowPlaceIdHelp(false)}
+                  className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
                 >
                   Compris !
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Google API Key */}
+      {showGoogleApiHelp && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-3xl"></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Comment obtenir une clé API Google ?
+                </h3>
+                <button
+                  onClick={() => setShowGoogleApiHelp(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6 text-gray-700">
+                <div>
+                  <h4 className="font-semibold text-lg mb-3 text-purple-600">
+                    🔐 Créer votre clé API Google My Business
+                  </h4>
+                  <ol className="list-decimal list-inside space-y-3 pl-2">
+                    <li>
+                      Allez sur la{' '}
+                      <a
+                        href="https://console.cloud.google.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:underline font-semibold"
+                      >
+                        Console Google Cloud
+                      </a>
+                    </li>
+                    <li>Créez un nouveau projet ou sélectionnez un projet existant</li>
+                    <li>
+                      Dans le menu de gauche, allez dans{' '}
+                      <strong>&quot;APIs & Services&quot; → &quot;Bibliothèque&quot;</strong>
+                    </li>
+                    <li>
+                      Recherchez et activez <strong>&quot;Google My Business API&quot;</strong> et{' '}
+                      <strong>&quot;Places API&quot;</strong>
+                    </li>
+                    <li>
+                      Allez dans <strong>&quot;Identifiants&quot;</strong> dans le menu de gauche
+                    </li>
+                    <li>
+                      Cliquez sur <strong>&quot;Créer des identifiants&quot;</strong> →{' '}
+                      <strong>&quot;Clé API&quot;</strong>
+                    </li>
+                    <li>Copiez la clé générée et collez-la dans le champ ci-dessus</li>
+                  </ol>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-4">
+                  <p className="text-sm text-yellow-900 font-semibold mb-2">
+                    ⚠️ Sécurité importante
+                  </p>
+                  <ul className="text-sm text-yellow-800 space-y-1 pl-4">
+                    <li className="list-disc">
+                      Limitez votre clé API à votre domaine uniquement dans la console Google
+                    </li>
+                    <li className="list-disc">Ne partagez jamais votre clé API publiquement</li>
+                    <li className="list-disc">
+                      ReviewLottery chiffre votre clé avec AES-256-GCM avant stockage
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>Pourquoi c&apos;est nécessaire ?</strong> L&apos;API Google vous
+                    permet de synchroniser automatiquement vos avis, de vérifier qu&apos;un
+                    participant a bien laissé un avis, et de répondre aux avis directement depuis
+                    ReviewLottery.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowGoogleApiHelp(false)}
+                  className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                >
+                  Compris !
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Upgrade Plan (Informatif en mode dev) */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-3xl"></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Limite du plan gratuit atteinte
+                </h3>
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="mb-6 p-6 bg-linear-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                    <Crown className="w-8 h-8 text-yellow-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-800 mb-2">Passez au plan supérieur</h4>
+                  <p className="text-sm text-gray-700 mb-4">
+                    Vous avez atteint la limite de <strong>{limits?.maxBrands} enseigne</strong> et{' '}
+                    <strong>{limits?.maxStoresPerBrand} commerce</strong> du plan gratuit.
+                  </p>
+                  <p className="text-xs text-purple-700 italic mb-4">
+                    (Mode développement : création autorisée pour test)
+                  </p>
+                  <p className="text-sm text-gray-700 mb-4">
+                    Passez au <strong>plan Starter</strong> pour débloquer :
+                  </p>
+                  <ul className="text-sm text-gray-700 space-y-2 mb-6 text-left w-full">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <span>
+                        Jusqu'à <strong>3 enseignes</strong>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <span>
+                        Jusqu'à <strong>10 commerces par enseigne</strong>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <span>Campagnes illimitées</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <span>Support prioritaire</span>
+                    </li>
+                  </ul>
+                  <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-semibold text-base hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 hover:scale-105 shadow-lg">
+                    <Crown className="w-5 h-5" />
+                    Voir les plans payants
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Continuer avec le plan gratuit
                 </button>
               </div>
             </div>

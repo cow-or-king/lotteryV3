@@ -6,8 +6,8 @@
 
 'use client';
 
-import { type HTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
+import { type HTMLAttributes, forwardRef } from 'react';
 
 interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'light' | 'dark' | 'colored';
@@ -23,7 +23,7 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
     const variants = {
       light: 'bg-white/40 border-white/20',
       dark: 'bg-black/40 border-black/20',
-      colored: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-300/20',
+      colored: 'bg-linear-to-br from-purple-500/20 to-pink-500/20 border-purple-300/20',
     };
 
     const blurs = {

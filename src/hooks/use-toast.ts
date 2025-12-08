@@ -51,33 +51,26 @@ export const useToastStore = create<ToastStore>((set) => ({
   removeAllToasts: () => set({ toasts: [] }),
 }));
 
-export const useToast = (): {
-  toasts: ToastMessage[];
-  toast: {
-    success: (title: string, description?: string, duration?: number) => void;
-    error: (title: string, description?: string, duration?: number) => void;
-    warning: (title: string, description?: string, duration?: number) => void;
-    info: (title: string, description?: string, duration?: number) => void;
-    default: (title: string, description?: string, duration?: number) => void;
-  };
-  removeToast: (id: string) => void;
-} => {
+export const useToast = () => {
   const { toasts, addToast, removeToast } = useToastStore();
+
+  const toast = (params: {
+    title: string;
+    description?: string;
+    variant?: ToastVariant;
+    duration?: number;
+  }) => {
+    addToast({
+      title: params.title,
+      description: params.description,
+      variant: params.variant || 'default',
+      duration: params.duration,
+    });
+  };
 
   return {
     toasts,
-    toast: {
-      success: (title: string, description?: string, duration?: number) =>
-        addToast({ title, description, variant: 'success', duration }),
-      error: (title: string, description?: string, duration?: number) =>
-        addToast({ title, description, variant: 'error', duration }),
-      warning: (title: string, description?: string, duration?: number) =>
-        addToast({ title, description, variant: 'warning', duration }),
-      info: (title: string, description?: string, duration?: number) =>
-        addToast({ title, description, variant: 'info', duration }),
-      default: (title: string, description?: string, duration?: number) =>
-        addToast({ title, description, variant: 'default', duration }),
-    },
+    toast,
     removeToast,
   };
 };

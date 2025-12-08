@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Loader2,
   Settings,
+  Star,
   Store,
   Target,
   TrendingUp,
@@ -43,6 +44,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setActiveMenu('dashboard');
     } else if (pathname.startsWith('/dashboard/stores')) {
       setActiveMenu('stores');
+    } else if (pathname.startsWith('/dashboard/reviews')) {
+      setActiveMenu('reviews');
     } else if (pathname.startsWith('/dashboard/prizes')) {
       setActiveMenu('prizes');
     } else if (pathname.startsWith('/campaigns')) {
@@ -104,6 +107,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: <Store className="w-5 h-5" />,
       label: 'Mes Commerces',
       path: '/dashboard/stores',
+    },
+    {
+      id: 'reviews',
+      icon: <Star className="w-5 h-5" />,
+      label: 'Avis Google',
+      path: '/dashboard/reviews',
     },
     {
       id: 'prizes',

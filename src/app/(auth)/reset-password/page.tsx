@@ -6,12 +6,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AnimatedBackground, GlassButton, GlassCard, GlassInput } from '@/components/ui';
+import { api } from '@/lib/trpc/client';
+import { CheckCircle, Key, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { api } from '@/lib/trpc/client';
-import { GlassCard, GlassButton, GlassInput, AnimatedBackground } from '@/components/ui';
-import { Key, CheckCircle, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -72,9 +72,9 @@ export default function ResetPasswordPage() {
   // Si pas de token, afficher un message d'erreur
   if (!hasAccess) {
     return (
-      <div className="relative min-h-[100dvh] overflow-x-hidden">
+      <div className="relative min-h-dvh overflow-x-hidden">
         <AnimatedBackground className="absolute inset-0" />
-        <div className="relative min-h-[100dvh] flex items-center justify-center px-4 py-6">
+        <div className="relative min-h-dvh flex items-center justify-center px-4 py-6">
           <GlassCard className="w-full max-w-md text-center">
             <XCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Lien invalide</h2>
@@ -91,18 +91,18 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] overflow-x-hidden">
+    <div className="relative min-h-dvh overflow-x-hidden">
       <AnimatedBackground className="absolute inset-0" />
-      <div className="relative min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:py-12">
+      <div className="relative min-h-dvh flex items-center justify-center px-4 py-6 sm:py-12">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-block p-2 sm:p-3 bg-white/30 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
               Review
-              <span className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
+              <span className="text-transparent bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text">
                 Lottery
               </span>
             </h1>

@@ -67,6 +67,11 @@ export class PrismaStoreRepository implements StoreRepository {
         ...(input.googlePlaceId !== undefined && { googlePlaceId: input.googlePlaceId }),
         ...(input.description !== undefined && { description: input.description }),
         ...(input.isActive !== undefined && { isActive: input.isActive }),
+        // Gestion de la clé API Google chiffrée + statut
+        ...(input.googleApiKey !== undefined && {
+          googlePlacesApiKey: input.googleApiKey,
+          googleApiKeyStatus: input.googleApiKey ? 'configured' : 'not_configured',
+        }),
       },
     });
   }

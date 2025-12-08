@@ -6,18 +6,18 @@
 
 'use client';
 
-import { useState } from 'react';
+import {
+  AnimatedBackground,
+  GlassBadge,
+  GlassButton,
+  GlassCard,
+  GlassInput,
+} from '@/components/ui';
+import { api } from '@/lib/trpc/client';
+import { Key, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/trpc/client';
-import {
-  GlassCard,
-  GlassButton,
-  GlassInput,
-  GlassBadge,
-  AnimatedBackground,
-} from '@/components/ui';
-import { Mail, Key } from 'lucide-react';
+import { useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,18 +51,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-[100dvh] overflow-x-hidden">
+    <div className="relative min-h-dvh overflow-x-hidden">
       <AnimatedBackground className="absolute inset-0" />
-      <div className="relative min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:py-12">
+      <div className="relative min-h-dvh flex items-center justify-center px-4 py-6 sm:py-12">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-block p-2 sm:p-3 bg-white/30 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl"></div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
               Review
-              <span className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
+              <span className="text-transparent bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text">
                 Lottery
               </span>
             </h1>
@@ -159,7 +159,7 @@ export default function LoginPage() {
               Pas encore de compte?{' '}
               <Link
                 href="/register"
-                className="font-bold text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text hover:from-purple-700 hover:to-pink-700"
+                className="font-bold text-transparent bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text hover:from-purple-700 hover:to-pink-700"
               >
                 Inscrivez-vous
               </Link>

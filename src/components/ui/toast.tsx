@@ -7,9 +7,9 @@
 
 'use client';
 
-import * as React from 'react';
 import * as ToastPrimitives from '@radix-ui/react-toast';
-import { X, CheckCircle2, XCircle, AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
+import * as React from 'react';
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -110,7 +110,7 @@ ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
 // Icônes selon le variant
 const ToastIcon: React.FC<{ variant: ToastVariant }> = ({ variant }) => {
-  const iconClasses = 'h-5 w-5 flex-shrink-0';
+  const iconClasses = 'h-5 w-5 shrink-0';
 
   switch (variant) {
     case 'success':
@@ -127,14 +127,14 @@ const ToastIcon: React.FC<{ variant: ToastVariant }> = ({ variant }) => {
 };
 
 export {
+  Toast,
+  ToastAction,
+  ToastClose,
+  ToastDescription,
+  ToastIcon,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
   type ToastProps,
   type ToastVariant,
-  ToastProvider,
-  ToastViewport,
-  Toast,
-  ToastTitle,
-  ToastDescription,
-  ToastClose,
-  ToastAction,
-  ToastIcon,
 };

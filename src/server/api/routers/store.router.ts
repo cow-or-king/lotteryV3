@@ -23,13 +23,23 @@ import {
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 import { PrismaBrandRepository } from '@/infrastructure/repositories/prisma-brand.repository';
 
+// Services
+import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
+
 // Instancier les repositories
 const storeRepository = new PrismaStoreRepository();
 const brandRepository = new PrismaBrandRepository();
 
+// Instancier les services
+const encryptionService = new ApiKeyEncryptionService();
+
 // Instancier les use cases
 const createStoreUseCase = new CreateStoreUseCase(storeRepository, brandRepository);
-const updateStoreUseCase = new UpdateStoreUseCase(storeRepository, brandRepository);
+const updateStoreUseCase = new UpdateStoreUseCase(
+  storeRepository,
+  brandRepository,
+  encryptionService,
+);
 const deleteStoreUseCase = new DeleteStoreUseCase(storeRepository, brandRepository);
 const listStoresUseCase = new ListStoresUseCase(storeRepository);
 const getStoreByIdUseCase = new GetStoreByIdUseCase(storeRepository, brandRepository);
@@ -185,7 +195,8 @@ export const storeRouter = createTRPCRouter({
         // Infos du commerce (toujours requis)
         name: z.string().min(2, 'Le nom du commerce doit contenir au moins 2 caractères'),
         googleBusinessUrl: z.string().url('URL Google Business invalide'),
-        googlePlaceId: z.string().min(1, 'Le Google Place ID est obligatoire'),
+        // Google Place ID optionnel (nécessaire seulement pour synchronisation Google)
+        googlePlaceId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -237,6 +248,7 @@ export const storeRouter = createTRPCRouter({
         name: z.string().min(2).optional(),
         googleBusinessUrl: z.string().url().optional(),
         googlePlaceId: z.string().optional(),
+        googleApiKey: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -6,8 +6,8 @@
 
 'use client';
 
-import { type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
+import { type HTMLAttributes } from 'react';
 
 interface AnimatedBackgroundProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'purple' | 'blue' | 'gradient';
@@ -38,10 +38,10 @@ export function AnimatedBackground({
         return ['bg-blue-300', 'bg-cyan-300', 'bg-sky-300', 'bg-indigo-300'];
       case 'gradient':
         return [
-          'bg-gradient-to-r from-purple-300 to-pink-300',
-          'bg-gradient-to-r from-yellow-300 to-orange-300',
-          'bg-gradient-to-r from-green-300 to-blue-300',
-          'bg-gradient-to-r from-red-300 to-purple-300',
+          'bg-linear-to-r from-purple-300 to-pink-300',
+          'bg-linear-to-r from-yellow-300 to-orange-300',
+          'bg-linear-to-r from-green-300 to-blue-300',
+          'bg-linear-to-r from-red-300 to-purple-300',
         ];
       default:
         return ['bg-purple-300', 'bg-yellow-300', 'bg-pink-300', 'bg-blue-300'];
