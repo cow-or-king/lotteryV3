@@ -26,7 +26,7 @@ import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-stor
 // Services
 import { GoogleMyBusinessService } from '@/infrastructure/services/google-my-business.service';
 import { GoogleMyBusinessMockService } from '@/infrastructure/services/google-my-business-mock.service';
-import { ApiKeyEncryptionService } from '@/infrastructure/security/api-key-encryption.service';
+import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
 
 // Instancier les repositories
 const reviewRepository = new PrismaReviewRepository(prisma);
