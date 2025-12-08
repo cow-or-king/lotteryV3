@@ -5,7 +5,6 @@
  */
 
 import { Result } from '@/shared/types/result.type';
-import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { ReviewId } from '@/shared/types/branded.type';
 

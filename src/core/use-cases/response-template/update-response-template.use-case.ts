@@ -5,7 +5,7 @@
  */
 
 import { Result } from '@/shared/types/result.type';
-import { ResponseTemplateEntity, TemplateCategory } from '@/core/entities/response-template.entity';
+import { TemplateCategory } from '@/core/entities/response-template.entity';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 
 // DTO pour l'input
