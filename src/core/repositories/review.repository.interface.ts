@@ -1,140 +1,138 @@
 /**
  * Review Repository Interface
- * Contrat pour la persistence des avis Google
+ * Port pour l'accès aux données des avis Google
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
 import { Result } from '@/shared/types/result.type';
-import { ReviewId, StoreId, UserId } from '@/shared/types/branded.type';
-
-export type ReviewStatus = 'NEW' | 'PENDING_RESPONSE' | 'RESPONDED' | 'IGNORED';
-export type ReviewSentiment = 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
-
-export interface ReviewData {
-  readonly id: ReviewId;
-  readonly googleReviewId: string;
-  readonly storeId: StoreId;
-  readonly authorName: string;
-  readonly authorPhotoUrl: string | null;
-  readonly rating: number; // 1-5
-  readonly comment: string | null;
-  readonly reviewTime: Date;
-  readonly responseText: string | null;
-  readonly respondedAt: Date | null;
-  readonly respondedBy: UserId | null;
-  readonly status: ReviewStatus;
-  readonly sentiment: ReviewSentiment | null;
-  readonly syncedAt: Date;
-}
+import { ReviewEntity } from '@/core/entities/review.entity';
+import { ReviewId, StoreId, CampaignId, ParticipantId } from '@/shared/types/branded.type';
 
 export interface CreateReviewData {
   readonly googleReviewId: string;
   readonly storeId: StoreId;
+  readonly campaignId?: CampaignId;
   readonly authorName: string;
+  readonly authorEmail?: string;
+  readonly authorGoogleId?: string;
   readonly authorPhotoUrl?: string;
   readonly rating: number;
   readonly comment?: string;
-  readonly reviewTime: Date;
-  readonly sentiment?: ReviewSentiment;
+  readonly reviewUrl: string;
+  readonly googlePlaceId: string;
+  readonly photoUrl?: string;
+  readonly publishedAt: Date;
+}
+
+export interface UpdateReviewData {
+  readonly hasResponse?: boolean;
+  readonly responseContent?: string;
+  readonly respondedAt?: Date;
+  readonly respondedBy?: string;
+  readonly isVerified?: boolean;
+  readonly participantId?: ParticipantId;
+  readonly status?: string;
+}
+
+export interface ReviewFilters {
+  readonly storeId?: StoreId;
+  readonly campaignId?: CampaignId;
+  readonly rating?: number;
+  readonly hasResponse?: boolean;
+  readonly isVerified?: boolean;
+  readonly status?: string;
+  readonly fromDate?: Date;
+  readonly toDate?: Date;
+}
+
+export interface ReviewStats {
+  readonly total: number;
+  readonly averageRating: number;
+  readonly ratingDistribution: Record<number, number>; // {1: 5, 2: 10, 3: 15, 4: 20, 5: 50}
+  readonly responseRate: number; // percentage
+  readonly positiveCount: number; // rating >= 4
+  readonly neutralCount: number; // rating = 3
+  readonly negativeCount: number; // rating <= 2
+  readonly needsAttentionCount: number; // rating <= 3 && !hasResponse
 }
 
 export interface IReviewRepository {
   /**
    * Trouve un avis par son ID
    */
-  findById(id: ReviewId): Promise<ReviewData | null>;
+  findById(id: ReviewId): Promise<ReviewEntity | null>;
 
   /**
-   * Trouve un avis par ID Google
+   * Trouve un avis par son Google Review ID
    */
-  findByGoogleId(googleReviewId: string): Promise<ReviewData | null>;
+  findByGoogleReviewId(googleReviewId: string): Promise<ReviewEntity | null>;
 
   /**
-   * Trouve tous les avis d'un store
+   * Liste les avis d'un store avec filtres optionnels
    */
   findByStore(
     storeId: StoreId,
-    options?: {
-      limit?: number;
-      offset?: number;
-      status?: ReviewStatus;
-      minRating?: number;
-      maxRating?: number;
-      sentiment?: ReviewSentiment;
-      orderBy?: 'reviewTime' | 'rating' | 'status';
-      order?: 'asc' | 'desc';
-    },
-  ): Promise<ReviewData[]>;
+    filters?: ReviewFilters,
+    limit?: number,
+    offset?: number,
+  ): Promise<ReadonlyArray<ReviewEntity>>;
 
   /**
-   * Trouve les avis nécessitant une réponse
+   * Liste les avis d'une campagne
    */
-  findPendingResponse(storeId: StoreId): Promise<ReviewData[]>;
+  findByCampaign(
+    campaignId: CampaignId,
+    limit?: number,
+    offset?: number,
+  ): Promise<ReadonlyArray<ReviewEntity>>;
 
   /**
-   * Crée ou met à jour un avis (upsert)
+   * Trouve un avis par email et store (pour vérification participant)
    */
-  upsert(data: CreateReviewData): Promise<Result<ReviewData>>;
+  findByEmailAndStore(email: string, storeId: StoreId): Promise<ReviewEntity | null>;
 
   /**
-   * Crée plusieurs avis en batch
+   * Crée un nouvel avis
+   */
+  create(data: CreateReviewData): Promise<Result<ReviewEntity>>;
+
+  /**
+   * Met à jour un avis
+   */
+  update(id: ReviewId, data: UpdateReviewData): Promise<Result<ReviewEntity>>;
+
+  /**
+   * Sauvegarde un avis (update entité complète)
+   */
+  save(review: ReviewEntity): Promise<Result<ReviewEntity>>;
+
+  /**
+   * Supprime un avis (RGPD)
+   */
+  delete(id: ReviewId): Promise<Result<void>>;
+
+  /**
+   * Compte le nombre d'avis pour un store
+   */
+  countByStore(storeId: StoreId, filters?: ReviewFilters): Promise<number>;
+
+  /**
+   * Obtient les statistiques d'avis pour un store
+   */
+  getStatsByStore(storeId: StoreId, filters?: ReviewFilters): Promise<ReviewStats>;
+
+  /**
+   * Vérifie si un avis existe déjà (par Google Review ID)
+   */
+  exists(googleReviewId: string): Promise<boolean>;
+
+  /**
+   * Liste les avis nécessitant une attention (rating <= 3 && !hasResponse)
+   */
+  findNeedingAttention(storeId: StoreId, limit?: number): Promise<ReadonlyArray<ReviewEntity>>;
+
+  /**
+   * Crée ou met à jour plusieurs avis en batch (pour sync Google)
    */
   upsertMany(reviews: CreateReviewData[]): Promise<Result<void>>;
-
-  /**
-   * Enregistre une réponse à un avis
-   */
-  saveResponse(id: ReviewId, responseText: string, respondedBy: UserId): Promise<Result<void>>;
-
-  /**
-   * Met à jour le statut d'un avis
-   */
-  updateStatus(id: ReviewId, status: ReviewStatus): Promise<Result<void>>;
-
-  /**
-   * Met à jour le sentiment d'un avis
-   */
-  updateSentiment(id: ReviewId, sentiment: ReviewSentiment): Promise<Result<void>>;
-
-  /**
-   * Marque un avis comme ignoré
-   */
-  ignore(id: ReviewId): Promise<Result<void>>;
-
-  /**
-   * Compte les avis par statut
-   */
-  countByStatus(storeId: StoreId): Promise<{
-    new: number;
-    pendingResponse: number;
-    responded: number;
-    ignored: number;
-  }>;
-
-  /**
-   * Calcule les statistiques d'avis
-   */
-  getReviewStats(storeId: StoreId): Promise<{
-    totalReviews: number;
-    averageRating: number;
-    ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number>;
-    sentimentDistribution: Record<ReviewSentiment, number>;
-    responseRate: number;
-    averageResponseTime: number; // en heures
-  }>;
-
-  /**
-   * Trouve les avis récents pour analyse
-   */
-  findRecentForAnalysis(storeId: StoreId, since: Date): Promise<ReviewData[]>;
-
-  /**
-   * Marque la dernière synchronisation
-   */
-  updateLastSync(storeId: StoreId, syncedAt: Date): Promise<Result<void>>;
-
-  /**
-   * Export des avis pour analyse
-   */
-  exportForAnalysis(storeId: StoreId, startDate: Date, endDate: Date): Promise<ReviewData[]>;
 }
