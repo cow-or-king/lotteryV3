@@ -8,5 +8,5 @@ export { ReviewFilters } from './ReviewFilters';
 export { GoogleApiConfigModal } from './GoogleApiConfigModal';
 export { ResponseModal } from './ResponseModal';
 export { NoApiConfigMessage } from './NoApiConfigMessage';
-export { ReviewsList } from './ReviewsList';
+export { ReviewList } from './ReviewList';
 export { NoStoresMessage } from './NoStoresMessage';

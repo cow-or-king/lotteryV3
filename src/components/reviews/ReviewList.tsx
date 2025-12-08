@@ -16,13 +16,13 @@ interface Review {
   hasResponse: boolean;
 }
 
-interface ReviewsListProps {
+interface ReviewListProps {
   reviews: Review[] | undefined;
   loading?: boolean;
   onRespond?: (review: Review) => void;
 }
 
-export function ReviewsList({ reviews, loading, onRespond }: ReviewsListProps) {
+export function ReviewList({ reviews, loading, onRespond }: ReviewListProps) {
   if (loading) {
     return (
       <div className="text-center py-12 text-gray-600">
