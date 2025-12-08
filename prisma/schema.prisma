@@ -31,6 +31,7 @@ model User {
   subscription   Subscription?
   brands         Brand[]
   prizeTemplates PrizeTemplate[]
+  reviewsResponded Review[]
 
   @@index([email])
   @@map("users")
@@ -89,22 +90,28 @@ model Brand {
 // =====================
 
 model Store {
-  id                String   @id @default(cuid())
-  slug              String   @unique
-  brandId           String   @map("brand_id")
-  name              String
-  description       String?
-  googlePlaceId     String?  @map("google_place_id")
-  googleBusinessUrl String   @map("google_business_url")
-  isActive          Boolean  @default(true) @map("is_active")
-  isPaid            Boolean  @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                     String    @id @default(cuid())
+  slug                   String    @unique
+  brandId                String    @map("brand_id")
+  name                   String
+  description            String?
+  googlePlaceId          String?   @map("google_place_id")
+  googleBusinessUrl      String    @map("google_business_url")
+  googlePlacesApiKey     String?   @map("google_places_api_key") // CHIFFRÉ AES-256-GCM
+  googleApiKeyStatus     String?   @default("not_configured") @map("google_api_key_status")
+  lastReviewSync         DateTime? @map("last_review_sync")
+  autoSyncEnabled        Boolean   @default(false) @map("auto_sync_enabled")
+  syncFrequencyHours     Int       @default(24) @map("sync_frequency_hours")
+  isActive               Boolean   @default(true) @map("is_active")
+  isPaid                 Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  brand     Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  campaigns Campaign[]
-  reviews   Review[]
+  brand             Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  campaigns         Campaign[]
+  reviews           Review[]
+  responseTemplates ResponseTemplate[]
 
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
@@ -117,22 +124,26 @@ model Store {
 // =====================
 
 model Campaign {
-  id             String   @id @default(cuid())
-  name           String
-  description    String?
-  storeId        String   @map("store_id")
-  startDate      DateTime @map("start_date")
-  endDate        DateTime @map("end_date")
-  isActive       Boolean  @default(false) @map("is_active")
-  wheelStyle     String   @default("classic") @map("wheel_style")
-  wheelAnimation String   @default("spin") @map("wheel_animation")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  storeId         String   @map("store_id")
+  startDate       DateTime @map("start_date")
+  endDate         DateTime @map("end_date")
+  isActive        Boolean  @default(false) @map("is_active")
+  wheelStyle      String   @default("classic") @map("wheel_style")
+  wheelAnimation  String   @default("spin") @map("wheel_animation")
+  type            String   @default("generic") // "review" | "social" | "generic"
+  requireReview   Boolean  @default(false) @map("require_review")
+  requireInstagram Boolean @default(false) @map("require_instagram") // future
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
   store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
   prizes       Prize[]
   participants Participant[]
+  reviews      Review[]
 
   @@index([storeId])
   @@index([isActive, startDate, endDate])
@@ -169,26 +180,30 @@ model Prize {
 // =====================
 
 model Participant {
-  id            String    @id @default(cuid())
-  email         String
-  name          String?
-  phone         String?
-  campaignId    String    @map("campaign_id")
-  hasPlayed     Boolean   @default(false) @map("has_played")
-  playedAt      DateTime? @map("played_at")
-  ipAddress     String?   @map("ip_address")
-  userAgent     String?   @map("user_agent")
-  hasReviewed   Boolean   @default(false) @map("has_reviewed")
-  reviewRating  Int?      @map("review_rating")
-  reviewComment String?   @map("review_comment")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id                 String    @id @default(cuid())
+  email              String
+  name               String?
+  phone              String?
+  campaignId         String    @map("campaign_id")
+  hasPlayed          Boolean   @default(false) @map("has_played")
+  playedAt           DateTime? @map("played_at")
+  ipAddress          String?   @map("ip_address")
+  userAgent          String?   @map("user_agent")
+  hasReviewed        Boolean   @default(false) @map("has_reviewed")
+  reviewRating       Int?      @map("review_rating")
+  reviewComment      String?   @map("review_comment")
+  consentDate        DateTime? @map("consent_date")
+  dataRetentionUntil DateTime? @map("data_retention_until") // 3 ans après dernière interaction
+  createdAt          DateTime  @default(now()) @map("created_at")
 
   // Relations
   campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  review   Review?
 
   @@unique([email, campaignId])
   @@index([campaignId])
   @@index([email])
+  @@index([dataRetentionUntil])
   @@map("participants")
 }
 
@@ -220,27 +235,67 @@ model Winner {
 // =====================
 
 model Review {
-  id             String    @id @default(cuid())
-  googleReviewId String    @unique @map("google_review_id")
-  storeId        String    @map("store_id")
-  authorName     String    @map("author_name")
-  authorPhotoUrl String?   @map("author_photo_url")
-  rating         Int
-  comment        String?
-  reviewTime     DateTime  @map("review_time")
-  responseText   String?   @map("response_text")
-  respondedAt    DateTime? @map("responded_at")
-  respondedBy    String?   @map("responded_by")
-  status         String    @default("NEW")
-  sentiment      String?
-  syncedAt       DateTime  @default(now()) @map("synced_at")
+  id              String    @id @default(cuid())
+  googleReviewId  String    @unique @map("google_review_id")
+  storeId         String    @map("store_id")
+  campaignId      String?   @map("campaign_id")
+  authorName      String    @map("author_name")
+  authorEmail     String?   @map("author_email")
+  authorGoogleId  String?   @map("author_google_id")
+  authorPhotoUrl  String?   @map("author_photo_url")
+  rating          Int // 1-5
+  comment         String?   @db.Text
+  publishedAt     DateTime  @map("published_at")
+  hasResponse     Boolean   @default(false) @map("has_response")
+  responseContent String?   @db.Text @map("response_content")
+  respondedAt     DateTime? @map("responded_at")
+  respondedBy     String?   @map("responded_by")
+  isVerified      Boolean   @default(false) @map("is_verified")
+  participantId   String?   @unique @map("participant_id")
+  aiSuggestion    Json?     @map("ai_suggestion")
+  aiSentiment     String?   @map("ai_sentiment")
+  reviewUrl       String    @map("review_url")
+  photoUrl        String?   @map("photo_url")
+  status          String    @default("NEW")
+  sentiment       String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  campaign    Campaign?    @relation(fields: [campaignId], references: [id])
+  participant Participant? @relation(fields: [participantId], references: [id])
+  respondent  User?        @relation(fields: [respondedBy], references: [id])
+
+  @@index([storeId, publishedAt])
+  @@index([campaignId])
+  @@index([authorEmail, storeId])
+  @@index([isVerified])
+  @@index([rating])
+  @@index([storeId, status])
+  @@map("reviews")
+}
+
+// =====================
+// RESPONSE TEMPLATES
+// =====================
+
+model ResponseTemplate {
+  id          String   @id @default(cuid())
+  storeId     String   @map("store_id")
+  name        String
+  content     String   @db.Text
+  category    String // "positive" | "neutral" | "negative"
+  usageCount  Int      @default(0) @map("usage_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  @@index([storeId, status])
-  @@index([googleReviewId])
-  @@map("reviews")
+  @@index([storeId])
+  @@index([storeId, category])
+  @@map("response_templates")
 }
 
 // =====================
