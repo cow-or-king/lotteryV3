@@ -10,8 +10,8 @@ import {
 } from '@/core/use-cases/review/verify-review-participant.use-case';
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
-import { StoreId, ParticipantId, CampaignId } from '@/shared/types/branded.type';
-import { Result } from '@/shared/types/result.type';
+import { StoreId, ParticipantId, CampaignId } from '@/lib/types/branded.type';
+import { Result } from '@/lib/types/result.type';
 
 describe('VerifyReviewParticipantUseCase', () => {
   let useCase: VerifyReviewParticipantUseCase;

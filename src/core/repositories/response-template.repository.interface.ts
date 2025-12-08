@@ -4,9 +4,9 @@
  * IMPORTANT: Interface uniquement, ZERO impl�mentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { ResponseTemplateEntity, TemplateCategory } from '@/core/entities/response-template.entity';
-import { StoreId } from '@/shared/types/branded.type';
+import { StoreId } from '@/lib/types/branded.type';
 
 export interface CreateResponseTemplateData {
   readonly storeId: StoreId;

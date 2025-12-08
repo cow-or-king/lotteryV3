@@ -4,8 +4,8 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
-import { PrizeId, CampaignId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { PrizeId, CampaignId } from '@/lib/types/branded.type';
 import { PrizeEntity } from '@/core/entities/prize.entity';
 
 export interface IPrizeRepository {

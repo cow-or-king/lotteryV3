@@ -4,7 +4,7 @@
  * Logique métier pure sans dépendances externes
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { StoreRepository } from '@/core/ports/store.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
 

@@ -4,9 +4,9 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { IReviewRepository, ReviewFilters } from '@/core/repositories/review.repository.interface';
-import { StoreId, ReviewId } from '@/shared/types/branded.type';
+import { StoreId, ReviewId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
 export interface ListReviewsByStoreInput {

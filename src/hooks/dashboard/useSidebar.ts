@@ -1,0 +1,91 @@
+/**
+ * useSidebar Hook
+ * Gère l'état et la logique de la sidebar du dashboard
+ * IMPORTANT: ZERO any types
+ */
+
+'use client';
+
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+export type MenuId =
+  | 'dashboard'
+  | 'stores'
+  | 'reviews'
+  | 'prizes'
+  | 'campaigns'
+  | 'lottery'
+  | 'participants'
+  | 'analytics'
+  | 'settings';
+
+export function useSidebar() {
+  const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isCompactMode, setIsCompactMode] = useState(false);
+  const [userClosedSidebar, setUserClosedSidebar] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<MenuId>('dashboard');
+
+  // Déterminer le menu actif basé sur le pathname
+  useEffect(() => {
+    if (pathname === '/dashboard') {
+      setActiveMenu('dashboard');
+    } else if (pathname.startsWith('/dashboard/stores')) {
+      setActiveMenu('stores');
+    } else if (pathname.startsWith('/dashboard/reviews')) {
+      setActiveMenu('reviews');
+    } else if (pathname.startsWith('/dashboard/prizes')) {
+      setActiveMenu('prizes');
+    } else if (pathname.startsWith('/campaigns')) {
+      setActiveMenu('campaigns');
+    } else if (pathname.startsWith('/lottery')) {
+      setActiveMenu('lottery');
+    } else if (pathname.startsWith('/participants')) {
+      setActiveMenu('participants');
+    } else if (pathname.startsWith('/analytics')) {
+      setActiveMenu('analytics');
+    } else if (pathname.startsWith('/settings')) {
+      setActiveMenu('settings');
+    }
+  }, [pathname]);
+
+  // Gérer le mode responsive
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsCompactMode(true);
+        if (!userClosedSidebar) {
+          setIsSidebarOpen(true);
+        }
+      } else {
+        setIsCompactMode(false);
+        setIsSidebarOpen(true);
+        setUserClosedSidebar(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [userClosedSidebar]);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+    setUserClosedSidebar(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+    setUserClosedSidebar(true);
+  };
+
+  return {
+    isSidebarOpen,
+    isCompactMode,
+    activeMenu,
+    setActiveMenu,
+    toggleSidebar,
+    closeSidebar,
+  };
+}

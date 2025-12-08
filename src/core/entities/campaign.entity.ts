@@ -6,8 +6,8 @@
  * - Une campagne peut avoir plusieurs prix
  */
 
-import { Result } from '@/shared/types/result.type';
-import { CampaignId, StoreId, PrizeId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { CampaignId, StoreId, PrizeId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidCampaignDataError extends Error {

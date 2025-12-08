@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { ReviewEntity, CreateReviewProps, ReviewProps } from '@/core/entities/review.entity';
-import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/shared/types/branded.type';
+import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/lib/types/branded.type';
 
 describe('ReviewEntity', () => {
   const storeId = 'store123' as StoreId;

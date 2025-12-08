@@ -4,8 +4,8 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
-import { CampaignId, StoreId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { CampaignId, StoreId } from '@/lib/types/branded.type';
 import { CampaignEntity } from '@/core/entities/campaign.entity';
 
 export interface ICampaignRepository {

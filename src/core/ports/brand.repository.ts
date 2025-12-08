@@ -5,7 +5,7 @@
  */
 
 import type { BrandEntity } from '@/core/entities/brand.entity';
-import type { Result } from '@/shared/types/result.type';
+import type { Result } from '@/lib/types/result.type';
 
 export type { BrandEntity };
 

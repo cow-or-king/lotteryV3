@@ -3,7 +3,7 @@
  * Gestion monétaire précise avec currency
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 
 export class InvalidMoneyError extends Error {
   constructor(message: string) {

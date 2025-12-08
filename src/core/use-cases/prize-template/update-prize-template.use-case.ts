@@ -3,7 +3,7 @@
  * Use case pour mettre à jour un prize template
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type {
   PrizeTemplateRepository,
   PrizeTemplateEntity,

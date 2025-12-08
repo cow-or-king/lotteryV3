@@ -11,8 +11,8 @@ import type {
   CreateBrandInput,
   UpdateBrandInput,
 } from '@/core/ports/brand.repository';
-import type { Result } from '@/shared/types/result.type';
-import { ok, fail } from '@/shared/types/result.type';
+import type { Result } from '@/lib/types/result.type';
+import { ok, fail } from '@/lib/types/result.type';
 
 export class PrismaBrandRepository implements BrandRepository {
   async create(input: CreateBrandInput): Promise<Result<BrandEntity>> {

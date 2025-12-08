@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import type { AuthTokens } from '@/infrastructure/auth/supabase-auth.service';
-import type { UserId } from '@/shared/types/branded.type';
+import type { UserId } from '@/lib/types/branded.type';
 import { NextRequest } from 'next/server';
 
 // Mock next/headers

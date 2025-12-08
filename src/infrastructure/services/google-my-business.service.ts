@@ -14,7 +14,7 @@
  * - Ajouter retry logic
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import {
   IGoogleMyBusinessService,
   GoogleReviewData,

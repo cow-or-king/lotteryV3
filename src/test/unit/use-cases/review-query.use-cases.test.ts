@@ -18,8 +18,8 @@ import {
 } from '@/core/use-cases/review/get-review-stats.use-case';
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
-import { ReviewId, StoreId } from '@/shared/types/branded.type';
-import { Result } from '@/shared/types/result.type';
+import { ReviewId, StoreId } from '@/lib/types/branded.type';
+import { Result } from '@/lib/types/result.type';
 
 describe('Review Query Use Cases', () => {
   let mockReviewRepo: IReviewRepository;

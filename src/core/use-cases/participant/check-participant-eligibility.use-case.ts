@@ -4,9 +4,9 @@
  * IMPORTANT: ZERO any types
  */
 
-import type { Result } from '@/shared/types/result.type';
-import { ok, fail } from '@/shared/types/result.type';
-import type { ParticipantRepository } from '@/core/ports/participant.repository';
+import type { Result } from '@/lib/types/result.type';
+import { ok, fail } from '@/lib/types/result.type';
+import type { IParticipantRepository } from '@/core/ports/participant.repository';
 import type { CampaignRepository } from '@/core/ports/campaign.repository';
 
 export interface CheckParticipantEligibilityInput {
@@ -24,7 +24,7 @@ export interface CheckParticipantEligibilityOutput {
 
 export class CheckParticipantEligibilityUseCase {
   constructor(
-    private readonly participantRepository: ParticipantRepository,
+    private readonly participantRepository: IParticipantRepository,
     private readonly campaignRepository: CampaignRepository,
   ) {}
 
@@ -53,7 +53,7 @@ export class CheckParticipantEligibilityUseCase {
       return fail(campaignResult.error);
     }
 
-    const campaign = campaignResult.value;
+    const campaign = campaignResult.data;
 
     if (!campaign) {
       return fail(new Error('Campaign not found'));
@@ -89,7 +89,7 @@ export class CheckParticipantEligibilityUseCase {
     }
 
     // Vérifier si le participant existe
-    const participantResult = await this.participantRepository.findByEmailAndCampaignId(
+    const participantResult = await this.participantRepository.findByEmailAndCampaign(
       input.email.trim().toLowerCase(),
       input.campaignId,
     );
@@ -98,7 +98,7 @@ export class CheckParticipantEligibilityUseCase {
       return fail(participantResult.error);
     }
 
-    const participant = participantResult.value;
+    const participant = participantResult.data;
 
     if (!participant) {
       // Nouveau participant - éligible

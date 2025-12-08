@@ -3,7 +3,7 @@
  * Use case pour créer un nouveau prize set
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { PrizeSetRepository, PrizeSetEntity } from '@/core/ports/prize-set.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
 

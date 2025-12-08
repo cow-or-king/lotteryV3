@@ -3,7 +3,7 @@
  * Use case pour récupérer un prize template par son ID
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type {
   PrizeTemplateRepository,
   PrizeTemplateEntity,

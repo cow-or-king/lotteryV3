@@ -7,8 +7,8 @@
 
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import type { Result } from '@/shared/types/result.type';
-import type { UserId } from '@/shared/types/branded.type';
+import type { Result } from '@/lib/types/result.type';
+import type { UserId } from '@/lib/types/branded.type';
 import type { ISessionManager, Session } from '@/core/ports/session.port';
 import type { IAuthProvider, AuthTokens } from '@/core/ports/auth.port';
 

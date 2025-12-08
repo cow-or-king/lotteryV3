@@ -4,8 +4,8 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
-import { SubscriptionId, UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { SubscriptionId, UserId } from '@/lib/types/branded.type';
 import { SubscriptionEntity } from '@/core/entities/subscription.entity';
 
 export interface ISubscriptionRepository {

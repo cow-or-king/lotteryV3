@@ -4,10 +4,10 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
-import { ReviewId, UserId } from '@/shared/types/branded.type';
+import { ReviewId, UserId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
 export interface RespondToReviewInput {

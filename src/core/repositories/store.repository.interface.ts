@@ -4,8 +4,8 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
-import { StoreId, UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { StoreId, UserId } from '@/lib/types/branded.type';
 import { StoreEntity } from '@/core/entities/store.entity';
 
 export interface IStoreRepository {

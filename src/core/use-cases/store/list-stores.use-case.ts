@@ -3,7 +3,7 @@
  * Use case pour lister les commerces d'un utilisateur
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { StoreRepository, StoreEntity } from '@/core/ports/store.repository';
 
 export class ListStoresUseCase {

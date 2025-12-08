@@ -3,8 +3,8 @@
  * Représente une réponse à un avis Google
  */
 
-import { Result } from '@/shared/types/result.type';
-import { UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { UserId } from '@/lib/types/branded.type';
 
 export interface ReviewResponseProps {
   readonly content: string;

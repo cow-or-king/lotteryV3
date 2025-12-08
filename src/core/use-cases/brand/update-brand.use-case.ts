@@ -3,7 +3,7 @@
  * Use case pour mettre à jour une enseigne
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { BrandRepository, BrandEntity } from '@/core/ports/brand.repository';
 
 export interface UpdateBrandInput {

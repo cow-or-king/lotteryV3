@@ -22,8 +22,8 @@ import {
 } from '@/core/use-cases/response-template/delete-response-template.use-case';
 import { ResponseTemplateEntity } from '@/core/entities/response-template.entity';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
-import { StoreId } from '@/shared/types/branded.type';
-import { Result } from '@/shared/types/result.type';
+import { StoreId } from '@/lib/types/branded.type';
+import { Result } from '@/lib/types/result.type';
 
 describe('ResponseTemplate Use Cases', () => {
   let mockTemplateRepo: IResponseTemplateRepository;

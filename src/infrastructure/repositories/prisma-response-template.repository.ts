@@ -5,14 +5,14 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { ResponseTemplateEntity, TemplateCategory } from '@/core/entities/response-template.entity';
 import {
   IResponseTemplateRepository,
   CreateResponseTemplateData,
   UpdateResponseTemplateData,
 } from '@/core/repositories/response-template.repository.interface';
-import { StoreId } from '@/shared/types/branded.type';
+import { StoreId } from '@/lib/types/branded.type';
 import * as TemplateMapper from './mappers/response-template.mapper';
 
 export class PrismaResponseTemplateRepository implements IResponseTemplateRepository {

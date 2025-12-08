@@ -6,8 +6,8 @@
  * - Un prix a une quantité limitée
  */
 
-import { Result } from '@/shared/types/result.type';
-import { PrizeId, CampaignId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { PrizeId, CampaignId } from '@/lib/types/branded.type';
 import { Money } from '@/core/value-objects/money.vo';
 
 // Domain Errors

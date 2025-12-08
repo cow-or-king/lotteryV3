@@ -5,8 +5,8 @@
  */
 
 import type { NextRequest } from 'next/server';
-import type { Result } from '@/shared/types/result.type';
-import type { UserId } from '@/shared/types/branded.type';
+import type { Result } from '@/lib/types/result.type';
+import type { UserId } from '@/lib/types/branded.type';
 import type { AuthTokens } from './auth.port';
 
 /**

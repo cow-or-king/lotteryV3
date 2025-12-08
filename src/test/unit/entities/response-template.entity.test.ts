@@ -8,7 +8,7 @@ import {
   CreateResponseTemplateProps,
   ResponseTemplateProps,
 } from '@/core/entities/response-template.entity';
-import { StoreId } from '@/shared/types/branded.type';
+import { StoreId } from '@/lib/types/branded.type';
 
 describe('ResponseTemplateEntity', () => {
   const storeId = 'store123' as StoreId;

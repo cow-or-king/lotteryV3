@@ -4,10 +4,10 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { ResponseTemplateEntity, TemplateCategory } from '@/core/entities/response-template.entity';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
-import { StoreId } from '@/shared/types/branded.type';
+import { StoreId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
 export interface ListResponseTemplatesInput {

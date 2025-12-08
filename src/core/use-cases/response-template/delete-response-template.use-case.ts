@@ -4,7 +4,7 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 
 // DTO pour l'input

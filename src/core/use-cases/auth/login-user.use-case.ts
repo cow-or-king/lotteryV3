@@ -4,8 +4,8 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
-import { UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { UserId } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { IUserRepository } from '@/core/repositories/user.repository.interface';
 import { ISubscriptionRepository } from '@/core/repositories/subscription.repository.interface';
@@ -75,6 +75,10 @@ export class LoginUserUseCase {
     }
 
     // 3. Vérifier le mot de passe
+    if (!user.hashedPassword) {
+      return Result.fail(new InvalidCredentialsError());
+    }
+
     const isPasswordValid = await this.passwordVerifier.verify(input.password, user.hashedPassword);
 
     if (!isPasswordValid) {

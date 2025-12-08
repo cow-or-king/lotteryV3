@@ -11,7 +11,7 @@ import {
   CreateResponseTemplateProps,
   TemplateCategory,
 } from '@/core/entities/response-template.entity';
-import { StoreId } from '@/shared/types/branded.type';
+import { StoreId } from '@/lib/types/branded.type';
 
 /**
  * Convertit un modèle Prisma en props d'entité Domain

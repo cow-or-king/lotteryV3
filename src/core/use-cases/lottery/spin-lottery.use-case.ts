@@ -4,8 +4,8 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
-import { CampaignId, PrizeId, WinnerId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { CampaignId, PrizeId, WinnerId } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { ICampaignRepository } from '@/core/repositories/campaign.repository.interface';
 import { IPrizeRepository } from '@/core/repositories/prize.repository.interface';
@@ -176,7 +176,7 @@ export class SpinLotteryUseCase {
       // 8. Calculer la durée de rotation de la roue
       // Plus le prix a de valeur, plus la roue tourne longtemps
       const baseSpinDuration = 3000; // 3 secondes minimum
-      const valueBonus = selectedPrize.value ? selectedPrize.value.amount * 10 : 0;
+      const valueBonus = selectedPrize.value ? selectedPrize.value.getAmount() * 10 : 0;
       const wheelSpinDuration = Math.min(baseSpinDuration + valueBonus, 8000); // Max 8 secondes
 
       // 9. Retourner le résultat
@@ -185,8 +185,8 @@ export class SpinLotteryUseCase {
         prizeId: selectedPrize.id,
         prizeName: selectedPrize.name,
         prizeDescription: selectedPrize.description,
-        prizeValue: selectedPrize.value?.amount ?? null,
-        claimCode: winner.claimCode.value,
+        prizeValue: selectedPrize.value?.getAmount() ?? null,
+        claimCode: winner.claimCode.getValue(),
         expiresAt: winner.expiresAt,
         wheelSpinDuration,
       });

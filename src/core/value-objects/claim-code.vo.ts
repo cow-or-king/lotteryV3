@@ -3,8 +3,8 @@
  * Code unique pour réclamer un prix
  */
 
-import { Result } from '@/shared/types/result.type';
-import { ClaimCode as ClaimCodeType } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { ClaimCode as ClaimCodeType } from '@/lib/types/branded.type';
 
 export class InvalidClaimCodeError extends Error {
   constructor(message: string) {

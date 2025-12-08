@@ -6,8 +6,8 @@
  * - Un prize set a un nom et une description optionnelle
  */
 
-import { Result } from '@/shared/types/result.type';
-import { PrizeSetId, BrandId, PrizeTemplateId, PrizeSetItemId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { PrizeSetId, BrandId, PrizeTemplateId, PrizeSetItemId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidPrizeSetDataError extends Error {

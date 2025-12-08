@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { UserId } from '@/shared/types/branded.type';
+import type { UserId } from '@/lib/types/branded.type';
 import type { PrismaClient } from '@/generated/prisma';
 
 // Mock Supabase Auth Service

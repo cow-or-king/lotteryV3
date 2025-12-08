@@ -4,9 +4,9 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { ReviewEntity } from '@/core/entities/review.entity';
-import { ReviewId, StoreId, CampaignId, ParticipantId } from '@/shared/types/branded.type';
+import { ReviewId, StoreId, CampaignId, ParticipantId } from '@/lib/types/branded.type';
 
 export interface CreateReviewData {
   readonly googleReviewId: string;

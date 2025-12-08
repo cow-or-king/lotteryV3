@@ -6,8 +6,8 @@
  * - AUCUNE dépendance externe
  */
 
-import { Result } from '@/shared/types/result.type';
-import { Email as EmailType } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { Email as EmailType } from '@/lib/types/branded.type';
 
 export class InvalidEmailError extends Error {
   constructor(email: string) {

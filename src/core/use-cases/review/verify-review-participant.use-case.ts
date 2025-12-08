@@ -4,11 +4,11 @@
  * IMPORTANT: Pure business logic, pas de d�pendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { ReviewVerificationError } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
-import { StoreId, CampaignId, ParticipantId, ReviewId } from '@/shared/types/branded.type';
+import { StoreId, CampaignId, ParticipantId, ReviewId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
 export interface VerifyReviewParticipantInput {

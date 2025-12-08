@@ -6,8 +6,8 @@
  * - Un store a un branding personnalisable
  */
 
-import { Result } from '@/shared/types/result.type';
-import { StoreId, StoreName, UserId, GooglePlaceId, CampaignId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { StoreId, StoreName, UserId, GooglePlaceId, CampaignId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidStoreDataError extends Error {

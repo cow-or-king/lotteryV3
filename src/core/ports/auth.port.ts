@@ -4,8 +4,8 @@
  * IMPORTANT: Interface du domain, implémentée dans l'infrastructure
  */
 
-import type { Result } from '@/shared/types/result.type';
-import type { UserId } from '@/shared/types/branded.type';
+import type { Result } from '@/lib/types/result.type';
+import type { UserId } from '@/lib/types/branded.type';
 
 /**
  * Données utilisateur authentifié

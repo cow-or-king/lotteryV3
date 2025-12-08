@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sessionService } from '@/infrastructure/auth/session.service';
-import { brandUserId } from '@/shared/types/branded.type';
+import { brandUserId } from '@/lib/types/branded.type';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

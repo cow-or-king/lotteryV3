@@ -5,7 +5,7 @@
  * Architecture hexagonale: Core business logic
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type {
   PrizeTemplateRepository,
   PrizeTemplateEntity,

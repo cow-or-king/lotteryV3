@@ -4,7 +4,7 @@
  * IMPORTANT: Interface uniquement, implémentation dans /infrastructure
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 
 /**
  * Données d'un avis retourné par l'API Google

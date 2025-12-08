@@ -4,7 +4,7 @@
  * Architecture hexagonale: Port dans le core, Adapter dans l'infrastructure
  */
 
-import type { Result } from '@/shared/types/result.type';
+import type { Result } from '@/lib/types/result.type';
 import type { CampaignEntity } from '@/core/entities/campaign.entity';
 
 export type { CampaignEntity };

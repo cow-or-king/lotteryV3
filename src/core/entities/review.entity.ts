@@ -8,8 +8,8 @@
  * - ✅ Types explicites partout
  */
 
-import { Result } from '@/shared/types/result.type';
-import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidReviewDataError extends Error {

@@ -3,7 +3,7 @@
  * Use case pour supprimer une enseigne
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { BrandRepository } from '@/core/ports/brand.repository';
 import { prisma } from '@/infrastructure/database/prisma-client';
 

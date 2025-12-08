@@ -4,8 +4,8 @@
  * IMPORTANT: ZERO any types
  */
 
-import type { Result } from '@/shared/types/result.type';
-import { ok, fail } from '@/shared/types/result.type';
+import type { Result } from '@/lib/types/result.type';
+import { ok, fail } from '@/lib/types/result.type';
 import type { ParticipantRepository } from '@/core/ports/participant.repository';
 import type { ParticipantEntity } from '@/core/entities/participant.entity';
 

@@ -8,8 +8,8 @@
  * - ✅ Types explicites partout
  */
 
-import { Result } from '@/shared/types/result.type';
-import { UserId, Email, StoreId, SubscriptionId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { UserId, Email, StoreId, SubscriptionId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidUserDataError extends Error {

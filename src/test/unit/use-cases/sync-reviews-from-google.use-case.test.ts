@@ -10,8 +10,8 @@ import {
 } from '@/core/use-cases/review/sync-reviews-from-google.use-case';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
-import { StoreId } from '@/shared/types/branded.type';
-import { Result } from '@/shared/types/result.type';
+import { StoreId } from '@/lib/types/branded.type';
+import { Result } from '@/lib/types/result.type';
 
 describe('SyncReviewsFromGoogleUseCase', () => {
   let useCase: SyncReviewsFromGoogleUseCase;

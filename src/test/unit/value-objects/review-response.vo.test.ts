@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { ReviewResponse } from '@/core/value-objects/review-response.vo';
-import { UserId } from '@/shared/types/branded.type';
+import { UserId } from '@/lib/types/branded.type';
 
 describe('ReviewResponse Value Object', () => {
   const userId = 'user123' as UserId;

@@ -3,7 +3,7 @@
  * Use case pour supprimer un prize template
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type { PrizeTemplateRepository } from '@/core/ports/prize-template.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
 

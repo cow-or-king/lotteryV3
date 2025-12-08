@@ -3,7 +3,7 @@
  * Use case pour lister les prize templates d'un utilisateur
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import type {
   PrizeTemplateRepository,
   PrizeTemplateEntity,

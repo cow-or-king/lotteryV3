@@ -4,8 +4,8 @@
  * IMPORTANT: Interface uniquement, ZERO implémentation ici
  */
 
-import { Result } from '@/shared/types/result.type';
-import { UserId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { UserId } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { UserEntity } from '@/core/entities/user.entity';
 

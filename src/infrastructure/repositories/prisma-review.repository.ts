@@ -5,7 +5,7 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { ReviewEntity } from '@/core/entities/review.entity';
 import {
   IReviewRepository,
@@ -14,7 +14,7 @@ import {
   ReviewFilters,
   ReviewStats,
 } from '@/core/repositories/review.repository.interface';
-import { ReviewId, StoreId, CampaignId } from '@/shared/types/branded.type';
+import { ReviewId, StoreId, CampaignId } from '@/lib/types/branded.type';
 import * as ReviewMapper from './mappers/review.mapper';
 
 export class PrismaReviewRepository implements IReviewRepository {

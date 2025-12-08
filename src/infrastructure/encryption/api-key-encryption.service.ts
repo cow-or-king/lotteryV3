@@ -13,7 +13,7 @@
  */
 
 import crypto from 'crypto';
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 
 export class ApiKeyEncryptionService {
   private readonly algorithm = 'aes-256-gcm';

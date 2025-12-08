@@ -4,7 +4,7 @@
  * IMPORTANT: Pure business logic, pas de dépendance au framework
  */
 
-import { Result } from '@/shared/types/result.type';
+import { Result } from '@/lib/types/result.type';
 import { TemplateCategory } from '@/core/entities/response-template.entity';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 

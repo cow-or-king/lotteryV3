@@ -5,8 +5,8 @@
  */
 
 import { PrismaClient } from '@/generated/prisma';
-import { Result } from '@/shared/types/result.type';
-import { UserId, Email as EmailBrand } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { UserId, Email as EmailBrand } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
 import { UserEntity } from '@/core/entities/user.entity';
 import { IUserRepository } from '@/core/repositories/user.repository.interface';

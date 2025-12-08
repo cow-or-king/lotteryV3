@@ -11,8 +11,8 @@ import {
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
-import { ReviewId, UserId, StoreId } from '@/shared/types/branded.type';
-import { Result } from '@/shared/types/result.type';
+import { ReviewId, UserId, StoreId } from '@/lib/types/branded.type';
+import { Result } from '@/lib/types/result.type';
 
 describe('RespondToReviewUseCase', () => {
   let useCase: RespondToReviewUseCase;

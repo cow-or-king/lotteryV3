@@ -6,8 +6,8 @@
  * - Un prize template a un nom, une description optionnelle, une valeur optionnelle, une couleur et une icône optionnelle
  */
 
-import { Result } from '@/shared/types/result.type';
-import { PrizeTemplateId, BrandId } from '@/shared/types/branded.type';
+import { Result } from '@/lib/types/result.type';
+import { PrizeTemplateId, BrandId } from '@/lib/types/branded.type';
 
 // Domain Errors
 export class InvalidPrizeTemplateDataError extends Error {
