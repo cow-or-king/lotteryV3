@@ -15,7 +15,7 @@ import {
   PrizeTemplateModal,
   PrizeSetCard,
   PrizeSetModal,
-} from '@/components/features/prizes';
+} from '@/components/prizes';
 
 export default function PrizesPage() {
   const [activeTab, setActiveTab] = useState<'templates' | 'sets'>('templates');

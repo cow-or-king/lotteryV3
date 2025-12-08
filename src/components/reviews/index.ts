@@ -1,8 +1,12 @@
 /**
- * Reviews Components Index
- * Export de tous les composants liés aux avis Google
+ * Export centralisé des composants reviews
  */
 
-export { ReviewCard, type ReviewCardData } from './ReviewCard';
-export { ResponseEditor } from './ResponseEditor';
-export { ReviewList } from './ReviewList';
+export { ReviewStatsCards } from './ReviewStatsCards';
+export { ReviewCard } from './ReviewCard';
+export { ReviewFilters } from './ReviewFilters';
+export { GoogleApiConfigModal } from './GoogleApiConfigModal';
+export { ResponseModal } from './ResponseModal';
+export { NoApiConfigMessage } from './NoApiConfigMessage';
+export { ReviewsList } from './ReviewsList';
+export { NoStoresMessage } from './NoStoresMessage';

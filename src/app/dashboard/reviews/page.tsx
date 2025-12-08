@@ -16,7 +16,7 @@ import {
   NoApiConfigMessage,
   ReviewsList,
   NoStoresMessage,
-} from '@/components/features/reviews';
+} from '@/components/reviews';
 import React, { useState } from 'react';
 
 export default function ReviewsPage() {

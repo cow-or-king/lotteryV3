@@ -17,7 +17,7 @@ import {
   PlaceIdHelpModal,
   StoreModal,
   UpgradeModal,
-} from '@/components/features/stores';
+} from '@/components/stores';
 import { useBrands, useStoreLimits, useStores } from '@/hooks/stores';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';

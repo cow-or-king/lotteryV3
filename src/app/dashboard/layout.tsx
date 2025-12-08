@@ -6,9 +6,9 @@
 
 'use client';
 
-import { AnimatedBackground } from '@/components/features/dashboard/AnimatedBackground';
-import { DashboardSidebar } from '@/components/features/dashboard/DashboardSidebar';
-import { DashboardTopBar } from '@/components/features/dashboard/DashboardTopBar';
+import { AnimatedBackground } from '@/components/dashboard/AnimatedBackground';
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTopBar } from '@/components/dashboard/DashboardTopBar';
 import { Toaster } from '@/components/ui/toaster';
 import { useDashboardUser } from '@/hooks/dashboard/useDashboardUser';
 import { useSidebar } from '@/hooks/dashboard/useSidebar';
