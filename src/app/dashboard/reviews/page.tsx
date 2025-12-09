@@ -6,18 +6,18 @@
 
 'use client';
 
-import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/trpc/client';
-import { useReviews, useGoogleApiConfig, useReviewResponse } from '@/hooks/reviews';
 import {
-  ReviewStatsCards,
-  ReviewFilters,
   GoogleApiConfigModal,
   NoApiConfigMessage,
-  ReviewList,
   NoStoresMessage,
   ResponseModal,
+  ReviewFilters,
+  ReviewList,
+  ReviewStatsCards,
 } from '@/components/reviews';
+import { useGoogleApiConfig, useReviewResponse, useReviews } from '@/hooks/reviews';
+import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/trpc/client';
 import React, { useState } from 'react';
 
 export default function ReviewsPage() {
@@ -143,12 +143,19 @@ export default function ReviewsPage() {
         />
       )}
 
-      {/* Statistiques */}
-      {selectedStoreId && hasApiKey && <ReviewStatsCards stats={stats} />}
+      {/* Statistiques - Sticky on scroll */}
+      {selectedStoreId && hasApiKey && (
+        <div className="sticky  z-10 bg-gradient-to-br from-purple-50/95 via-pink-50/95 to-blue-50/95 backdrop-blur-lg pt-4 pb-2 -mx-6 px-6">
+          <ReviewStatsCards stats={stats} />
+        </div>
+      )}
 
       {/* Liste des avis */}
       {selectedStoreId && hasApiKey && (
-        <div className="bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6">
+        <div
+          className="bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6 overflow-auto"
+          style={{ maxHeight: 'calc(100vh - 220px)' }}
+        >
           <h2 className="text-xl font-bold text-gray-800 mb-4">Liste des avis</h2>
           <ReviewList
             reviews={reviewsData?.reviews}

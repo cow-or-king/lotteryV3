@@ -5,7 +5,7 @@
 
 'use client';
 
-import { Star, MessageSquare, CheckCircle } from 'lucide-react';
+import { Star, MessageSquare, CheckCircle, ExternalLink } from 'lucide-react';
 import { ReviewDTO } from '@/lib/types/review.types';
 
 interface ReviewCardProps {
@@ -78,7 +78,15 @@ export function ReviewCard({ review, onRespond }: ReviewCardProps) {
         )}
 
         {review.hasResponse && (
-          <span className="text-xs text-gray-500 italic">Réponse déjà envoyée</span>
+          <a
+            href="https://business.google.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-white hover:bg-gray-50 border-2 border-gray-300 text-gray-700 text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 flex items-center gap-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Modifier sur Google
+          </a>
         )}
       </div>
     </div>

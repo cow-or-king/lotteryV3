@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '@/lib/trpc/client';
 import { useToast } from '@/hooks/use-toast';
 import type { ReviewDTO } from '@/lib/types/review.types';
@@ -30,6 +30,7 @@ export function useReviewResponse() {
   const [selectedTone, setSelectedTone] = useState<'professional' | 'friendly' | 'apologetic'>(
     'friendly',
   );
+  const scrollPositionRef = useRef<number>(0);
 
   const utils = api.useUtils();
 
@@ -83,18 +84,27 @@ export function useReviewResponse() {
 
   /**
    * Met à jour le nombre d'étoiles dans la réponse
+   * Affiche toujours 5 étoiles : jaunes (⭐) pour les sélectionnées, grises (☆) pour les autres
    */
   const setResponseStars = (stars: number) => {
     setResponseStarsState(stars);
 
-    // Supprimer les anciennes étoiles du début du contenu
-    const contentWithoutStars = responseContent.replace(/^⭐+\n+/, '');
+    // Supprimer les anciennes étoiles du début du contenu (support des deux formats)
+    const contentWithoutStars = responseContent.replace(/^[⭐☆]+\n+/, '');
 
-    // Ajouter les nouvelles étoiles si stars > 0
+    // Ajouter les nouvelles étoiles si stars > 0 ou stars === -1 (mode "5 grises")
     if (stars > 0) {
-      const starsText = '⭐'.repeat(stars) + '\n\n';
+      // stars étoiles jaunes + (5 - stars) étoiles grises
+      const yellowStars = '⭐'.repeat(stars);
+      const grayStars = '☆'.repeat(5 - stars);
+      const starsText = yellowStars + grayStars + '\n\n';
+      setResponseContent(starsText + contentWithoutStars);
+    } else if (stars === -1) {
+      // Mode "5 étoiles grises" (checkbox)
+      const starsText = '☆☆☆☆☆\n\n';
       setResponseContent(starsText + contentWithoutStars);
     } else {
+      // stars === 0 : rien
       setResponseContent(contentWithoutStars);
     }
   };
@@ -103,6 +113,9 @@ export function useReviewResponse() {
    * Ouvre le modal de réponse pour un avis
    */
   const openResponseModal = (review: ReviewDTO) => {
+    // Sauvegarder la position de scroll actuelle
+    scrollPositionRef.current = window.scrollY;
+
     setSelectedReview(review);
     setIsModalOpen(true);
     setResponseContent('');
@@ -128,6 +141,11 @@ export function useReviewResponse() {
     setResponseContent('');
     setResponseStarsState(0);
     setAiSuggestion(null);
+
+    // Restaurer la position de scroll
+    setTimeout(() => {
+      window.scrollTo({ top: scrollPositionRef.current, behavior: 'smooth' });
+    }, 100);
   };
 
   /**
