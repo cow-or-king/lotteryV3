@@ -28,9 +28,9 @@ model User {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
-  subscription   Subscription?
-  brands         Brand[]
-  prizeTemplates PrizeTemplate[]
+  subscription     Subscription?
+  brands           Brand[]
+  prizeTemplates   PrizeTemplate[]
   reviewsResponded Review[]
 
   @@index([email])
@@ -90,22 +90,22 @@ model Brand {
 // =====================
 
 model Store {
-  id                     String    @id @default(cuid())
-  slug                   String    @unique
-  brandId                String    @map("brand_id")
-  name                   String
-  description            String?
-  googlePlaceId          String?   @map("google_place_id")
-  googleBusinessUrl      String    @map("google_business_url")
-  googlePlacesApiKey     String?   @map("google_places_api_key") // CHIFFRÉ AES-256-GCM
-  googleApiKeyStatus     String?   @default("not_configured") @map("google_api_key_status")
-  lastReviewSync         DateTime? @map("last_review_sync")
-  autoSyncEnabled        Boolean   @default(false) @map("auto_sync_enabled")
-  syncFrequencyHours     Int       @default(24) @map("sync_frequency_hours")
-  isActive               Boolean   @default(true) @map("is_active")
-  isPaid                 Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
-  createdAt              DateTime  @default(now()) @map("created_at")
-  updatedAt              DateTime  @updatedAt @map("updated_at")
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  brandId            String    @map("brand_id")
+  name               String
+  description        String?
+  googlePlaceId      String?   @map("google_place_id")
+  googleBusinessUrl  String    @map("google_business_url")
+  googlePlacesApiKey String?   @map("google_places_api_key") // CHIFFRÉ AES-256-GCM
+  googleApiKeyStatus String?   @default("not_configured") @map("google_api_key_status")
+  lastReviewSync     DateTime? @map("last_review_sync")
+  autoSyncEnabled    Boolean   @default(false) @map("auto_sync_enabled")
+  syncFrequencyHours Int       @default(24) @map("sync_frequency_hours")
+  isActive           Boolean   @default(true) @map("is_active")
+  isPaid             Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   // Relations
   brand             Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
@@ -124,20 +124,20 @@ model Store {
 // =====================
 
 model Campaign {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  storeId         String   @map("store_id")
-  startDate       DateTime @map("start_date")
-  endDate         DateTime @map("end_date")
-  isActive        Boolean  @default(false) @map("is_active")
-  wheelStyle      String   @default("classic") @map("wheel_style")
-  wheelAnimation  String   @default("spin") @map("wheel_animation")
-  type            String   @default("generic") // "review" | "social" | "generic"
-  requireReview   Boolean  @default(false) @map("require_review")
-  requireInstagram Boolean @default(false) @map("require_instagram") // future
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  storeId          String   @map("store_id")
+  startDate        DateTime @map("start_date")
+  endDate          DateTime @map("end_date")
+  isActive         Boolean  @default(false) @map("is_active")
+  wheelStyle       String   @default("classic") @map("wheel_style")
+  wheelAnimation   String   @default("spin") @map("wheel_animation")
+  type             String   @default("generic") // "review" | "social" | "generic"
+  requireReview    Boolean  @default(false) @map("require_review")
+  requireInstagram Boolean  @default(false) @map("require_instagram") // future
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
   store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -247,7 +247,7 @@ model Review {
   comment         String?   @db.Text
   publishedAt     DateTime  @map("published_at")
   hasResponse     Boolean   @default(false) @map("has_response")
-  responseContent String?   @db.Text @map("response_content")
+  responseContent String?   @map("response_content") @db.Text
   respondedAt     DateTime? @map("responded_at")
   respondedBy     String?   @map("responded_by")
   isVerified      Boolean   @default(false) @map("is_verified")
@@ -282,14 +282,14 @@ model Review {
 // =====================
 
 model ResponseTemplate {
-  id          String   @id @default(cuid())
-  storeId     String   @map("store_id")
-  name        String
-  content     String   @db.Text
-  category    String // "positive" | "neutral" | "negative"
-  usageCount  Int      @default(0) @map("usage_count")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  storeId    String   @map("store_id")
+  name       String
+  content    String   @db.Text
+  category   String // "positive" | "neutral" | "negative"
+  usageCount Int      @default(0) @map("usage_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -392,10 +392,14 @@ model PlanLimits {
   maxParticipants Int @map("max_participants")
 
   // Features activées
-  customBranding    Boolean @default(false) @map("custom_branding")
-  advancedAnalytics Boolean @default(false) @map("advanced_analytics")
-  apiAccess         Boolean @default(false) @map("api_access")
-  prioritySupport   Boolean @default(false) @map("priority_support")
+  customBranding     Boolean @default(false) @map("custom_branding")
+  advancedAnalytics  Boolean @default(false) @map("advanced_analytics")
+  apiAccess          Boolean @default(false) @map("api_access")
+  prioritySupport    Boolean @default(false) @map("priority_support")
+  aiResponsesEnabled Boolean @default(false) @map("ai_responses_enabled")
+
+  // AI Limits
+  aiResponsesPerMonth Int? @map("ai_responses_per_month") // null = illimité
 
   // Pricing
   priceMonthly Float?  @map("price_monthly")
@@ -407,4 +411,72 @@ model PlanLimits {
 
   @@index([plan])
   @@map("plan_limits")
+}
+
+// =====================
+// AI SERVICE CONFIG (Super-Admin uniquement)
+// =====================
+
+model AiServiceConfig {
+  id       String @id @default(cuid())
+  provider String // "openai" | "anthropic"
+
+  // API Keys (CHIFFRÉES AES-256-GCM)
+  apiKey       String @map("api_key") @db.Text
+  apiKeyStatus String @default("active") @map("api_key_status") // "active" | "inactive" | "error"
+
+  // Configuration
+  model        String  @default("gpt-4") // "gpt-4" | "claude-3-opus" | "claude-3-sonnet"
+  maxTokens    Int     @default(500) @map("max_tokens")
+  temperature  Float   @default(0.7)
+  systemPrompt String? @map("system_prompt") @db.Text
+
+  // Monitoring
+  isActive           Boolean   @default(true) @map("is_active")
+  dailyQuotaLimit    Int?      @map("daily_quota_limit") // Limite quotidienne globale
+  lastUsedAt         DateTime? @map("last_used_at")
+  totalRequestsCount Int       @default(0) @map("total_requests_count")
+  totalTokensUsed    Int       @default(0) @map("total_tokens_used")
+  lastErrorAt        DateTime? @map("last_error_at")
+  lastErrorMessage   String?   @map("last_error_message") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([provider])
+  @@index([isActive])
+  @@map("ai_service_config")
+}
+
+// =====================
+// AI USAGE LOG (Facturation clients)
+// =====================
+
+model AiUsageLog {
+  id       String  @id @default(cuid())
+  userId   String  @map("user_id") // Admin qui a utilisé l'IA
+  storeId  String? @map("store_id") // Commerce concerné (optionnel)
+  reviewId String? @map("review_id") // Avis concerné (optionnel)
+
+  // Details de la requête
+  provider         String // "openai" | "anthropic"
+  model            String // "gpt-4" | "claude-3-opus"
+  promptTokens     Int    @map("prompt_tokens")
+  completionTokens Int    @map("completion_tokens")
+  totalTokens      Int    @map("total_tokens")
+
+  // Coût estimé (pour facturation)
+  estimatedCostUsd Float @map("estimated_cost_usd")
+
+  // Métadonnées
+  requestType String  @map("request_type") // "generate_response" | "sentiment_analysis"
+  wasUsed     Boolean @default(false) @map("was_used") // L'utilisateur a-t-il utilisé la suggestion ?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([storeId, createdAt])
+  @@index([reviewId])
+  @@index([createdAt])
+  @@map("ai_usage_logs")
 }

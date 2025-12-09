@@ -24,6 +24,7 @@
     "review:help": "echo '\n💡 Workflow Sonnet ↔ Opus:\n\n🟢 Sonnet: Code la feature\n🔵 Opus: opusplan review [feature]\n🟢 Sonnet: Fix les problèmes\n🔵 Opus: opusplan validation finale\n\n📖 Doc: .opusplan/config.md\n'"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -43,6 +44,7 @@
     "immer": "^11.0.1",
     "lucide-react": "^0.556.0",
     "next": "16.0.7",
+    "openai": "^6.10.0",
     "prisma": "^5.22.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",

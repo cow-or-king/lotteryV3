@@ -60,7 +60,7 @@
 
 ## 🌟 Features Spécifiques
 
-### Google Reviews
+### Google Reviews + IA
 
 - **[REVIEWS-TECHNICAL.md](./REVIEWS-TECHNICAL.md)**
   - Architecture technique
@@ -79,6 +79,18 @@
 - **[README-REVIEWS-TESTING.md](./README-REVIEWS-TESTING.md)**
   - Tests de la feature reviews
   - Scénarios de test
+
+### Super-Admin & Multi-Tenant
+
+- **[SUPER-ADMIN-ARCHITECTURE.md](./SUPER-ADMIN-ARCHITECTURE.md)** ⭐ **ROADMAP**
+  - Architecture SaaS multi-tenant
+  - Dashboard super-admin complet
+  - Gestion forfaits & pricing
+  - Configuration IA centralisée (OpenAI/Claude)
+  - Analytics & monitoring globaux
+  - Gestion promotions & clients
+  - Facturation Stripe
+  - Roadmap phases d'implémentation
 
 ---
 
@@ -125,6 +137,12 @@
 📖 RGPD-REVIEWS.md             → Conformité
 ```
 
+**4. Pour comprendre l'architecture SaaS multi-tenant :**
+
+```
+📖 SUPER-ADMIN-ARCHITECTURE.md → Vision globale, roadmap
+```
+
 ---
 
 ## 🔗 Ordre de Lecture Recommandé
@@ -137,12 +155,18 @@
 4. TESTING-GUIDE.md (écrire des tests)
 5. CODE-REVIEW.md (état actuel du code)
 
-### Pour Feature Google Reviews
+### Pour Feature Google Reviews + IA
 
 1. REVIEWS-TECHNICAL.md
 2. GOOGLE-API-PRODUCTION.md
 3. RGPD-REVIEWS.md
 4. README-REVIEWS-TESTING.md
+
+### Pour Architecture SaaS & Super-Admin
+
+1. SUPER-ADMIN-ARCHITECTURE.md (vision globale)
+2. PRD_ReviewLottery_v3.md (business model)
+3. ARCHITECTURE-MODULAIRE.md (patterns techniques)
 
 ---
 
