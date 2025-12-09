@@ -1,42 +1,85 @@
 /**
- * Modal de réponse à une review
+ * Modal de réponse à une review avec IA
+ * IMPORTANT: ZERO any types, Composant de présentation pur
  */
 
 'use client';
 
-import { X } from 'lucide-react';
+import { X, Sparkles, Loader2 } from 'lucide-react';
+import type { ReviewDTO } from '@/lib/types/review.types';
+import { AiResponseSuggestion } from './AiResponseSuggestion';
 
-interface Review {
-  reviewId: string;
-  authorName: string;
-  rating: number;
-  comment: string | null;
-  publishedAt: Date;
-  hasResponse: boolean;
+interface AiSuggestion {
+  suggestedResponse: string;
+  confidence: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  tokensUsed: number;
+  provider: string;
+  model: string;
 }
 
 interface ResponseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  review: Review | null;
-  onSubmit: (response: string) => void;
+  review: ReviewDTO | null;
+  responseContent: string;
+  onResponseContentChange: (value: string) => void;
+  selectedTone: 'professional' | 'friendly' | 'apologetic';
+  onToneChange: (tone: 'professional' | 'friendly' | 'apologetic') => void;
+  aiSuggestion: AiSuggestion | null;
+  onGenerateAi: () => void;
+  onUseAiSuggestion: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+  isGeneratingAi: boolean;
 }
 
-export function ResponseModal({ isOpen, onClose, review }: ResponseModalProps) {
+const toneOptions = [
+  { value: 'professional' as const, label: 'Professionnel', emoji: '💼' },
+  { value: 'friendly' as const, label: 'Amical', emoji: '😊' },
+  { value: 'apologetic' as const, label: 'Conciliant', emoji: '🙏' },
+];
+
+export function ResponseModal({
+  isOpen,
+  onClose,
+  review,
+  responseContent,
+  onResponseContentChange,
+  selectedTone,
+  onToneChange,
+  aiSuggestion,
+  onGenerateAi,
+  onUseAiSuggestion,
+  onSubmit,
+  isSubmitting,
+  isGeneratingAi,
+}: ResponseModalProps) {
   if (!isOpen || !review) return null;
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < rating ? 'text-yellow-400' : 'text-gray-300'}>
+        ⭐
+      </span>
+    ));
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-3xl"></div>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
       <div
-        className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 overflow-y-auto flex-1">
+          {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-2xl font-bold text-gray-900">Répondre à l&apos;avis</h3>
-              <p className="text-sm text-gray-600 mt-1">Auteur : {review.authorName}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {review.authorName} · {renderStars(review.rating)}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -46,37 +89,117 @@ export function ResponseModal({ isOpen, onClose, review }: ResponseModalProps) {
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600 mb-2">Avis original :</p>
-              <p className="text-gray-800">{review.comment || 'Aucun commentaire'}</p>
+          <div className="space-y-5">
+            {/* Original Review */}
+            <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Avis original
+              </p>
+              <p className="text-gray-800 leading-relaxed">
+                {review.comment || '(Aucun commentaire écrit)'}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                Publié le {new Date(review.publishedAt).toLocaleDateString('fr-FR')}
+              </p>
             </div>
 
+            {/* Tone Selector */}
             <div>
-              <label htmlFor="response" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Ton de la réponse
+              </label>
+              <div className="flex gap-2">
+                {toneOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => onToneChange(option.value)}
+                    className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                      selectedTone === option.value
+                        ? 'bg-purple-600 text-white shadow-lg scale-105'
+                        : 'bg-white border-2 border-purple-200 text-gray-700 hover:border-purple-400'
+                    }`}
+                  >
+                    <span className="mr-2">{option.emoji}</span>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Suggestion Button */}
+            <div>
+              <button
+                type="button"
+                onClick={onGenerateAi}
+                disabled={isGeneratingAi}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 shadow-lg"
+              >
+                {isGeneratingAi ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Génération en cours...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Générer une suggestion IA
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* AI Suggestion Display */}
+            {aiSuggestion && (
+              <AiResponseSuggestion
+                suggestion={aiSuggestion}
+                onUse={onUseAiSuggestion}
+                isUsing={responseContent === aiSuggestion.suggestedResponse}
+              />
+            )}
+
+            {/* Response Textarea */}
+            <div>
+              <label htmlFor="response" className="block text-sm font-semibold text-gray-700 mb-2">
                 Votre réponse
               </label>
               <textarea
                 id="response"
-                rows={6}
-                className="w-full px-4 py-3 bg-white border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all resize-none"
-                placeholder="Écrivez votre réponse..."
+                rows={8}
+                value={responseContent}
+                onChange={(e) => onResponseContentChange(e.target.value)}
+                className="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all resize-none"
+                placeholder="Écrivez votre réponse ici, ou générez une suggestion IA..."
               />
+              <p className="text-xs text-gray-500 mt-2">
+                {responseContent.length} caractères · Minimum 10 caractères
+              </p>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-white/50 hover:bg-white/70 border border-purple-600/20 text-gray-700 rounded-xl font-semibold transition-all"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-white hover:bg-gray-50 disabled:bg-gray-100 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all disabled:cursor-not-allowed"
               >
                 Annuler
               </button>
               <button
                 type="button"
-                className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                onClick={onSubmit}
+                disabled={isSubmitting || responseContent.trim().length < 10}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:scale-100 shadow-lg flex items-center justify-center gap-2"
               >
-                Envoyer la réponse
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  'Envoyer la réponse'
+                )}
               </button>
             </div>
           </div>

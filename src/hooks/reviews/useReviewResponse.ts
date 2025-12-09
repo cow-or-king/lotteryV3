@@ -112,7 +112,7 @@ export function useReviewResponse() {
     if (!selectedReview) return;
 
     generateAiMutation.mutate({
-      reviewId: selectedReview.id,
+      reviewId: selectedReview.reviewId,
       tone: selectedTone,
       language: 'fr',
       includeEmojis: true,
@@ -148,7 +148,7 @@ export function useReviewResponse() {
     }
 
     respondMutation.mutate({
-      reviewId: selectedReview.id,
+      reviewId: selectedReview.reviewId,
       responseContent: responseContent.trim(),
     });
   };

@@ -8,7 +8,7 @@
 
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
-import { useReviews, useGoogleApiConfig } from '@/hooks/reviews';
+import { useReviews, useGoogleApiConfig, useReviewResponse } from '@/hooks/reviews';
 import {
   ReviewStatsCards,
   ReviewFilters,
@@ -16,6 +16,7 @@ import {
   NoApiConfigMessage,
   ReviewList,
   NoStoresMessage,
+  ResponseModal,
 } from '@/components/reviews';
 import React, { useState } from 'react';
 
@@ -29,6 +30,7 @@ export default function ReviewsPage() {
   // Hooks personnalisés
   const { stats, reviewsData, syncMutation } = useReviews({ storeId: selectedStoreId });
   const googleApiConfig = useGoogleApiConfig();
+  const reviewResponseHook = useReviewResponse();
 
   // Gestion de la synchronisation
   const handleSync = () => {
@@ -148,7 +150,10 @@ export default function ReviewsPage() {
       {selectedStoreId && hasApiKey && (
         <div className="bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Liste des avis</h2>
-          <ReviewList reviews={reviewsData?.reviews} />
+          <ReviewList
+            reviews={reviewsData?.reviews}
+            onRespond={reviewResponseHook.openResponseModal}
+          />
         </div>
       )}
 
@@ -173,6 +178,23 @@ export default function ReviewsPage() {
         onFormDataChange={googleApiConfig.setFormData}
         onSubmit={handleApiConfigSubmit}
         isSubmitting={googleApiConfig.isSubmitting}
+      />
+
+      {/* Modal: Réponse aux avis avec IA */}
+      <ResponseModal
+        isOpen={reviewResponseHook.isModalOpen}
+        onClose={reviewResponseHook.closeResponseModal}
+        review={reviewResponseHook.selectedReview}
+        responseContent={reviewResponseHook.responseContent}
+        onResponseContentChange={reviewResponseHook.setResponseContent}
+        selectedTone={reviewResponseHook.selectedTone}
+        onToneChange={reviewResponseHook.setSelectedTone}
+        aiSuggestion={reviewResponseHook.aiSuggestion}
+        onGenerateAi={reviewResponseHook.generateAiSuggestion}
+        onUseAiSuggestion={reviewResponseHook.useAiSuggestion}
+        onSubmit={reviewResponseHook.submitResponse}
+        isSubmitting={reviewResponseHook.isSubmitting}
+        isGeneratingAi={reviewResponseHook.isGeneratingAi}
       />
     </div>
   );
