@@ -14,7 +14,7 @@ interface PlanLimitsWarningProps {
 
 export function PlanLimitsWarning({ maxBrands, maxStoresPerBrand }: PlanLimitsWarningProps) {
   return (
-    <div className="mb-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
+    <div className="mb-6 p-6 bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
       <div className="flex flex-col items-center text-center">
         <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
           <HelpCircle className="w-6 h-6 text-yellow-600" />

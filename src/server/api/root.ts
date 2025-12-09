@@ -13,6 +13,7 @@ import { prizeTemplateRouter } from './routers/prize-template.router';
 import { prizeSetRouter } from './routers/prize-set.router';
 import { reviewRouter } from './routers/review.router';
 import { responseTemplateRouter } from './routers/response-template.router';
+import { adminRouter } from './routers/admin.router';
 
 /**
  * Router principal de l'API
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   prizeSet: prizeSetRouter,
   review: reviewRouter,
   responseTemplate: responseTemplateRouter,
+  admin: adminRouter,
   // TODO: Ajouter les autres routers
   // campaign: campaignRouter,
   // lottery: lotteryRouter,

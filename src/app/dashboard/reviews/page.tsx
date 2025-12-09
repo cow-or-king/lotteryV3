@@ -145,7 +145,7 @@ export default function ReviewsPage() {
 
       {/* Statistiques - Sticky on scroll */}
       {selectedStoreId && hasApiKey && (
-        <div className="sticky z-10 bg-gradient-to-br from-purple-50/95 via-pink-50/95 to-blue-50/95 backdrop-blur-lg pt-4 pb-2 -mx-6 px-6">
+        <div className="sticky z-10 bg-linear-to-br from-purple-50/95 via-pink-50/95 to-blue-50/95 backdrop-blur-lg pt-4 pb-2 -mx-6 px-6">
           <ReviewStatsCards stats={stats} />
         </div>
       )}

@@ -5,13 +5,13 @@
 
 'use client';
 
+import { useConfirmation } from '@/hooks/reviews';
 import type { ReviewDTO } from '@/lib/types/review.types';
 import { Loader2, Sparkles, Star, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { AiResponseSuggestion } from './AiResponseSuggestion';
 import { StarRatingSelector } from './StarRatingSelector';
-import { ToneSelector, AiServiceBanner, ConfirmationAlert } from './modal';
-import { useConfirmation } from '@/hooks/reviews';
+import { AiServiceBanner, ConfirmationAlert, ToneSelector } from './modal';
 
 interface AiSuggestion {
   suggestedResponse: string;
@@ -28,10 +28,10 @@ interface ResponseModalProps {
   review: ReviewDTO | null;
   responseContent: string;
   responseStars: number;
-  onResponseContentChange: (value: string) => void;
-  onResponseStarsChange: (stars: number) => void;
+  onResponseContentChange: (_value: string) => void;
+  onResponseStarsChange: (_stars: number) => void;
   selectedTone: 'professional' | 'friendly' | 'apologetic';
-  onToneChange: (tone: 'professional' | 'friendly' | 'apologetic') => void;
+  onToneChange: (_tone: 'professional' | 'friendly' | 'apologetic') => void;
   aiSuggestion: AiSuggestion | null;
   aiServiceAvailable: boolean;
   onGenerateAi: () => void;
@@ -73,7 +73,9 @@ export function ResponseModal({
     }
   }, [isOpen]);
 
-  if (!isOpen || !review) return null;
+  if (!isOpen || !review) {
+    return null;
+  }
 
   const handleSubmitClick = () => {
     if (confirmation.skipConfirmation) {
@@ -143,7 +145,7 @@ export function ResponseModal({
 
             <div className="space-y-4 sm:space-y-5">
               {/* Original Review */}
-              <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+              <div className="p-4 bg-linear-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                   Avis original
                 </p>
@@ -175,7 +177,7 @@ export function ResponseModal({
                     type="button"
                     onClick={onGenerateAi}
                     disabled={isGeneratingAi}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 shadow-lg"
+                    className="w-full px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 shadow-lg"
                   >
                     {isGeneratingAi ? (
                       <>
@@ -248,7 +250,7 @@ export function ResponseModal({
                     type="button"
                     onClick={handleSubmitClick}
                     disabled={isSubmitting || responseContent.trim().length < 10}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:scale-100 shadow-lg flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:scale-100 shadow-lg flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>

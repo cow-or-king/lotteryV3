@@ -39,7 +39,7 @@ export function AiResponseSuggestion({
   const confidencePercent = Math.round(suggestion.confidence * 100);
 
   return (
-    <div className="border-2 border-purple-200 rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 space-y-3 sm:space-y-4">
+    <div className="border-2 border-purple-200 rounded-2xl p-3 sm:p-4 bg-linear-to-br from-purple-50/50 to-pink-50/50 space-y-3 sm:space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 flex-1">

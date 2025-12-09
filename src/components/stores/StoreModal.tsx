@@ -8,13 +8,13 @@
 
 import { X } from 'lucide-react';
 import {
-  PlanLimitsWarning,
-  PlanInfoCard,
-  BrandSelector,
-  NewBrandWarning,
   BrandFormFields,
-  GoogleBusinessUrlField,
+  BrandSelector,
   GoogleApiAccordion,
+  GoogleBusinessUrlField,
+  NewBrandWarning,
+  PlanInfoCard,
+  PlanLimitsWarning,
 } from './modal';
 
 interface StoreModalProps {
@@ -186,7 +186,7 @@ export function StoreModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isSubmitting ? 'Création...' : 'Créer'}
               </button>

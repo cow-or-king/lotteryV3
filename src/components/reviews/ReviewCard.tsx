@@ -18,7 +18,7 @@ export function ReviewCard({ review, onRespond }: ReviewCardProps) {
     <div className="p-4 sm:p-5 bg-white rounded-xl border border-purple-600/10 hover:border-purple-600/30 transition-all hover:shadow-lg">
       <div className="flex items-start justify-between mb-3 gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md shrink-0">
             {review.authorName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export function ReviewCard({ review, onRespond }: ReviewCardProps) {
         {!review.hasResponse && onRespond && (
           <button
             onClick={() => onRespond(review)}
-            className="w-full sm:w-auto px-3 py-2 sm:px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-md flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-3 py-2 sm:px-4 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-md flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4 h-4" />
             Répondre

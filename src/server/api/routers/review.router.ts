@@ -368,4 +368,18 @@ export const reviewRouter = createTRPCRouter({
 
       return result.data;
     }),
+
+  /**
+   * Vérifie si le service IA est disponible (endpoint public)
+   * Permet au frontend d'afficher ou masquer les fonctionnalités IA
+   */
+  getAiServiceStatus: protectedProcedure.query(async () => {
+    const isAvailable = await aiService.isAvailable();
+    const activeProvider = await aiService.getActiveProvider();
+
+    return {
+      isAvailable,
+      provider: activeProvider,
+    };
+  }),
 });

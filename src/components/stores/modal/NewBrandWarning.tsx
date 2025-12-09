@@ -13,7 +13,7 @@ interface NewBrandWarningProps {
 
 export function NewBrandWarning({ onUseExisting }: NewBrandWarningProps) {
   return (
-    <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
+    <div className="p-4 bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl">
       <div className="flex flex-col items-center text-center">
         <Crown className="w-8 h-8 text-yellow-600 mb-2" />
         <h3 className="text-sm font-bold text-gray-800 mb-1">Nouvelle enseigne (payant)</h3>

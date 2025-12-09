@@ -34,9 +34,14 @@ export function useReviewResponse() {
 
   const utils = api.useUtils();
 
-  // TODO: Vérifier si le service IA est disponible (endpoint à créer dans Phase 3)
-  // Pour l'instant, retourner false par défaut
-  const aiServiceAvailable = false;
+  // Vérifier si le service IA est disponible
+  const { data: aiServiceStatus } = api.review.getAiServiceStatus.useQuery(undefined, {
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const aiServiceAvailable = aiServiceStatus?.isAvailable ?? false;
 
   // Mutation: Répondre à un avis
   const respondMutation = api.review.respond.useMutation({

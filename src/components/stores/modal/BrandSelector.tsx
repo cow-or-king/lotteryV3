@@ -15,7 +15,7 @@ interface BrandSelectorProps {
 
 export function BrandSelector({ brandName, logoUrl, onCreateNew }: BrandSelectorProps) {
   return (
-    <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
+    <div className="p-4 bg-linear-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
@@ -31,7 +31,7 @@ export function BrandSelector({ brandName, logoUrl, onCreateNew }: BrandSelector
         <button
           type="button"
           onClick={onCreateNew}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-xs hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-sm"
         >
           <Plus className="w-3.5 h-3.5" />
           Nouvelle enseigne

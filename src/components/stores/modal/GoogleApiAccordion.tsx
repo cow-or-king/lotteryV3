@@ -36,7 +36,7 @@ export function GoogleApiAccordion({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all flex items-center justify-between gap-3"
+        className="w-full p-4 bg-linear-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all flex items-center justify-between gap-3"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
@@ -71,7 +71,7 @@ export function GoogleApiAccordion({
       {isOpen && (
         <div className="p-4 bg-white/50 space-y-4">
           {/* Info box with benefits */}
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+          <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
             <h5 className="text-sm font-bold text-gray-800 mb-2">Avantages de l'API :</h5>
             <ul className="text-xs text-gray-700 space-y-1 pl-4">
               <li className="list-disc">

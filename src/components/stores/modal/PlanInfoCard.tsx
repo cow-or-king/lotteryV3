@@ -23,7 +23,7 @@ export function PlanInfoCard({
   canCreateBrand,
 }: PlanInfoCardProps) {
   return (
-    <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
+    <div className="mb-6 p-5 bg-linear-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl">
       <div className="flex flex-col items-center text-center">
         <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mb-3">
           <HelpCircle className="w-5 h-5 text-purple-600" />

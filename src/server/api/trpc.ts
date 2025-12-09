@@ -159,6 +159,42 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 /**
+ * Middleware super-admin
+ * Vérifie que l'utilisateur est un super-administrateur
+ */
+const enforceSuperAdmin = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  // Récupérer l'utilisateur avec son role
+  const user = await ctx.prisma.user.findUnique({
+    where: { id: ctx.userId },
+    select: { id: true, email: true, role: true },
+  });
+
+  if (!user || user.role !== 'SUPER_ADMIN') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Super admin access required',
+    });
+  }
+
+  return next({
+    ctx: {
+      userId: ctx.userId,
+      user,
+    },
+  });
+});
+
+/**
+ * Procédure super-admin (authentifiée + role SUPER_ADMIN)
+ * Nécessite les droits de super-administrateur
+ */
+export const superAdminProcedure = t.procedure.use(enforceSuperAdmin);
+
+/**
  * Type du contexte pour réutilisation
  */
 export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
