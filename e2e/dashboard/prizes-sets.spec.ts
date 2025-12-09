@@ -57,13 +57,13 @@ test.describe('Dashboard - Prize Sets', () => {
 
   test('devrait ajouter des gains à un lot', async ({ page }) => {
     // Cliquer sur "Gérer les gains" pour un lot
-    await page.click('[data-testid="manage-prizes-button"]').first();
+    await page.locator('[data-testid="manage-prizes-button"]').first().click();
 
     // Vérifier l'affichage du modal de gestion des gains
     await expect(page.locator('[data-testid="prizes-modal"]')).toBeVisible();
 
     // Cocher un gain
-    await page.check('[data-testid="prize-checkbox"]').first();
+    await page.locator('[data-testid="prize-checkbox"]').first().check();
 
     // Définir la quantité et la probabilité
     await page.fill('input[name="quantity"]', '10');
@@ -78,7 +78,7 @@ test.describe('Dashboard - Prize Sets', () => {
 
   test('devrait modifier un lot existant', async ({ page }) => {
     // Cliquer sur le bouton d'édition
-    await page.click('[data-testid="edit-set-button"]').first();
+    await page.locator('[data-testid="edit-set-button"]').first().click();
 
     // Modifier le nom
     const nameInput = page.locator('input[name="name"]');
@@ -97,7 +97,7 @@ test.describe('Dashboard - Prize Sets', () => {
 
   test('devrait supprimer un lot', async ({ page }) => {
     // Cliquer sur le bouton de suppression
-    await page.click('[data-testid="delete-set-button"]').first();
+    await page.locator('[data-testid="delete-set-button"]').first().click();
 
     // Confirmer la suppression
     await page.click('button:has-text("Confirmer")');
@@ -108,7 +108,7 @@ test.describe('Dashboard - Prize Sets', () => {
 
   test("devrait afficher les statistiques d'un lot", async ({ page }) => {
     // Cliquer sur un lot pour voir les détails
-    await page.click('[data-testid="view-set-details"]').first();
+    await page.locator('[data-testid="view-set-details"]').first().click();
 
     // Vérifier l'affichage des statistiques
     await expect(page.locator('[data-testid="set-stats"]')).toBeVisible();
@@ -118,7 +118,7 @@ test.describe('Dashboard - Prize Sets', () => {
   });
 
   test('devrait valider que la somme des probabilités est <= 1', async ({ page }) => {
-    await page.click('[data-testid="manage-prizes-button"]').first();
+    await page.locator('[data-testid="manage-prizes-button"]').first().click();
 
     // Essayer d'ajouter un gain avec une probabilité > 1
     await page.check('[data-testid="prize-checkbox"]').first();
@@ -151,7 +151,7 @@ test.describe('Dashboard - Prize Sets', () => {
 
   test("devrait gérer le statut actif/inactif d'un lot", async ({ page }) => {
     // Toggle le statut
-    await page.click('[data-testid="toggle-active-status"]').first();
+    await page.locator('[data-testid="toggle-active-status"]').first().click();
 
     // Vérifier le toast de succès
     await expect(page.locator('[role="status"]')).toContainText(/statut/i);

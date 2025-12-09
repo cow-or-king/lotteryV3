@@ -139,7 +139,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 hidden sm:grid">
+              <div className="grid-cols-3 gap-2 sm:gap-3 hidden sm:grid">
                 <GlassButton type="button" variant="secondary" size="sm">
                   <span className="text-base sm:text-lg">🔵</span>
                 </GlassButton>

@@ -5,6 +5,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    environmentMatchGlobs: [
+      // Tests React/UI utilisent jsdom
+      ['**/*.test.tsx', 'jsdom'],
+      ['**/components/**/*.test.ts', 'jsdom'],
+      ['**/app/**/*.test.ts', 'jsdom'],
+      ['**/hooks/**/*.test.ts', 'jsdom'],
+    ],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

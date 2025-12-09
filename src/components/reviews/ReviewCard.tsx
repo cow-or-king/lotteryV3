@@ -5,19 +5,11 @@
 'use client';
 
 import { Star } from 'lucide-react';
-
-interface Review {
-  reviewId: string;
-  authorName: string;
-  rating: number;
-  comment: string | null;
-  publishedAt: Date;
-  hasResponse: boolean;
-}
+import { ReviewDTO } from '@/lib/types/review.types';
 
 interface ReviewCardProps {
-  review: Review;
-  onRespond?: (review: Review) => void;
+  review: ReviewDTO;
+  onRespond?: (review: ReviewDTO) => void;
 }
 
 export function ReviewCard({ review }: ReviewCardProps) {

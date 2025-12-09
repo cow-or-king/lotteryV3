@@ -148,7 +148,7 @@ export default function ReviewsPage() {
       {selectedStoreId && hasApiKey && (
         <div className="bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Liste des avis</h2>
-          <ReviewList reviews={reviewsData?.reviews as unknown as any} />
+          <ReviewList reviews={reviewsData?.reviews} />
         </div>
       )}
 

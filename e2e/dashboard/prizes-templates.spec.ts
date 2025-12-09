@@ -66,7 +66,7 @@ test.describe('Dashboard - Prize Templates', () => {
 
   test('devrait éditer un modèle existant', async ({ page }) => {
     // Cliquer sur le bouton d'édition du premier gain
-    await page.click('[data-testid="edit-template-button"]').first();
+    await page.locator('[data-testid="edit-template-button"]').first().click();
 
     // Modifier le nom
     const nameInput = page.locator('input[name="name"]');
@@ -85,7 +85,7 @@ test.describe('Dashboard - Prize Templates', () => {
 
   test('devrait supprimer un modèle', async ({ page }) => {
     // Cliquer sur le bouton de suppression
-    await page.click('[data-testid="delete-template-button"]').first();
+    await page.locator('[data-testid="delete-template-button"]').first().click();
 
     // Confirmer la suppression dans le dialog
     await page.click('button:has-text("Confirmer")');
@@ -130,7 +130,7 @@ test.describe('Dashboard - Prize Templates', () => {
 
   test("devrait afficher les détails d'un modèle", async ({ page }) => {
     // Cliquer sur un gain pour voir les détails
-    await page.click('[data-testid="view-template-details"]').first();
+    await page.locator('[data-testid="view-template-details"]').first().click();
 
     // Vérifier l'affichage des détails
     await expect(page.locator('[data-testid="template-details"]')).toBeVisible();

@@ -6,20 +6,12 @@
 
 import { Star } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
-
-interface Review {
-  reviewId: string;
-  authorName: string;
-  rating: number;
-  comment: string | null;
-  publishedAt: Date;
-  hasResponse: boolean;
-}
+import { ReviewDTO } from '@/lib/types/review.types';
 
 interface ReviewListProps {
-  reviews: Review[] | undefined;
+  reviews: readonly ReviewDTO[] | undefined;
   loading?: boolean;
-  onRespond?: (review: Review) => void;
+  onRespond?: (review: ReviewDTO) => void;
 }
 
 export function ReviewList({ reviews, loading, onRespond }: ReviewListProps) {

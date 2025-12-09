@@ -99,6 +99,6 @@ export class ApiKeyEncryptionService {
    */
   isEncrypted(text: string): boolean {
     const parts = text.split(':');
-    return parts.length === 3 && parts[0].length === 32 && parts[1].length === 32;
+    return parts.length === 3 && parts[0]!.length === 32 && parts[1]!.length === 32;
   }
 }

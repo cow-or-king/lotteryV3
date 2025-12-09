@@ -85,7 +85,7 @@ export function usePrizes() {
   // Handlers
   const handleOpenCreateForm = (brands: Array<{ id: string }>) => {
     if (brands.length === 1) {
-      setFormData({ ...formData, brandId: brands[0].id });
+      setFormData({ ...formData, brandId: brands[0]!.id });
     }
     setShowCreateForm(true);
   };
