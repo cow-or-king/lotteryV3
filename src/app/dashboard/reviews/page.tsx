@@ -186,10 +186,13 @@ export default function ReviewsPage() {
         onClose={reviewResponseHook.closeResponseModal}
         review={reviewResponseHook.selectedReview}
         responseContent={reviewResponseHook.responseContent}
+        responseStars={reviewResponseHook.responseStars}
         onResponseContentChange={reviewResponseHook.setResponseContent}
+        onResponseStarsChange={reviewResponseHook.setResponseStars}
         selectedTone={reviewResponseHook.selectedTone}
         onToneChange={reviewResponseHook.setSelectedTone}
         aiSuggestion={reviewResponseHook.aiSuggestion}
+        aiServiceAvailable={reviewResponseHook.aiServiceAvailable}
         onGenerateAi={reviewResponseHook.generateAiSuggestion}
         onUseAiSuggestion={reviewResponseHook.useAiSuggestion}
         onSubmit={reviewResponseHook.submitResponse}

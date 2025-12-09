@@ -25,12 +25,17 @@ export function useReviewResponse() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState<ReviewDTO | null>(null);
   const [responseContent, setResponseContent] = useState('');
+  const [responseStars, setResponseStarsState] = useState(0);
   const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null);
   const [selectedTone, setSelectedTone] = useState<'professional' | 'friendly' | 'apologetic'>(
     'friendly',
   );
 
   const utils = api.useUtils();
+
+  // TODO: Vérifier si le service IA est disponible (endpoint à créer dans Phase 3)
+  // Pour l'instant, retourner false par défaut
+  const aiServiceAvailable = false;
 
   // Mutation: Répondre à un avis
   const respondMutation = api.review.respond.useMutation({
@@ -77,12 +82,31 @@ export function useReviewResponse() {
   });
 
   /**
+   * Met à jour le nombre d'étoiles dans la réponse
+   */
+  const setResponseStars = (stars: number) => {
+    setResponseStarsState(stars);
+
+    // Supprimer les anciennes étoiles du début du contenu
+    const contentWithoutStars = responseContent.replace(/^⭐+\n+/, '');
+
+    // Ajouter les nouvelles étoiles si stars > 0
+    if (stars > 0) {
+      const starsText = '⭐'.repeat(stars) + '\n\n';
+      setResponseContent(starsText + contentWithoutStars);
+    } else {
+      setResponseContent(contentWithoutStars);
+    }
+  };
+
+  /**
    * Ouvre le modal de réponse pour un avis
    */
   const openResponseModal = (review: ReviewDTO) => {
     setSelectedReview(review);
     setIsModalOpen(true);
     setResponseContent('');
+    setResponseStarsState(0);
     setAiSuggestion(null);
 
     // Déterminer le ton automatiquement selon le rating
@@ -102,6 +126,7 @@ export function useReviewResponse() {
     setIsModalOpen(false);
     setSelectedReview(null);
     setResponseContent('');
+    setResponseStarsState(0);
     setAiSuggestion(null);
   };
 
@@ -124,7 +149,13 @@ export function useReviewResponse() {
    */
   const useAiSuggestion = () => {
     if (aiSuggestion) {
-      setResponseContent(aiSuggestion.suggestedResponse);
+      // Conserver les étoiles si déjà sélectionnées
+      if (responseStars > 0) {
+        const starsText = '⭐'.repeat(responseStars) + '\n\n';
+        setResponseContent(starsText + aiSuggestion.suggestedResponse);
+      } else {
+        setResponseContent(aiSuggestion.suggestedResponse);
+      }
       toast({
         title: 'Suggestion appliquée',
         description: "Vous pouvez modifier la réponse avant de l'envoyer.",
@@ -158,11 +189,14 @@ export function useReviewResponse() {
     isModalOpen,
     selectedReview,
     responseContent,
+    responseStars,
     aiSuggestion,
     selectedTone,
+    aiServiceAvailable,
 
     // Setters
     setResponseContent,
+    setResponseStars,
     setSelectedTone,
 
     // Actions
