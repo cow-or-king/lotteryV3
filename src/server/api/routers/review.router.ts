@@ -13,6 +13,7 @@ import { prisma } from '@/infrastructure/database/prisma-client';
 // Use Cases
 import { VerifyReviewParticipantUseCase } from '@/core/use-cases/review/verify-review-participant.use-case';
 import { RespondToReviewUseCase } from '@/core/use-cases/review/respond-to-review.use-case';
+import { GenerateAiResponseUseCase } from '@/core/use-cases/review/generate-ai-response.use-case';
 import { SyncReviewsFromGoogleUseCase } from '@/core/use-cases/review/sync-reviews-from-google.use-case';
 import { GetReviewByIdUseCase } from '@/core/use-cases/review/get-review-by-id.use-case';
 import { ListReviewsByStoreUseCase } from '@/core/use-cases/review/list-reviews-by-store.use-case';
@@ -27,6 +28,7 @@ import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-stor
 import { GoogleMyBusinessService } from '@/infrastructure/services/google-my-business.service';
 import { GoogleMyBusinessMockService } from '@/infrastructure/services/google-my-business-mock.service';
 import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
+import { AiResponseGeneratorService } from '@/infrastructure/services/ai-response-generator.service';
 
 // Instancier les repositories
 const reviewRepository = new PrismaReviewRepository(prisma);
@@ -45,6 +47,7 @@ if (useMockService) {
 }
 
 const encryptionService = new ApiKeyEncryptionService();
+const aiService = new AiResponseGeneratorService(prisma, encryptionService);
 
 // Instancier les use cases
 const verifyParticipantUseCase = new VerifyReviewParticipantUseCase(reviewRepository);
@@ -55,6 +58,7 @@ const respondToReviewUseCase = new RespondToReviewUseCase(
   encryptionService,
   storeRepository,
 );
+const generateAiResponseUseCase = new GenerateAiResponseUseCase(reviewRepository, aiService);
 const syncReviewsUseCase = new SyncReviewsFromGoogleUseCase(
   reviewRepository,
   googleService,
@@ -291,6 +295,76 @@ export const reviewRouter = createTRPCRouter({
           message: result.error.message,
         });
       }
+
+      return result.data;
+    }),
+
+  /**
+   * Génère une suggestion de réponse IA pour un avis
+   */
+  generateAiResponse: protectedProcedure
+    .input(
+      z.object({
+        reviewId: z.string(),
+        tone: z.enum(['professional', 'friendly', 'apologetic']).optional(),
+        language: z.enum(['fr', 'en']).optional(),
+        includeEmojis: z.boolean().optional().default(true),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await generateAiResponseUseCase.execute({
+        reviewId: input.reviewId as string & { readonly __brand: unique symbol },
+        userId: ctx.user.id as string & { readonly __brand: unique symbol },
+        tone: input.tone,
+        language: input.language,
+        includeEmojis: input.includeEmojis,
+      });
+
+      if (!result.success) {
+        const errorMessage = result.error.message;
+
+        if (errorMessage.includes('not found')) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: errorMessage,
+          });
+        }
+
+        if (errorMessage.includes('not available') || errorMessage.includes('not configured')) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: "Le service IA n'est pas configuré. Contactez l'administrateur.",
+          });
+        }
+
+        if (errorMessage.includes('quota')) {
+          throw new TRPCError({
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Quota IA dépassé pour ce mois.',
+          });
+        }
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: errorMessage,
+        });
+      }
+
+      // Logger l'usage IA pour facturation
+      await prisma.aiUsageLog.create({
+        data: {
+          userId: ctx.user.id,
+          reviewId: input.reviewId,
+          provider: result.data.provider,
+          model: result.data.model,
+          promptTokens: Math.floor(result.data.tokensUsed * 0.4), // Estimation
+          completionTokens: Math.floor(result.data.tokensUsed * 0.6),
+          totalTokens: result.data.tokensUsed,
+          estimatedCostUsd: result.data.tokensUsed * 0.00003, // ~$0.03 per 1K tokens
+          requestType: 'generate_response',
+          wasUsed: false, // Sera mis à true si l'utilisateur utilise la suggestion
+        },
+      });
 
       return result.data;
     }),
