@@ -25,8 +25,6 @@ import { PrismaResponseTemplateRepository } from '@/infrastructure/repositories/
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 
 // Services
-import { GoogleMyBusinessService } from '@/infrastructure/services/google-my-business.service';
-import { GoogleMyBusinessMockService } from '@/infrastructure/services/google-my-business-mock.service';
 import { GoogleMyBusinessProductionService } from '@/infrastructure/services/google-my-business-production.service';
 import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
 import { AiResponseGeneratorService } from '@/infrastructure/services/ai-response-generator.service';
@@ -39,24 +37,9 @@ const storeRepository = new PrismaStoreRepository();
 // Instancier encryption service (utilisé par le service production)
 const encryptionService = new ApiKeyEncryptionService();
 
-// Choisir le service Google selon la config
-// - "mock" : Fake reviews pour développement (USE_MOCK_GOOGLE_SERVICE=true)
-// - "mybusiness" : Google My Business API avec OAuth2 (GOOGLE_CLIENT_ID configuré) - READ + WRITE
-// - "stub" (default) : Service stub qui ne fait rien
-const useMockService = process.env.USE_MOCK_GOOGLE_SERVICE === 'true';
-const useMyBusinessApi = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-
-let googleService;
-if (useMockService) {
-  console.log('[INFO] 🎭 Using MOCK Google service with fake reviews');
-  googleService = new GoogleMyBusinessMockService();
-} else if (useMyBusinessApi) {
-  console.log('[INFO] 🏢 Using MY BUSINESS API service (OAuth2, read + write)');
-  googleService = new GoogleMyBusinessProductionService(encryptionService);
-} else {
-  console.log('[INFO] 📝 Using STUB Google service (no API calls)');
-  googleService = new GoogleMyBusinessService();
-}
+// Utiliser Google My Business API avec OAuth2
+console.log('[INFO] 🏢 Using MY BUSINESS API service (OAuth2, read + write)');
+const googleService = new GoogleMyBusinessProductionService(encryptionService);
 
 const aiService = new AiResponseGeneratorService(prisma, encryptionService);
 
