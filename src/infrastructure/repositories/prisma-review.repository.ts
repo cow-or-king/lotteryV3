@@ -106,6 +106,7 @@ export class PrismaReviewRepository implements IReviewRepository {
         where: { id },
         data: {
           ...data,
+          aiSuggestion: data.aiSuggestion ? JSON.stringify(data.aiSuggestion) : undefined,
           updatedAt: new Date(),
         },
       });

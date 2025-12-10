@@ -24,6 +24,7 @@ model User {
   hashedPassword String?  @map("hashed_password")
   name           String?
   avatarUrl      String?  @map("avatar_url")
+  role           String   @default("ADMIN") // "USER" | "ADMIN" | "SUPER_ADMIN"
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

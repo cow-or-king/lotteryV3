@@ -70,6 +70,7 @@ export class UserRepositoryPrisma implements IUserRepository {
           hashedPassword: data.hashedPassword,
           name: data.name,
           avatarUrl: data.avatarUrl,
+          role: data.role,
           updatedAt: new Date(),
         },
       });
@@ -140,6 +141,9 @@ export class UserRepositoryPrisma implements IUserRepository {
       hashedPassword: data.hashedPassword,
       name: data.name,
       avatarUrl: data.avatarUrl,
+      role: data.role || 'ADMIN',
+      subscription: null, // TODO: Load subscription from DB
+      stores: [], // TODO: Load stores from DB
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     });
@@ -154,6 +158,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       hashedPassword: data.hashedPassword,
       name: data.name,
       avatarUrl: data.avatarUrl,
+      role: data.role,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

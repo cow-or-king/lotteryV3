@@ -43,6 +43,7 @@ export default function AiConfigPage() {
   const [showForm, setShowForm] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingConfig, setEditingConfig] = useState<{ apiKey: string } | null>(null);
   const [formData, setFormData] = useState<ConfigFormData>({
     provider: 'openai',
     apiKey: '',
@@ -138,6 +139,7 @@ export default function AiConfigPage() {
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
+    setEditingConfig(null);
     setFormData({
       provider: 'openai',
       apiKey: '',
@@ -185,6 +187,23 @@ export default function AiConfigPage() {
 
   const handleDeactivate = (id: string) => {
     deactivateMutation.mutate({ id });
+  };
+
+  const handleEdit = (config: typeof configs extends (infer T)[] ? T : never) => {
+    // Pré-remplir le formulaire avec les données existantes
+    setFormData({
+      provider: config.provider as Provider,
+      apiKey: '', // On ne montre pas l'API key existante (sécurité)
+      model: config.model,
+      maxTokens: config.maxTokens,
+      temperature: config.temperature,
+      systemPrompt: config.systemPrompt || '',
+    });
+    setEditingId(config.id);
+    setEditingConfig(config); // Garder la config pour afficher l'API key masquée
+    setShowForm(true);
+    // Scroll vers le formulaire
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = (id: string) => {
@@ -323,16 +342,32 @@ export default function AiConfigPage() {
 
               {/* API Key */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  API Key {editingId && "(laisser vide pour garder l'actuelle)"}
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">API Key</label>
+                {editingConfig && (
+                  <div className="mb-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-green-800">
+                          API Key actuelle:{' '}
+                          <span className="font-mono">{editingConfig.apiKey}</span>
+                        </p>
+                        <p className="text-xs text-green-700 mt-0.5">
+                          Laisser le champ ci-dessous vide pour conserver cette clé
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="relative">
                   <input
                     type={showApiKey ? 'text' : 'password'}
                     value={formData.apiKey}
                     onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    placeholder={editingId ? '(optionnel)' : 'sk-...'}
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900 placeholder:text-gray-500"
+                    placeholder={
+                      editingId ? 'Nouvelle API Key (optionnel)' : 'sk-proj-... ou sk-ant-...'
+                    }
                     required={!editingId}
                   />
                   <button
@@ -351,7 +386,7 @@ export default function AiConfigPage() {
                 <select
                   value={formData.model}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900"
                   required
                 >
                   {getModelOptions(formData.provider).map((model) => (
@@ -376,7 +411,7 @@ export default function AiConfigPage() {
                     }
                     min="100"
                     max="4000"
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900"
                   />
                 </div>
                 <div>
@@ -392,7 +427,7 @@ export default function AiConfigPage() {
                     min="0"
                     max="2"
                     step="0.1"
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-900"
                   />
                 </div>
               </div>
@@ -406,7 +441,7 @@ export default function AiConfigPage() {
                   value={formData.systemPrompt}
                   onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent resize-none text-gray-900 placeholder:text-gray-500"
                   placeholder="Prompt personnalisé (optionnel, par défaut le système utilise un prompt optimisé)"
                 />
               </div>
@@ -483,6 +518,13 @@ export default function AiConfigPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 shrink-0">
+                  <button
+                    onClick={() => handleEdit(config)}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all text-sm flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Modifier
+                  </button>
                   {config.isActive ? (
                     <button
                       onClick={() => handleDeactivate(config.id)}

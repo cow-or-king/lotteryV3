@@ -36,6 +36,8 @@ export interface UserSubscription {
   readonly currentPeriodEnd: Date;
 }
 
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+
 export interface CreateUserProps {
   readonly id?: UserId | undefined; // Optional: use Supabase ID if provided
   readonly email: string;
@@ -44,6 +46,7 @@ export interface CreateUserProps {
   readonly name?: string | undefined;
   readonly avatarUrl?: string | undefined;
   readonly acceptedTerms?: boolean | undefined;
+  readonly role?: UserRole | undefined;
 }
 
 export interface UserProps {
@@ -53,6 +56,7 @@ export interface UserProps {
   readonly name: string | null;
   readonly avatarUrl: string | null;
   readonly hashedPassword: string | null;
+  readonly role: UserRole;
   readonly subscription: UserSubscription | null;
   readonly stores: ReadonlyArray<StoreId>;
   readonly createdAt: Date;
@@ -92,6 +96,7 @@ export class UserEntity {
       name: props.name ?? null,
       avatarUrl: props.avatarUrl ?? null,
       hashedPassword: props.hashedPassword ?? null, // Managed by Supabase
+      role: props.role ?? 'ADMIN', // Default role
       subscription: null,
       stores: [],
       createdAt: now,
@@ -144,6 +149,10 @@ export class UserEntity {
 
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  get role(): UserRole {
+    return this.props.role;
   }
 
   // Business Logic

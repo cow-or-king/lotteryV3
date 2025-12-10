@@ -1,181 +1,77 @@
 # 📚 Documentation ReviewLottery V3
 
-**Dernière mise à jour:** 9 Décembre 2025
+Documentation complète du projet ReviewLottery V3.
+
+## 📂 Structure
+
+### 🏗️ Architecture
+
+- [ARCHITECTURE.md](./architecture/ARCHITECTURE.md) - Architecture hexagonale, DDD, patterns utilisés
+- [ARCHITECTURE-MODULAIRE.md](./architecture/ARCHITECTURE-MODULAIRE.md) - Architecture modulaire du projet
+- [SUPER-ADMIN-ARCHITECTURE.md](./architecture/SUPER-ADMIN-ARCHITECTURE.md) - Architecture du système d'administration
+
+### 📅 Planning
+
+- [ROADMAP.md](./planning/ROADMAP.md) - Feuille de route du projet, phases de développement
+- [PRD_ReviewLottery_v3.md](./planning/PRD_ReviewLottery_v3.md) - Product Requirements Document
+- [PROGRESS.md](./planning/PROGRESS.md) - Suivi de la progression
+- [plan.md](./planning/plan.md) - Plan détaillé du développement
+
+### 🔐 Authentication
+
+- [MAGIC-LINK-SETUP.md](./authentication/MAGIC-LINK-SETUP.md) - Guide de configuration Magic Link (postponé)
+
+### 💻 Development
+
+- [DEVELOPMENT.md](./development/DEVELOPMENT.md) - Guide de développement
+- [CODE-REVIEW.md](./development/CODE-REVIEW.md) - Processus de code review
+- [TESTING-GUIDE.md](./development/TESTING-GUIDE.md) - Guide des tests
+- [CRITICAL_FIXES_SUMMARY.md](./development/CRITICAL_FIXES_SUMMARY.md) - Résumé des correctifs critiques
+
+### ⭐ Reviews
+
+- [REVIEWS-TECHNICAL.md](./reviews/REVIEWS-TECHNICAL.md) - Documentation technique du système de reviews
+- [REVIEW_TEMPLATE.md](./reviews/REVIEW_TEMPLATE.md) - Templates de réponses
+- [README-REVIEWS-TESTING.md](./reviews/README-REVIEWS-TESTING.md) - Guide de test des reviews
+- [RGPD-REVIEWS.md](./reviews/RGPD-REVIEWS.md) - Conformité RGPD pour les reviews
+
+### 🔄 Workflows
+
+- [WORKFLOW_GUIDE.md](./workflows/WORKFLOW_GUIDE.md) - Guide des workflows
+- [AUTOMATED_WORKFLOW.md](./workflows/AUTOMATED_WORKFLOW.md) - Workflows automatisés
+
+### 🔌 API
+
+- [GOOGLE-API-PRODUCTION.md](./api/GOOGLE-API-PRODUCTION.md) - Configuration Google API en production
+
+## 🎯 Informations clés
+
+### Comptes administrateurs
+
+- **Super Admin**: dev@coworkingcafe.fr
+- **Admin**: milone.thierry@gmail.com
+
+### Rôles système
+
+- `SUPER_ADMIN` - Accès complet, gestion des admins
+- `ADMIN` - Gestion des utilisateurs, accès dashboard
+- `USER` - Accès restreint (créés par les admins)
+
+### Stack technique
+
+- **Frontend**: Next.js 16.0.7, React, TypeScript
+- **Backend**: tRPC, Prisma ORM
+- **Database**: PostgreSQL (Supabase)
+- **Auth**: Supabase Auth avec cookies HTTP-only
+- **State**: Zustand
+- **Tests**: Vitest
+- **Style**: Glassmorphism design system
+
+## 🚀 Progression actuelle
+
+**Phase actuelle**: Reviews & IA (80%)
+**Prochaine phase**: User management par ADMIN
 
 ---
 
-## 📖 Guide de Navigation
-
-### 🎯 Pour Démarrer
-
-1. **[PRD_ReviewLottery_v3.md](./PRD_ReviewLottery_v3.md)** - Product Requirements Document
-   - Vision du produit
-   - Fonctionnalités principales
-   - Architecture globale
-
-2. **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Guide de développement
-   - Setup du projet
-   - Configuration environnement
-   - Commandes principales
-
----
-
-## 🏗️ Architecture & Patterns
-
-### Code Architecture
-
-- **[ARCHITECTURE-MODULAIRE.md](./ARCHITECTURE-MODULAIRE.md)** ⭐ **À SUIVRE**
-  - Patterns de développement
-  - Structure modulaire
-  - Guidelines de refactoring
-  - Comment décomposer les composants
-
-- **[CODE-REVIEW.md](./CODE-REVIEW.md)** ⭐ **RAPPORT ACTUEL**
-  - État du code après refactoring
-  - Points forts et améliorations
-  - Métriques de qualité
-  - Recommandations
-
-### Testing
-
-- **[TESTING-GUIDE.md](./TESTING-GUIDE.md)** ⭐ **GUIDE TESTS**
-  - Patterns de tests
-  - Configuration Vitest
-  - Tests composants/hooks/use-cases
-  - Corrections erreurs TypeScript
-
----
-
-## 🔄 Workflows
-
-- **[WORKFLOW_GUIDE.md](./WORKFLOW_GUIDE.md)**
-  - Workflow Sonnet ↔ Opus
-  - Process de développement
-
-- **[AUTOMATED_WORKFLOW.md](./AUTOMATED_WORKFLOW.md)**
-  - Automatisation des reviews
-  - Scripts et outils
-
----
-
-## 🌟 Features Spécifiques
-
-### Google Reviews + IA
-
-- **[REVIEWS-TECHNICAL.md](./REVIEWS-TECHNICAL.md)**
-  - Architecture technique
-  - Intégration Google API
-
-- **[GOOGLE-API-PRODUCTION.md](./GOOGLE-API-PRODUCTION.md)**
-  - Configuration production
-  - Encryption des clés
-  - Sécurité
-
-- **[RGPD-REVIEWS.md](./RGPD-REVIEWS.md)**
-  - Conformité RGPD
-  - Rétention des données
-  - Politique de confidentialité
-
-- **[README-REVIEWS-TESTING.md](./README-REVIEWS-TESTING.md)**
-  - Tests de la feature reviews
-  - Scénarios de test
-
-### Super-Admin & Multi-Tenant
-
-- **[SUPER-ADMIN-ARCHITECTURE.md](./SUPER-ADMIN-ARCHITECTURE.md)** ⭐ **ROADMAP**
-  - Architecture SaaS multi-tenant
-  - Dashboard super-admin complet
-  - Gestion forfaits & pricing
-  - Configuration IA centralisée (OpenAI/Claude)
-  - Analytics & monitoring globaux
-  - Gestion promotions & clients
-  - Facturation Stripe
-  - Roadmap phases d'implémentation
-
----
-
-## 📊 Suivi & Historique
-
-- **[PROGRESS.md](./PROGRESS.md)**
-  - Avancement du projet
-  - Features complétées
-
-- **[CRITICAL_FIXES_SUMMARY.md](./CRITICAL_FIXES_SUMMARY.md)**
-  - Corrections critiques
-  - Bugs résolus
-
-- **[plan.md](./plan.md)**
-  - Plan de développement
-  - Roadmap
-
----
-
-## 🎯 Quel Fichier Suivre ?
-
-### En tant que Développeur
-
-**1. Lors du développement :**
-
-```
-📖 ARCHITECTURE-MODULAIRE.md  → Patterns à suivre
-📖 TESTING-GUIDE.md            → Comment tester
-📖 DEVELOPMENT.md              → Setup & commands
-```
-
-**2. Avant un commit :**
-
-```
-📖 CODE-REVIEW.md              → Checklist qualité
-📖 WORKFLOW_GUIDE.md           → Process de review
-```
-
-**3. Pour une feature spécifique (ex: Google Reviews) :**
-
-```
-📖 REVIEWS-TECHNICAL.md        → Architecture
-📖 GOOGLE-API-PRODUCTION.md    → Configuration
-📖 RGPD-REVIEWS.md             → Conformité
-```
-
-**4. Pour comprendre l'architecture SaaS multi-tenant :**
-
-```
-📖 SUPER-ADMIN-ARCHITECTURE.md → Vision globale, roadmap
-```
-
----
-
-## 🔗 Ordre de Lecture Recommandé
-
-### Pour Nouveau Développeur
-
-1. PRD_ReviewLottery_v3.md (comprendre le projet)
-2. DEVELOPMENT.md (setup environnement)
-3. ARCHITECTURE-MODULAIRE.md (apprendre les patterns)
-4. TESTING-GUIDE.md (écrire des tests)
-5. CODE-REVIEW.md (état actuel du code)
-
-### Pour Feature Google Reviews + IA
-
-1. REVIEWS-TECHNICAL.md
-2. GOOGLE-API-PRODUCTION.md
-3. RGPD-REVIEWS.md
-4. README-REVIEWS-TESTING.md
-
-### Pour Architecture SaaS & Super-Admin
-
-1. SUPER-ADMIN-ARCHITECTURE.md (vision globale)
-2. PRD_ReviewLottery_v3.md (business model)
-3. ARCHITECTURE-MODULAIRE.md (patterns techniques)
-
----
-
-## 📝 Templates
-
-- **[REVIEW_TEMPLATE.md](./REVIEW_TEMPLATE.md)**
-  - Template pour code reviews
-  - Checklist de validation
-
----
-
-**📌 Fichier principal à suivre : [ARCHITECTURE-MODULAIRE.md](./ARCHITECTURE-MODULAIRE.md)**
+Pour plus d'informations, consultez les fichiers de documentation dans chaque dossier.

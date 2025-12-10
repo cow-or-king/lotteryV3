@@ -54,6 +54,27 @@ export const authRouter = createTRPCRouter({
 
     const supabaseUserId = authResult.data.id;
 
+    // Auto-confirmer l'email en mode développement
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseAdmin = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { autoRefreshToken: false, persistSession: false } },
+        );
+
+        await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
+          email_confirm: true,
+        });
+
+        console.log(`[DEV] Email auto-confirmé pour: ${input.email}`);
+      } catch (err) {
+        console.error('[DEV] Erreur lors de la confirmation automatique:', err);
+        // On continue quand même, l'utilisateur pourra confirmer manuellement
+      }
+    }
+
     // 2. Créer l'utilisateur dans notre base de données
     const userRepository = new UserRepositoryPrisma(ctx.prisma);
     const subscriptionRepository = new SubscriptionRepositoryPrisma(ctx.prisma);
@@ -83,6 +104,14 @@ export const authRouter = createTRPCRouter({
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to create user profile',
+      });
+    }
+
+    // Mettre à jour emailVerified dans notre DB si auto-confirmé en DEV
+    if (process.env.NODE_ENV === 'development') {
+      await ctx.prisma.user.update({
+        where: { id: supabaseUserId },
+        data: { emailVerified: true },
       });
     }
 
@@ -229,6 +258,7 @@ export const authRouter = createTRPCRouter({
       name: user.name,
       avatarUrl: user.avatarUrl,
       emailVerified: user.emailVerified,
+      role: user.role,
       subscription: subscription
         ? {
             plan: subscription.plan,

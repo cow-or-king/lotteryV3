@@ -57,6 +57,9 @@ export class GenerateAiResponseUseCase {
   constructor(
     private readonly reviewRepository: IReviewRepository,
     private readonly aiService: IAiResponseGeneratorService,
+    private readonly storeRepository: {
+      findById: (id: StoreId) => Promise<{ id: string; name: string } | null>;
+    },
   ) {}
 
   async execute(input: GenerateAiResponseInput): Promise<Result<GenerateAiResponseOutput>> {
@@ -78,8 +81,8 @@ export class GenerateAiResponseUseCase {
     }
 
     // 4. Récupérer le store name
-    const storeResult = await this.reviewRepository.findStoreById(review.storeId as StoreId);
-    if (!storeResult.success) {
+    const store = await this.storeRepository.findById(review.storeId as StoreId);
+    if (!store) {
       return Result.fail(new Error('Store not found'));
     }
 
@@ -91,7 +94,7 @@ export class GenerateAiResponseUseCase {
       reviewContent: review.comment,
       reviewRating: review.rating,
       authorName: review.authorName,
-      storeName: storeResult.data.name,
+      storeName: store.name,
       tone,
       language: input.language || 'fr',
       includeEmojis: input.includeEmojis ?? true,
@@ -103,22 +106,17 @@ export class GenerateAiResponseUseCase {
 
     const aiResponse = generateResult.data;
 
-    // 7. Sauvegarder la suggestion dans l'avis (champ aiSuggestion)
-    const updatedReview = {
-      ...review,
+    // 7. Mettre à jour l'avis avec la suggestion IA
+    const updateResult = await this.reviewRepository.update(input.reviewId, {
       aiSuggestion: {
-        content: aiResponse.suggestedResponse,
+        suggestedResponse: aiResponse.suggestedResponse,
         confidence: aiResponse.confidence,
-        sentiment: aiResponse.sentiment,
-        generatedAt: new Date().toISOString(),
         tone,
       },
       aiSentiment: aiResponse.sentiment,
-    };
-
-    const saveResult = await this.reviewRepository.save(updatedReview);
-    if (!saveResult.success) {
-      return Result.fail(saveResult.error);
+    });
+    if (!updateResult.success) {
+      return Result.fail(updateResult.error);
     }
 
     // 8. Retourner la réponse avec metadata

@@ -4,6 +4,10 @@
  * IMPORTANT: ZERO any types
  */
 
+'use client';
+
+import { RoleBadge } from '@/components/admin/RoleBadge';
+
 interface User {
   name?: string | null;
   email?: string | null;
@@ -62,79 +66,12 @@ export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: Sid
         >
           👤
         </div>
-        {/* Colonne gauche: Nom et Email */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2px',
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f2937',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {userLoading ? '...' : user?.name || user?.email?.split('@')[0] || 'Utilisateur'}
-          </p>
-          <p
-            style={{
-              margin: 0,
-              fontSize: '11px',
-              color: '#6b7280',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {userLoading ? '...' : user?.email || ''}
-          </p>
-        </div>
-        {/* Colonne droite: Plan et Limites */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-            alignItems: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              padding: '2px 8px',
-              background: 'rgba(147, 51, 234, 0.15)',
-              border: '1px solid rgba(147, 51, 234, 0.3)',
-              borderRadius: '6px',
-              fontSize: '10px',
-              color: '#7c3aed',
-              fontWeight: '600',
-              textAlign: 'center',
-            }}
-          >
-            {userLoading ? '...' : user?.subscription?.plan || 'FREE'}
+        {/* Role Badge */}
+        {!userLoading && (
+          <div style={{ flexShrink: 0 }}>
+            <RoleBadge />
           </div>
-          <div
-            style={{
-              fontSize: '9px',
-              color: '#6b7280',
-              whiteSpace: 'nowrap',
-              textAlign: 'center',
-            }}
-          >
-            {userLoading
-              ? '...'
-              : `${user?.subscription?.storesLimit || 1} store${(user?.subscription?.storesLimit || 1) > 1 ? 's' : ''}`}
-          </div>
-        </div>
+        )}
         {/* Icône chevron */}
         <div
           style={{

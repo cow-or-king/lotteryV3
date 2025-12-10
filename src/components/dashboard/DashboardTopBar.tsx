@@ -9,6 +9,7 @@
 interface User {
   name?: string | null;
   email?: string | null;
+  role?: string | null;
   subscription?: {
     plan?: string | null;
     storesLimit?: number | null;
@@ -140,16 +141,17 @@ export function DashboardTopBar({
           </p>
         </div>
 
-        {/* Colonne droite: Plan et Limites (centrés) */}
+        {/* Colonne droite: Plan et Limites */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px',
-            alignItems: 'center',
+            gap: '6px',
+            alignItems: 'flex-end',
             flexShrink: 0,
           }}
         >
+          {/* Plan Badge */}
           <div
             style={{
               padding: '4px 12px',
@@ -164,6 +166,8 @@ export function DashboardTopBar({
           >
             {userLoading ? '...' : user?.subscription?.plan || 'FREE'}
           </div>
+
+          {/* Store Limit */}
           <div
             style={{
               fontSize: 'clamp(9px, 1.8vw, 10px)',

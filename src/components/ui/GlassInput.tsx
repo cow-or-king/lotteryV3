@@ -45,7 +45,7 @@ export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
             className={cn(
               'w-full py-3 bg-white/70 backdrop-blur border border-white/60 rounded-2xl',
               'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-              'text-gray-900 font-medium placeholder-gray-500 transition-all duration-200',
+              'text-gray-900 font-medium placeholder:text-gray-600 transition-all duration-200',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               icon ? 'pl-10 pr-3' : 'px-4',
               error && 'border-red-400/50 focus:ring-red-400',

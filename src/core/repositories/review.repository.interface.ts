@@ -32,6 +32,8 @@ export interface UpdateReviewData {
   readonly isVerified?: boolean;
   readonly participantId?: ParticipantId;
   readonly status?: string;
+  readonly aiSuggestion?: unknown; // JSON type from Prisma
+  readonly aiSentiment?: string | null;
 }
 
 export interface ReviewFilters {
