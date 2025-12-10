@@ -1,5 +1,17 @@
 # 🔐 Magic Link Setup Guide
 
+> ⚠️ **STATUT : POSTPONED**
+>
+> Cette fonctionnalité a été développée mais **n'est pas actuellement activée** en production.
+>
+> **Raison** : Retour à connexion classique email/password demandé par l'utilisateur.
+>
+> **Décision à prendre** : Garder le code inactif avec flag `ENABLE_MAGIC_LINK=false` OU supprimer définitivement.
+>
+> **Voir** : `/docs/TODO.md` pour la liste des fichiers concernés si suppression.
+
+---
+
 Guide complet pour activer et configurer Magic Link dans ReviewLottery.
 
 ## ✅ Ce qui est déjà fait
