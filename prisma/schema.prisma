@@ -481,3 +481,27 @@ model AiUsageLog {
   @@index([createdAt])
   @@map("ai_usage_logs")
 }
+
+// =====================
+// MENU PERMISSIONS (Gestion des menus visibles par rôle)
+// =====================
+
+model MenuPermission {
+  id        String   @id @default(cuid())
+  menuId    String   @unique @map("menu_id") // "dashboard" | "stores" | "reviews" | etc.
+  label     String // "Dashboard" | "Mes Commerces" | etc.
+
+  // Permissions par rôle
+  superAdminVisible Boolean @default(true) @map("super_admin_visible")
+  adminVisible      Boolean @default(true) @map("admin_visible")
+  userVisible       Boolean @default(false) @map("user_visible")
+
+  // Ordre d'affichage
+  displayOrder Int @default(0) @map("display_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([menuId])
+  @@map("menu_permissions")
+}

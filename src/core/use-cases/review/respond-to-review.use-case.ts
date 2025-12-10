@@ -7,6 +7,9 @@
 import { Result } from '@/lib/types/result.type';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
+import { IStoreRepository } from '@/core/repositories/store.repository.interface';
+import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
+import { ApiKeyEncryptionService } from '@/infrastructure/security/api-key-encryption.service';
 import { ReviewId, UserId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
@@ -44,11 +47,15 @@ export class ReviewResponseError extends Error {
 /**
  * Use Case: Respond To Review
  * Permet à un utilisateur (store owner) de répondre à un avis Google
+ * ET publie la réponse sur Google My Business
  */
 export class RespondToReviewUseCase {
   constructor(
     private readonly reviewRepository: IReviewRepository,
     private readonly templateRepository: IResponseTemplateRepository,
+    private readonly googleService: IGoogleMyBusinessService,
+    private readonly encryptionService: ApiKeyEncryptionService,
+    private readonly storeRepository: IStoreRepository,
   ) {}
 
   async execute(input: RespondToReviewInput): Promise<Result<RespondToReviewOutput>> {
@@ -89,12 +96,45 @@ export class RespondToReviewUseCase {
 
     const updatedReview = saveResult.data;
 
-    // 6. Si un template a été utilisé, incrémenter son compteur d'usage
+    // 6. Publier la réponse sur Google My Business
+    const store = await this.storeRepository.findById(updatedReview.storeId);
+    if (!store) {
+      console.error('[RespondToReview] Store not found:', updatedReview.storeId);
+      return Result.fail(new Error('Store not found'));
+    }
+
+    // Vérifier que le store a une API key configurée
+    if (!store.googleApiKey || store.googleApiKeyStatus !== 'configured') {
+      console.warn('[RespondToReview] No Google API key configured for store:', store.id);
+      return Result.fail(
+        new Error(
+          'Google API key not configured for this store. Please configure it in store settings.',
+        ),
+      );
+    }
+
+    // Publier sur Google (nécessite le nom complet de la review)
+    const publishResult = await this.googleService.publishResponse(
+      updatedReview.googleReviewId,
+      input.responseContent,
+      store.googleApiKey,
+    );
+
+    if (!publishResult.success) {
+      console.error('[RespondToReview] Failed to publish to Google:', publishResult.error.message);
+      // IMPORTANT: La réponse a été sauvegardée en DB mais pas publiée sur Google
+      // On pourrait retourner un succès partiel ici, ou fail complètement
+      return Result.fail(
+        new Error(`Failed to publish response to Google: ${publishResult.error.message}`),
+      );
+    }
+
+    // 7. Si un template a été utilisé, incrémenter son compteur d'usage
     if (input.templateId) {
       await this.templateRepository.incrementUsage(input.templateId);
     }
 
-    // 7. Retourner les informations de la réponse
+    // 8. Retourner les informations de la réponse
     return Result.ok({
       reviewId: updatedReview.id,
       hasResponse: updatedReview.hasResponse,

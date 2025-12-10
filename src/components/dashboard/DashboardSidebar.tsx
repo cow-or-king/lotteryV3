@@ -8,6 +8,7 @@
 
 import { MenuId } from '@/hooks/dashboard/useSidebar';
 import {
+  Crown,
   Dices,
   Gift,
   LayoutDashboard,
@@ -18,7 +19,9 @@ import {
   Users,
   Settings,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { usePermissions } from '@/lib/rbac/usePermissions';
+import { getVisibleMenusForRole } from '@/lib/rbac/menuConfig';
 import {
   SidebarLogo,
   SidebarNavItem,
@@ -48,62 +51,19 @@ interface DashboardSidebarProps {
   handleLogout: () => Promise<void>;
 }
 
-const menuItems = [
-  {
-    id: 'dashboard' as MenuId,
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    label: 'Dashboard',
-    path: '/dashboard',
-  },
-  {
-    id: 'stores' as MenuId,
-    icon: <Store className="w-5 h-5" />,
-    label: 'Mes Commerces',
-    path: '/dashboard/stores',
-  },
-  {
-    id: 'reviews' as MenuId,
-    icon: <Star className="w-5 h-5" />,
-    label: 'Avis Google',
-    path: '/dashboard/reviews',
-  },
-  {
-    id: 'prizes' as MenuId,
-    icon: <Gift className="w-5 h-5" />,
-    label: 'Gains & Lots',
-    path: '/dashboard/prizes',
-  },
-  {
-    id: 'campaigns' as MenuId,
-    icon: <Target className="w-5 h-5" />,
-    label: 'Campagnes',
-    path: '/campaigns',
-  },
-  {
-    id: 'lottery' as MenuId,
-    icon: <Dices className="w-5 h-5" />,
-    label: 'Lottery',
-    path: '/lottery',
-  },
-  {
-    id: 'participants' as MenuId,
-    icon: <Users className="w-5 h-5" />,
-    label: 'Participants',
-    path: '/participants',
-  },
-  {
-    id: 'analytics' as MenuId,
-    icon: <TrendingUp className="w-5 h-5" />,
-    label: 'Analytics',
-    path: '/analytics',
-  },
-  {
-    id: 'settings' as MenuId,
-    icon: <Settings className="w-5 h-5" />,
-    label: 'Paramètres',
-    path: '/settings',
-  },
-];
+// Mapping des icônes
+const ICON_MAP = {
+  Crown: Crown,
+  LayoutDashboard: LayoutDashboard,
+  Store: Store,
+  Star: Star,
+  Gift: Gift,
+  Target: Target,
+  Dices: Dices,
+  Users: Users,
+  TrendingUp: TrendingUp,
+  Settings: Settings,
+};
 
 export function DashboardSidebar({
   isSidebarOpen,
@@ -117,6 +77,21 @@ export function DashboardSidebar({
   handleLogout,
 }: DashboardSidebarProps) {
   const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
+  const { role } = usePermissions();
+
+  // Filtrer les menus visibles selon le rôle
+  const visibleMenus = useMemo(() => {
+    const menus = getVisibleMenusForRole(role);
+    return menus.map((menu) => {
+      const IconComponent = ICON_MAP[menu.icon as keyof typeof ICON_MAP];
+      return {
+        id: menu.id as MenuId,
+        icon: IconComponent ? <IconComponent className="w-5 h-5" /> : null,
+        label: menu.label,
+        path: menu.path,
+      };
+    });
+  }, [role]);
 
   return (
     <div
@@ -145,7 +120,7 @@ export function DashboardSidebar({
       <nav
         style={{ flex: 1, padding: isCompactMode ? '20px 8px' : '20px 12px', overflowY: 'auto' }}
       >
-        {menuItems.map((item) => (
+        {visibleMenus.map((item) => (
           <SidebarNavItem
             key={item.id}
             id={item.id}

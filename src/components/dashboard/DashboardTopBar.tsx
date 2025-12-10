@@ -9,7 +9,6 @@
 interface User {
   name?: string | null;
   email?: string | null;
-  role?: string | null;
   subscription?: {
     plan?: string | null;
     storesLimit?: number | null;
@@ -36,6 +35,7 @@ export function DashboardTopBar({
         alignItems: 'center',
         gap: '12px',
         marginBottom: '30px',
+        position: 'relative',
       }}
     >
       {/* User Info Card with integrated toggle button */}
@@ -50,6 +50,7 @@ export function DashboardTopBar({
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
+          position: 'relative',
         }}
       >
         {/* Toggle Button */}

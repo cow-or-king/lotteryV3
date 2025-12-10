@@ -15,6 +15,7 @@ import {
   ReviewList,
   ReviewStatsCards,
 } from '@/components/reviews';
+import { AIServiceBadge } from '@/components/ui/AIServiceBadge';
 import { useGoogleApiConfig, useReviewResponse, useReviews } from '@/hooks/reviews';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
@@ -116,7 +117,10 @@ export default function ReviewsPage() {
       {!isSingleStoreWithoutApi && (
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Avis Google</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-gray-800">Avis Google</h1>
+              <AIServiceBadge />
+            </div>
             <p className="text-gray-600">Gérez et répondez aux avis de vos clients</p>
           </div>
         </div>

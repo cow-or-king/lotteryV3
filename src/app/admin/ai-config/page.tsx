@@ -10,6 +10,7 @@ import { api } from '@/lib/trpc/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { AIServiceBadge } from '@/components/ui/AIServiceBadge';
 import {
   Settings,
   Plus,
@@ -225,11 +226,12 @@ export default function AiConfigPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <div className="flex items-center gap-3 mb-2">
               <Settings className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
-              Configuration IA
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Configuration IA</h1>
+              <AIServiceBadge showProvider />
+            </div>
+            <p className="text-sm text-gray-600">
               Gérer les services d&apos;intelligence artificielle (OpenAI / Anthropic)
             </p>
           </div>

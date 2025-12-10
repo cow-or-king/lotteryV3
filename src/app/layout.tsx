@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { TRPCProvider } from '@/lib/trpc/Provider';
+import { RoleImpersonationProvider } from '@/lib/rbac/RoleImpersonationProvider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -34,7 +35,9 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <TRPCProvider>{children}</TRPCProvider>
+        <TRPCProvider>
+          <RoleImpersonationProvider>{children}</RoleImpersonationProvider>
+        </TRPCProvider>
       </body>
     </html>
   );

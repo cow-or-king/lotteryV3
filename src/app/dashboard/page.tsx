@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { api } from '@/lib/trpc/client';
 import { StatCard } from '@/components/dashboard/StatCard';
+import { AIServiceBadge } from '@/components/ui/AIServiceBadge';
 import { Store, Target, Users, TrendingUp } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -26,6 +27,17 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+            <AIServiceBadge />
+          </div>
+          <p className="text-gray-600">Vue d'ensemble de votre activité</p>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div
         style={{

@@ -7,10 +7,16 @@
 'use client';
 
 import { RoleBadge } from '@/components/admin/RoleBadge';
+import { RoleIndicator } from '@/components/admin/RoleIndicator';
+import { usePermissions } from '@/lib/rbac/usePermissions';
+import { useRoleImpersonation } from '@/lib/rbac/RoleImpersonationProvider';
+import { isSuperAdmin } from '@/lib/rbac/permissions';
+import { UserRole } from '@/lib/rbac/permissions';
 
 interface User {
   name?: string | null;
   email?: string | null;
+  role?: string | null;
   subscription?: {
     plan?: string | null;
     storesLimit?: number | null;
@@ -25,6 +31,15 @@ interface SidebarUserInfoProps {
 }
 
 export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: SidebarUserInfoProps) {
+  const { role, realRole, isImpersonating } = usePermissions();
+  const { setImpersonatedRole } = useRoleImpersonation();
+
+  const handleRoleChange = (newRole: UserRole) => {
+    setImpersonatedRole(newRole);
+    window.location.reload();
+  };
+
+  const showRoleIndicator = user && isSuperAdmin(user);
   return (
     <button
       onClick={onToggle}
@@ -49,7 +64,7 @@ export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: Sid
         e.currentTarget.style.borderColor = `rgba(147, 51, 234, ${isExpanded ? '0.4' : '0.2'})`;
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
         <div
           style={{
             width: '44px',
@@ -66,10 +81,20 @@ export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: Sid
         >
           👤
         </div>
-        {/* Role Badge */}
+        {/* Role Indicator pour SUPER_ADMIN, Role Badge pour les autres */}
         {!userLoading && (
-          <div style={{ flexShrink: 0 }}>
-            <RoleBadge />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+            {showRoleIndicator && role && realRole ? (
+              <RoleIndicator
+                currentRole={role}
+                realRole={realRole}
+                isImpersonating={isImpersonating}
+                isSuperAdmin={true}
+                onRoleChange={handleRoleChange}
+              />
+            ) : (
+              <RoleBadge />
+            )}
           </div>
         )}
         {/* Icône chevron */}
@@ -80,6 +105,7 @@ export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: Sid
             transition: 'transform 0.3s',
             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
             flexShrink: 0,
+            marginLeft: 'auto',
           }}
         >
           ▼

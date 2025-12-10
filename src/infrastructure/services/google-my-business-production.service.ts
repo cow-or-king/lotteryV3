@@ -138,27 +138,74 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
 
   /**
    * Publie une réponse à un avis Google
-   * Note: Cette fonctionnalité est disponible via My Business API
+   * Utilise Google Business Profile API (nouvelle API post-2021)
+   * IMPORTANT: Nécessite OAuth2 avec le scope businessprofileperformance
    */
   async publishResponse(
-    googleReviewId: string,
+    googleReviewName: string,
     responseContent: string,
     apiKey: string,
   ): Promise<Result<void>> {
     try {
       const auth = await this.getAuthClient(apiKey);
 
-      // L'API pour publier des réponses existe mais nécessite
-      // le nom complet de la review: accounts/{accountId}/locations/{locationId}/reviews/{reviewId}
+      console.log('[GMB] Publishing response to review:', googleReviewName);
+      console.log('[GMB] Response content:', responseContent);
 
-      console.warn('[GMB] Publishing responses requires the full review resource name');
-      console.warn('[GMB] Format: accounts/{accountId}/locations/{locationId}/reviews/{reviewId}');
+      // Format requis: locations/{locationId}/reviews/{reviewId}
+      // Si le format inclut "accounts/", on l'extrait
+      let reviewPath = googleReviewName;
+      if (googleReviewName.includes('accounts/')) {
+        // Extraire locations/{locationId}/reviews/{reviewId}
+        const match = googleReviewName.match(/locations\/[^/]+\/reviews\/[^/]+/);
+        if (!match) {
+          return Result.fail(
+            new Error('Invalid review name format. Could not extract location/review path.'),
+          );
+        }
+        reviewPath = match[0];
+      }
 
-      return Result.fail(
-        new Error('Publishing responses not yet implemented. Need full review resource name.'),
-      );
+      if (!reviewPath.includes('locations/') || !reviewPath.includes('/reviews/')) {
+        return Result.fail(
+          new Error(
+            'Invalid review name format. Expected: locations/{locationId}/reviews/{reviewId}',
+          ),
+        );
+      }
+
+      // Utiliser l'API REST directement car google.mybusinessbusinesscommunications n'existe pas encore
+      // Endpoint: PATCH https://businessprofileperformance.googleapis.com/v1/{reviewPath}/reply
+      const url = `https://businessprofileperformance.googleapis.com/v1/${reviewPath}/reply`;
+
+      const accessToken = await auth.getAccessToken();
+      if (!accessToken.token) {
+        return Result.fail(new Error('Failed to get access token'));
+      }
+
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          comment: responseContent,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[GMB] API Error:', response.status, errorText);
+        return Result.fail(new Error(`API request failed (${response.status}): ${errorText}`));
+      }
+
+      console.log('[GMB] ✅ Response published successfully');
+      return Result.ok(undefined);
     } catch (error) {
-      return Result.fail(new Error('Failed to publish response: ' + (error as Error).message));
+      console.error('[GMB] Error publishing response:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return Result.fail(new Error(`Failed to publish response: ${errorMessage}`));
     }
   }
 

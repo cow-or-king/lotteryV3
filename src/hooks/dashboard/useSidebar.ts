@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export type MenuId =
+  | 'super-admin'
   | 'dashboard'
   | 'stores'
   | 'reviews'
@@ -29,7 +30,9 @@ export function useSidebar() {
 
   // Déterminer le menu actif basé sur le pathname
   useEffect(() => {
-    if (pathname === '/dashboard') {
+    if (pathname.startsWith('/dashboard/super-admin')) {
+      setActiveMenu('super-admin');
+    } else if (pathname === '/dashboard') {
       setActiveMenu('dashboard');
     } else if (pathname.startsWith('/dashboard/stores')) {
       setActiveMenu('stores');
