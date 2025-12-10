@@ -112,24 +112,18 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
 
       // 4. Récupérer les avis pour cette location
       // Note: L'API My Business v4.9 pour les reviews n'est plus disponible
-      // Il faut maintenant utiliser l'API Google Maps Platform - Places API
       // Pour l'instant, on retourne un tableau vide avec un message explicatif
 
       console.warn('[GMB] ⚠️  Google My Business API v4 (reviews) is deprecated.');
-      console.warn(
-        '[GMB] ⚠️  You need to use Google Maps Platform - Places API (New) to fetch reviews.',
-      );
-      console.warn(
-        '[GMB] ⚠️  See: https://developers.google.com/maps/documentation/places/web-service/reviews',
-      );
+      console.warn('[GMB] ⚠️  Review fetching needs to be implemented with the new API endpoints.');
 
-      // Stub reviews (en attendant l'implémentation Places API)
+      // Stub reviews (en attendant l'implémentation complète)
       const stubReviews: GoogleReviewData[] = [
         {
           googleReviewId: `stub_${Date.now()}_1`,
           authorName: 'Test User 1',
           rating: 5,
-          comment: '⚠️ STUB DATA - Real reviews require Places API (New)',
+          comment: '⚠️ STUB DATA - Implementation pending for review fetching',
           reviewUrl: `https://www.google.com/maps/place/?q=place_id:${googlePlaceId}`,
           publishedAt: new Date(),
         },

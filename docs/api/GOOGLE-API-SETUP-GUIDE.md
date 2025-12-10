@@ -2,12 +2,7 @@
 
 ## 📋 Vue d'ensemble
 
-Ce guide détaille la configuration des APIs Google pour récupérer et gérer les avis Google My Business.
-
-**Deux approches possibles:**
-
-- **Approche A**: Places API (New) - Simple, lecture seule
-- **Approche B**: My Business APIs - Complet, lecture + écriture
+Ce guide détaille la configuration de l'API Google My Business pour récupérer et gérer les avis Google My Business.
 
 ---
 
@@ -76,268 +71,7 @@ Avec le compte API, vérifier l'accès à:
 
 ---
 
-## 📍 Approche A: Places API (New) - Configuration Rapide
-
-### Caractéristiques
-
-**✅ Avantages:**
-
-- Setup très simple (10 minutes)
-- Juste une API Key, pas d'OAuth
-- Gratuit jusqu'à 100,000 requêtes/jour
-- Parfait pour récupérer les avis
-
-**❌ Limitations:**
-
-- **Lecture seule** - impossible de publier des réponses
-- Maximum 5 avis les plus récents par lieu
-- Pas d'accès aux insights avancés
-
-**💰 Coûts:**
-
-- Gratuit: 100,000 requêtes/mois
-- Au-delà: $0.017 par requête
-
-### Configuration Step-by-Step
-
-#### 1. Accès Google Cloud Console
-
-1. Aller sur [Google Cloud Console](https://console.cloud.google.com/)
-2. Se connecter avec le **compte API dédié** ou un compte admin
-3. Créer un nouveau projet:
-   - Nom: `ReviewLottery Production`
-   - ID: `reviewlottery-prod-xxxxx` (généré automatiquement)
-4. Activer la facturation (obligatoire même pour l'offre gratuite)
-   - Ajouter une carte bancaire (aucun débit si vous restez dans les limites gratuites)
-
-#### 2. Activer l'API Places (New)
-
-1. Dans le menu, aller dans **APIs & Services** → **Bibliothèque**
-2. Rechercher: **"Places API (New)"**
-3. Cliquer sur la carte **"Places API (New)"**
-4. Cliquer sur **Activer**
-5. Attendre 1-2 minutes (propagation)
-
-#### 3. Créer une API Key
-
-1. Aller dans **APIs & Services** → **Identifiants**
-2. Cliquer sur **+ Créer des identifiants**
-3. Sélectionner **Clé API**
-4. Une clé est générée: `AIzaSy...` (ne pas fermer la fenêtre)
-
-#### 4. Restreindre l'API Key (OBLIGATOIRE pour la sécurité)
-
-**⚠️ CRITIQUE**: Une API Key non restreinte est une faille de sécurité majeure
-
-1. Dans la fenêtre de création, cliquer sur **Modifier la clé API**
-2. Ou dans la liste des identifiants, cliquer sur le nom de la clé
-
-**Restrictions d'application:**
-
-Option 1 (Recommandé pour production):
-
-- Sélectionner: **Adresses IP (serveurs web, tâches Cron, etc.)**
-- Ajouter l'IP de votre serveur: `XX.XX.XX.XX`
-- Ajouter l'IP de secours si applicable
-
-Option 2 (Acceptable pour dev):
-
-- Sélectionner: **Référents HTTP (sites web)**
-- Ajouter: `https://votredomaine.com/*`
-- Ajouter: `http://localhost:3000/*` (dev uniquement)
-
-**Restrictions d'API:**
-
-- Sélectionner: **Restreindre la clé**
-- Cocher uniquement: **Places API (New)**
-- Enregistrer
-
-#### 5. Configurer les Variables d'Environnement
-
-**Fichier `.env.production`:**
-
-```env
-# Google Places API (New)
-GOOGLE_PLACES_API_KEY="AIzaSy...votre_cle..."
-USE_PLACES_API="true"
-
-# Flag pour indiquer l'utilisation de Places API
-GOOGLE_API_PROVIDER="places"
-```
-
-**Fichier `.env.local` (développement):**
-
-```env
-# Google Places API (New) - Dev
-GOOGLE_PLACES_API_KEY="AIzaSy...votre_cle_dev..."
-USE_PLACES_API="true"
-GOOGLE_API_PROVIDER="places"
-```
-
-#### 6. Tester l'API
-
-Utiliser cURL pour tester:
-
-```bash
-# Remplacer YOUR_API_KEY et PLACE_ID
-curl -X GET \
-  "https://places.googleapis.com/v1/places/PLACE_ID?fields=reviews&key=YOUR_API_KEY" \
-  -H "Content-Type: application/json"
-```
-
-**Trouver votre Place ID:**
-
-1. Aller sur [Google Maps](https://www.google.com/maps)
-2. Chercher votre établissement
-3. Copier l'URL, le Place ID est dans l'URL: `ChIJ...`
-
-**Réponse attendue:**
-
-```json
-{
-  "reviews": [
-    {
-      "name": "...",
-      "relativePublishTimeDescription": "...",
-      "rating": 5,
-      "text": {
-        "text": "Great service!",
-        "languageCode": "en"
-      },
-      "authorAttribution": {
-        "displayName": "John Doe",
-        "uri": "..."
-      }
-    }
-  ]
-}
-```
-
-#### 7. Intégration dans le Code
-
-Le code est déjà prêt dans le projet, il suffit d'activer Places API:
-
-**Fichier:** `src/infrastructure/services/google-places.service.ts` (à créer)
-
-```typescript
-/**
- * Google Places Service - Production Implementation
- * Utilise Places API (New) pour récupérer les avis
- */
-
-import { Result } from '@/lib/types/result.type';
-import {
-  IGoogleMyBusinessService,
-  GoogleReviewData,
-  FetchReviewsOptions,
-} from '@/core/services/google-my-business.service.interface';
-
-export class GooglePlacesService implements IGoogleMyBusinessService {
-  private readonly apiKey: string;
-  private readonly baseUrl = 'https://places.googleapis.com/v1';
-
-  constructor() {
-    const key = process.env.GOOGLE_PLACES_API_KEY;
-    if (!key) {
-      throw new Error('GOOGLE_PLACES_API_KEY is not configured');
-    }
-    this.apiKey = key;
-  }
-
-  async fetchReviews(
-    googlePlaceId: string,
-    options?: FetchReviewsOptions,
-  ): Promise<Result<readonly GoogleReviewData[]>> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/places/${googlePlaceId}?fields=reviews&key=${this.apiKey}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        return Result.fail(
-          new Error(`Places API error: ${error.error?.message || response.statusText}`),
-        );
-      }
-
-      const data = await response.json();
-      const reviews = data.reviews || [];
-
-      // Transform to domain format
-      const googleReviews: GoogleReviewData[] = reviews.map((review: any) => ({
-        googleReviewId: review.name || `${googlePlaceId}_${review.publishTime}`,
-        authorName: review.authorAttribution?.displayName || 'Anonymous',
-        rating: review.rating,
-        comment: review.text?.text || null,
-        reviewUrl: review.authorAttribution?.uri || '',
-        publishedAt: new Date(review.publishTime),
-      }));
-
-      return Result.ok(googleReviews);
-    } catch (error) {
-      return Result.fail(error as Error);
-    }
-  }
-
-  // Places API ne permet PAS de publier des réponses
-  async publishResponse(
-    googleReviewId: string,
-    responseContent: string,
-    apiKey: string,
-  ): Promise<Result<void>> {
-    return Result.fail(
-      new Error(
-        'Publishing responses is not available with Places API. Use My Business API instead.',
-      ),
-    );
-  }
-
-  async validateCredentials(apiKey: string): Promise<Result<boolean>> {
-    try {
-      // Test avec un Place ID connu (ex: Google Headquarters)
-      const testPlaceId = 'ChIJj61dQgK6j4AR4GeTYWZsKWw';
-
-      const response = await fetch(
-        `${this.baseUrl}/places/${testPlaceId}?fields=name&key=${apiKey}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      return Result.ok(response.ok);
-    } catch (error) {
-      return Result.ok(false);
-    }
-  }
-}
-```
-
-**Activer le service dans le router:**
-
-```typescript
-// src/server/api/routers/review.router.ts
-
-import { GooglePlacesService } from '@/infrastructure/services/google-places.service';
-
-// Utiliser Places API si configuré
-const googleService =
-  process.env.USE_PLACES_API === 'true'
-    ? new GooglePlacesService()
-    : new GoogleMyBusinessService(encryptionService);
-```
-
----
-
-## 🏢 Approche B: My Business APIs - Configuration Complète
+## 🏢 My Business API - Configuration Complète
 
 ### Caractéristiques
 
@@ -601,10 +335,6 @@ GOOGLE_CLIENT_ID="123456789-xxxxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="GOCSPX-xxxxx"
 GOOGLE_REDIRECT_URI="https://votredomaine.com/api/auth/google/callback"
 
-# Configuration
-USE_PLACES_API="false"
-GOOGLE_API_PROVIDER="mybusiness"
-
 # Le refresh_token est stocké CHIFFRÉ en base de données par store
 # Voir table: stores.googleApiKey
 ```
@@ -616,9 +346,6 @@ GOOGLE_API_PROVIDER="mybusiness"
 GOOGLE_CLIENT_ID="123456789-xxxxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="GOCSPX-xxxxx"
 GOOGLE_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
-
-USE_PLACES_API="false"
-GOOGLE_API_PROVIDER="mybusiness"
 ```
 
 #### 7. Implémentation du Service
@@ -703,51 +430,6 @@ curl -X POST https://votredomaine.com/api/trpc/review.syncFromGoogle \
 
 ---
 
-## 📊 Comparaison des Approches
-
-| Critère              | Places API (New)    | My Business APIs    |
-| -------------------- | ------------------- | ------------------- |
-| **Setup**            | ⭐⭐⭐⭐⭐ Simple   | ⭐⭐ Complexe       |
-| **Temps**            | 10-15 min           | 2-3 heures          |
-| **Auth**             | API Key             | OAuth 2.0           |
-| **Lecture avis**     | ✅ (5 derniers)     | ✅ (illimité)       |
-| **Publier réponses** | ❌                  | ✅                  |
-| **Coût**             | Gratuit (100k/mois) | Gratuit (1k/jour)   |
-| **Maintenance**      | Faible              | Moyenne             |
-| **Recommandé pour**  | MVP, Tests          | Production complète |
-
----
-
-## 🎯 Recommandation par Phase
-
-### Phase 1: MVP / Développement (maintenant)
-
-**→ Utiliser Places API (New) - Approche A**
-
-- Setup rapide
-- Tester la récupération des avis
-- Valider le workflow
-- Pas besoin de publier les réponses pour l'instant
-
-### Phase 2: Beta / Early Production
-
-**→ Continuer avec Places API**
-
-- Ajouter monitoring
-- Optimiser les appels API
-- Préparer la migration vers My Business
-
-### Phase 3: Production Complète
-
-**→ Migrer vers My Business APIs - Approche B**
-
-- Quand vous avez besoin de publier des réponses automatiquement
-- Configuration du compte API dédié
-- Setup OAuth 2.0
-- Migration progressive
-
----
-
 ## 🔒 Sécurité - Checklist
 
 - [ ] Compte API dédié créé avec 2FA
@@ -764,7 +446,6 @@ curl -X POST https://votredomaine.com/api/trpc/review.syncFromGoogle \
 
 ## 📚 Ressources
 
-- [Places API (New) Documentation](https://developers.google.com/maps/documentation/places/web-service/overview)
 - [My Business API Documentation](https://developers.google.com/my-business)
 - [OAuth 2.0 Guide](https://developers.google.com/identity/protocols/oauth2)
 - [OAuth Playground](https://developers.google.com/oauthplayground/)

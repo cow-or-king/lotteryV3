@@ -18,39 +18,7 @@ Ce guide détaille le passage en production de l'intégration Google My Business
 
 ### 1.2 Activer les APIs Nécessaires
 
-#### Option A: Google Places API (Recommandé pour début)
-
-**Avantages:**
-
-- Setup simple (juste une API key)
-- Pas besoin d'OAuth2
-- Gratuit jusqu'à 100,000 requêtes/jour
-- Parfait pour la lecture des avis
-
-**Limites:**
-
-- **Lecture seule** - impossible de publier des réponses
-- Données limitées par rapport à My Business API
-
-**Activation:**
-
-```bash
-# Via gcloud CLI
-gcloud services enable places-backend.googleapis.com
-
-# Ou via Console:
-# https://console.cloud.google.com/apis/library/places-backend.googleapis.com
-```
-
-**Créer API Key:**
-
-1. Aller dans "APIs & Services" → "Credentials"
-2. "Create Credentials" → "API Key"
-3. **Important:** Restreindre la clé:
-   - Application restrictions: HTTP referrers ou IP addresses
-   - API restrictions: Cocher "Places API"
-
-#### Option B: Google My Business API (Pour fonctionnalités complètes)
+#### Google My Business API
 
 **Avantages:**
 
@@ -74,74 +42,9 @@ gcloud services enable mybusinessbusinessinformation.googleapis.com
 
 ---
 
-## 🔐 Étape 2: Authentification
+## 🔐 Étape 2: Authentification OAuth 2.0
 
-### Option A: API Key (Places API uniquement)
-
-**Fichier:** `.env.production`
-
-```env
-GOOGLE_PLACES_API_KEY="AIza..."
-```
-
-**Implémentation:**
-
-```typescript
-// src/infrastructure/services/google-places.service.ts
-import { Client } from '@googlemaps/google-maps-services-js';
-
-export class GooglePlacesService implements IGoogleMyBusinessService {
-  private client: Client;
-
-  constructor() {
-    this.client = new Client({});
-  }
-
-  async fetchReviews(
-    googlePlaceId: string,
-    options?: FetchReviewsOptions,
-  ): Promise<Result<readonly GoogleReviewData[]>> {
-    try {
-      const response = await this.client.placeDetails({
-        params: {
-          place_id: googlePlaceId,
-          fields: ['reviews', 'name', 'rating'],
-          key: process.env.GOOGLE_PLACES_API_KEY!,
-        },
-      });
-
-      if (response.data.status !== 'OK') {
-        return Result.fail(new Error(`Google API error: ${response.data.status}`));
-      }
-
-      const reviews = response.data.result.reviews || [];
-
-      // Transform to domain format
-      const googleReviews: GoogleReviewData[] = reviews.map((review) => ({
-        googleReviewId: review.author_url || `${googlePlaceId}_${review.time}`,
-        authorName: review.author_name,
-        rating: review.rating,
-        comment: review.text,
-        reviewUrl: review.author_url || '',
-        publishedAt: new Date(review.time * 1000), // Unix timestamp
-      }));
-
-      return Result.ok(googleReviews);
-    } catch (error) {
-      return Result.fail(error as Error);
-    }
-  }
-
-  // publishResponse NOT AVAILABLE avec Places API
-  async publishResponse(): Promise<Result<void>> {
-    return Result.fail(new Error('Publishing responses requires My Business API with OAuth2'));
-  }
-}
-```
-
-### Option B: OAuth 2.0 (My Business API)
-
-#### 2.1 Créer OAuth 2.0 Credentials
+### 2.1 Créer OAuth 2.0 Credentials
 
 1. Google Cloud Console → "APIs & Services" → "Credentials"
 2. "Create Credentials" → "OAuth client ID"
@@ -152,7 +55,7 @@ export class GooglePlacesService implements IGoogleMyBusinessService {
 
 5. Noter **Client ID** et **Client Secret**
 
-#### 2.2 Obtenir Refresh Token
+### 2.2 Obtenir Refresh Token
 
 **Méthode 1: Via OAuth Playground**
 
@@ -204,7 +107,7 @@ export async function callback(request: Request) {
 }
 ```
 
-#### 2.3 Variables d'Environnement
+### 2.3 Variables d'Environnement
 
 ```env
 # OAuth 2.0
@@ -215,7 +118,7 @@ GOOGLE_CLIENT_SECRET="GOCSPX-..."
 # stores.googleApiKey → Stocke refresh_token chiffré
 ```
 
-#### 2.4 Implémentation Service
+### 2.4 Implémentation Service
 
 ```typescript
 // src/infrastructure/services/google-my-business.service.ts
@@ -345,14 +248,6 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
 
 ## 📦 Étape 3: Installation Dépendances
 
-### Pour Places API
-
-```bash
-npm install @googlemaps/google-maps-services-js
-```
-
-### Pour My Business API
-
 ```bash
 npm install googleapis
 ```
@@ -381,14 +276,9 @@ mv src/infrastructure/services/google-my-business.service.ts \
 const googleService = new GoogleMyBusinessService();
 
 // APRÈS (production)
-import { GooglePlacesService } from '@/infrastructure/services/google-places.service';
-// OU
-import { GoogleMyBusinessService } from '@/infrastructure/services/google-my-business.service';
+import { GoogleMyBusinessProductionService } from '@/infrastructure/services/google-my-business-production.service';
 
-const googleService =
-  process.env.USE_PLACES_API === 'true'
-    ? new GooglePlacesService()
-    : new GoogleMyBusinessService(encryptionService);
+const googleService = new GoogleMyBusinessProductionService(encryptionService);
 ```
 
 ---
@@ -452,9 +342,11 @@ axiosRetry(axios, {
 // src/test/integration/google-api.test.ts
 describe('Google My Business Integration', () => {
   it('should fetch real reviews from test Place ID', async () => {
-    const service = new GooglePlacesService();
+    const service = new GoogleMyBusinessProductionService(encryptionService);
 
-    const result = await service.fetchReviews(process.env.TEST_GOOGLE_PLACE_ID!);
+    const result = await service.fetchReviews(process.env.TEST_GOOGLE_PLACE_ID!, {
+      apiKey: encryptedRefreshToken,
+    });
 
     expect(result.success).toBe(true);
     expect(result.data.length).toBeGreaterThan(0);
@@ -466,8 +358,10 @@ describe('Google My Business Integration', () => {
 
 ```bash
 # .env.staging
-GOOGLE_PLACES_API_KEY="test_key..."
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
 TEST_GOOGLE_PLACE_ID="ChIJ..."
+# Refresh token stored encrypted in database
 ```
 
 ---
@@ -515,21 +409,6 @@ await metrics.increment('google_api.reviews_fetched', reviews.length);
 
 ## 💰 Étape 8: Coûts & Quotas
 
-### Places API
-
-**Gratuit:**
-
-- 100,000 requêtes/jour
-
-**Payant au-delà:**
-
-- $0.017 par requête
-
-**Quotas:**
-
-- 100 requêtes/seconde par projet
-- 1,000 requêtes/seconde par utilisateur
-
 ### My Business API
 
 **Gratuit** mais avec quotas:
@@ -542,8 +421,9 @@ await metrics.increment('google_api.reviews_fetched', reviews.length);
 ## ✅ Checklist Pré-Production
 
 - [ ] Projet Google Cloud créé
-- [ ] API activée (Places ou My Business)
-- [ ] Credentials créées et sécurisées
+- [ ] My Business API activée
+- [ ] OAuth 2.0 Credentials créées et sécurisées
+- [ ] Refresh token obtenu
 - [ ] Variables d'environnement configurées
 - [ ] Dépendances installées
 - [ ] Code stub remplacé
@@ -558,16 +438,6 @@ await metrics.increment('google_api.reviews_fetched', reviews.length);
 ---
 
 ## 🆘 Troubleshooting
-
-### Erreur: "API key not valid"
-
-**Cause:** Restrictions API key mal configurées
-
-**Solution:**
-
-1. Vérifier restrictions dans Google Cloud Console
-2. S'assurer que "Places API" est cochée
-3. Vérifier HTTP referrers
 
 ### Erreur: "PERMISSION_DENIED"
 
@@ -593,7 +463,6 @@ await metrics.increment('google_api.reviews_fetched', reviews.length);
 
 ## 📚 Ressources
 
-- [Google Places API Docs](https://developers.google.com/maps/documentation/places/web-service/overview)
 - [Google My Business API Docs](https://developers.google.com/my-business)
 - [OAuth 2.0 Guide](https://developers.google.com/identity/protocols/oauth2)
 - [Rate Limiting Best Practices](https://cloud.google.com/apis/design/design_patterns#rate_limiting)

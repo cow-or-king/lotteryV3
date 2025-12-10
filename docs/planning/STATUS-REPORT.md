@@ -1,7 +1,7 @@
 # 📊 Point de Situation - ReviewLottery V3
 
 **Date**: 10 Décembre 2025
-**Commit**: `6aa7c28` - Fix API Google Places + OpenAI integration
+**Commit**: `e6c743d` - Complete authentication system with Supabase Auth
 
 ---
 
@@ -23,8 +23,7 @@
 
 ### ⭐ Reviews Google
 
-- [x] **Sync Google Places API** - Récupération avis réels (5 reviews testés)
-- [x] **Place ID**: `ChIJj61dQgK6j4AR4GeTYWZsKWw` (Google HQ Mountain View)
+- [x] **Sync Google My Business API** - Récupération avis via OAuth2
 - [x] Affichage liste reviews avec filtres
 - [x] Statistiques par commerce
 
@@ -98,7 +97,6 @@ docs/
 
 ### Google API
 
-- `scripts/test-places-api.ts` - Tester Places API ✅
 - `scripts/test-google-api.ts` - Tester My Business API (OAuth2)
 
 ### Database
@@ -139,30 +137,14 @@ docs/
 
 **Problèmes identifiés**:
 
-- [ ] Places API = READ ONLY (impossible de publier réponses)
-- [ ] Besoin Google My Business API + OAuth2 pour écrire
+- [ ] Google My Business API configuré avec OAuth2
 - [ ] Templates réponses à tester
 - [ ] Workflow validation réponses
+- [ ] Publication de réponses à tester avec vrai commerce
 
 **Priorité**: 🟡 **MOYENNE**
 
-### 3. Limitations Google Places API
-
-**Problèmes actuels**:
-
-- ⚠️ Seulement 5 reviews récupérés (limitation API ou config?)
-- ⚠️ Reviews aléatoires, pas les derniers
-- ❌ Impossible de publier réponses (API read-only)
-
-**Solutions possibles**:
-
-- [ ] Investiguer pagination Places API
-- [ ] Implémenter Google My Business API (OAuth2) pour write access
-- [ ] Tester avec vrai commerce (pas Google HQ)
-
-**Priorité**: 🟡 **MOYENNE**
-
-### 4. Participants & Verification
+### 3. Participants & Verification
 
 **Statut**: ❌ **Non testé**
 
@@ -174,7 +156,7 @@ docs/
 
 **Priorité**: 🟡 **MOYENNE**
 
-### 5. Email Notifications
+### 4. Email Notifications
 
 **Statut**: ❌ **Non commencé**
 
@@ -192,7 +174,7 @@ docs/
 
 **Priorité**: 🟢 **BASSE**
 
-### 6. Tests Automatisés
+### 5. Tests Automatisés
 
 **Statut**: ⚠️ **Infrastructure prête, tests manquants**
 
@@ -204,7 +186,7 @@ docs/
 
 **Priorité**: 🟡 **MOYENNE**
 
-### 7. Cleanup Code
+### 6. Cleanup Code
 
 **À nettoyer si Magic Link abandonné définitivement**:
 
@@ -269,7 +251,6 @@ docs/
 ### API Keys Configurées
 
 ```env
-GOOGLE_PLACES_API_KEY="AIzaSyCX7HIqXcFOBAAee394yJcp0Gxhnjy05vE"
 GOOGLE_CLIENT_ID="467670053448-jrlbk1lsuhtvloetqhkh3usco4jn8jgd.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="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"
 ENCRYPTION_SECRET_KEY="0a4700bf8972a9933544afaf9ea3e9642ba15306e4373154d622d577fe431219"
@@ -292,8 +273,6 @@ ENCRYPTION_SECRET_KEY="0a4700bf8972a9933544afaf9ea3e9642ba15306e4373154d622d577f
 
 ### Mineurs
 
-- ⚠️ Seulement 5 reviews récupérés (à investiguer)
-- ⚠️ Reviews aléatoires (pas chronologique)
 - ⚠️ Besoin saisir API key manuellement parfois (à investiguer)
 
 ### Bloquants

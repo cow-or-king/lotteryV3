@@ -204,8 +204,7 @@ export function GoogleApiHelpModal({ isOpen, onClose }: GoogleApiHelpModalProps)
                   <strong>&quot;APIs & Services&quot; → &quot;Bibliothèque&quot;</strong>
                 </li>
                 <li>
-                  Recherchez et activez <strong>&quot;Google My Business API&quot;</strong> et{' '}
-                  <strong>&quot;Places API&quot;</strong>
+                  Recherchez et activez <strong>&quot;Google My Business API&quot;</strong>
                 </li>
                 <li>
                   Allez dans <strong>&quot;Identifiants&quot;</strong> dans le menu de gauche

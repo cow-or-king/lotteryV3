@@ -28,7 +28,6 @@ import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-stor
 import { GoogleMyBusinessService } from '@/infrastructure/services/google-my-business.service';
 import { GoogleMyBusinessMockService } from '@/infrastructure/services/google-my-business-mock.service';
 import { GoogleMyBusinessProductionService } from '@/infrastructure/services/google-my-business-production.service';
-import { GooglePlacesService } from '@/infrastructure/services/google-places.service';
 import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
 import { AiResponseGeneratorService } from '@/infrastructure/services/ai-response-generator.service';
 
@@ -42,20 +41,15 @@ const encryptionService = new ApiKeyEncryptionService();
 
 // Choisir le service Google selon la config
 // - "mock" : Fake reviews pour développement (USE_MOCK_GOOGLE_SERVICE=true)
-// - "places" : Google Places API (GOOGLE_PLACES_API_KEY configurée) - READ ONLY
 // - "mybusiness" : Google My Business API avec OAuth2 (GOOGLE_CLIENT_ID configuré) - READ + WRITE
 // - "stub" (default) : Service stub qui ne fait rien
 const useMockService = process.env.USE_MOCK_GOOGLE_SERVICE === 'true';
-const usePlacesApi = !!process.env.GOOGLE_PLACES_API_KEY;
 const useMyBusinessApi = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
 let googleService;
 if (useMockService) {
   console.log('[INFO] 🎭 Using MOCK Google service with fake reviews');
   googleService = new GoogleMyBusinessMockService();
-} else if (usePlacesApi) {
-  console.log('[INFO] 📍 Using PLACES API service (read-only, real reviews)');
-  googleService = new GooglePlacesService();
 } else if (useMyBusinessApi) {
   console.log('[INFO] 🏢 Using MY BUSINESS API service (OAuth2, read + write)');
   googleService = new GoogleMyBusinessProductionService(encryptionService);

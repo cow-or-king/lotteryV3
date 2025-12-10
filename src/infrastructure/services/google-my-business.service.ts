@@ -26,19 +26,12 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
    * STUB: Récupère les avis Google pour un lieu
    *
    * Production implementation would:
-   * 1. Use Google Places API or My Business API
-   * 2. Authenticate with API key or OAuth2
+   * 1. Use Google My Business API with OAuth2
+   * 2. Authenticate with refresh token
    * 3. Handle pagination with nextPageToken
    * 4. Parse Google's response format
    *
-   * Example using @google/maps:
-   * ```typescript
-   * const client = new Client({ key: process.env.GOOGLE_PLACES_API_KEY });
-   * const response = await client.placeDetails({
-   *   params: { place_id: googlePlaceId, fields: ['reviews'] }
-   * });
-   * return response.data.result.reviews;
-   * ```
+   * See google-my-business-production.service.ts for production implementation
    */
   async fetchReviews(
     googlePlaceId: string,
@@ -144,32 +137,27 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
  * NOTES POUR IMPLÉMENTATION PRODUCTION:
  *
  * 1. Installer les dépendances:
- *    npm install @google/maps googleapis
+ *    npm install googleapis
  *
- * 2. Configuration OAuth2 (pour publishResponse):
+ * 2. Configuration OAuth2:
  *    - Créer projet Google Cloud Console
  *    - Activer Google My Business API
  *    - Créer OAuth2 credentials
  *    - Obtenir refresh token du propriétaire du business
  *
- * 3. Pour fetchReviews:
- *    - Utiliser Google Places API (plus simple, juste API key)
- *    - Ou Google My Business API (plus complet, nécessite OAuth2)
+ * 3. Rate Limiting:
+ *    - My Business API: varie selon le plan (généralement 1,000 requêtes/jour)
  *
- * 4. Rate Limiting:
- *    - Places API: 100,000 requêtes/jour (gratuit)
- *    - My Business API: varie selon le plan
- *
- * 5. Gestion d'erreurs spécifiques:
+ * 4. Gestion d'erreurs spécifiques:
  *    - 403: Permissions insuffisantes
  *    - 429: Rate limit dépassé
  *    - 404: Place ID invalide
  *
- * 6. Décryptage API Key:
+ * 5. Décryptage API Key:
  *    - Utiliser ApiKeyEncryptionService.decrypt()
  *    - Ne JAMAIS logger les clés décryptées
  *
- * 7. Tests:
+ * 6. Tests:
  *    - Créer mocks pour tests unitaires
  *    - Utiliser sandbox Google pour tests d'intégration
  */

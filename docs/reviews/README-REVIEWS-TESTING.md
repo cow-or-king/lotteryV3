@@ -167,35 +167,34 @@ Quand vous êtes prêt à utiliser les vraies Google APIs :
 
 ### 1. Obtenir Credentials Google
 
-Suivre le guide complet : `docs/GOOGLE-API-PRODUCTION.md`
+Suivre le guide complet : `docs/api/GOOGLE-API-PRODUCTION.md`
 
 **Résumé :**
 
 - Créer projet Google Cloud
-- Activer **Google Places API** (simple) ou **My Business API** (complet)
-- Obtenir une API Key ou OAuth2 credentials
+- Activer **Google My Business API**
+- Configurer OAuth2 credentials
+- Obtenir refresh token
 
 ### 2. Configurer .env
 
 ```env
 USE_MOCK_GOOGLE_SERVICE="false"
 
-# Pour Places API (lecture seule)
-GOOGLE_PLACES_API_KEY="AIza..."
-
-# OU pour My Business API (lecture + réponses)
+# Google My Business API (OAuth2)
 GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="GOCSPX-..."
+# Refresh token stored encrypted per store in database
 ```
 
 ### 3. Mise à jour du code
 
-Si vous utilisez **Places API**, remplacer dans `review.router.ts` :
+Remplacer dans `review.router.ts` :
 
 ```typescript
 const googleService = useMockService
   ? new GoogleMyBusinessMockService()
-  : new GooglePlacesService(); // Nouveau service
+  : new GoogleMyBusinessProductionService(encryptionService);
 ```
 
 Voir implémentation complète dans `GOOGLE-API-PRODUCTION.md`.

@@ -437,12 +437,10 @@ SUPABASE_SERVICE_ROLE_KEY="..."
 # Encryption (AES-256-GCM)
 ENCRYPTION_KEY="base64:random_32_bytes_key..."
 
-# Google My Business API (Production)
-GOOGLE_PLACES_API_KEY="..."
-# or OAuth2:
+# Google My Business API (Production - OAuth2)
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
-GOOGLE_REFRESH_TOKEN="..."
+# Refresh token is stored encrypted per store in database
 ```
 
 ### Génération ENCRYPTION_KEY
