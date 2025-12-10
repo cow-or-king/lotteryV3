@@ -11,12 +11,43 @@ import { useEffect, useState } from 'react';
 import { usePermissions } from '@/lib/rbac/usePermissions';
 import { DEFAULT_MENU_CONFIG, MenuConfig } from '@/lib/rbac/menuConfig';
 import { Settings, Save, RotateCcw } from 'lucide-react';
+import { api } from '@/lib/trpc/client';
 
 export default function MenuConfigPage() {
   const router = useRouter();
   const { isSuperAdmin } = usePermissions();
   const [menuConfig, setMenuConfig] = useState<MenuConfig[]>(DEFAULT_MENU_CONFIG);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Récupérer les permissions depuis la BD
+  const utils = api.useUtils();
+  const { data: dbPermissions } = api.menu.getPermissions.useQuery(undefined, {
+    enabled: true, // Table créée avec succès
+  });
+  const savePermissions = api.menu.savePermissions.useMutation({
+    onSuccess: () => {
+      // Invalider le cache pour forcer un refetch et mettre à jour la sidebar
+      utils.menu.getPermissions.invalidate();
+    },
+  });
+
+  // Initialiser avec les permissions de la BD si disponibles
+  useEffect(() => {
+    if (dbPermissions && dbPermissions.length > 0) {
+      const mergedConfig = DEFAULT_MENU_CONFIG.map((menu) => {
+        const dbPerm = dbPermissions.find((p) => p.menuId === menu.id);
+        return dbPerm
+          ? {
+              ...menu,
+              superAdminVisible: dbPerm.superAdminVisible,
+              adminVisible: dbPerm.adminVisible,
+              userVisible: dbPerm.userVisible,
+            }
+          : menu;
+      });
+      setMenuConfig(mergedConfig);
+    }
+  }, [dbPermissions]);
 
   // Rediriger si pas SUPER_ADMIN
   useEffect(() => {
@@ -43,11 +74,25 @@ export default function MenuConfigPage() {
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    // TODO: Sauvegarder dans la base de données via tRPC
-    console.log('Configuration sauvegardée:', menuConfig);
-    setHasChanges(false);
-    alert('Configuration sauvegardée (en mémoire pour le moment)');
+  const handleSave = async () => {
+    try {
+      // Préparer les données pour la sauvegarde
+      const permissions = menuConfig.map((menu, index) => ({
+        menuId: menu.id,
+        label: menu.label,
+        superAdminVisible: menu.superAdminVisible,
+        adminVisible: menu.adminVisible,
+        userVisible: menu.userVisible,
+        displayOrder: index,
+      }));
+
+      await savePermissions.mutateAsync(permissions);
+      setHasChanges(false);
+      alert('✅ Configuration sauvegardée avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('❌ Erreur lors de la sauvegarde. Vérifiez que la migration Prisma est effectuée.');
+    }
   };
 
   const handleReset = () => {
@@ -222,96 +267,110 @@ export default function MenuConfigPage() {
             </tr>
           </thead>
           <tbody>
-            {menuConfig.map((menu) => (
-              <tr
-                key={menu.id}
-                style={{
-                  borderBottom: '1px solid rgba(147, 51, 234, 0.1)',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(147, 51, 234, 0.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <td style={{ padding: '16px 20px' }}>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
-                      {menu.label}
-                    </p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>{menu.path}</p>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                  <label
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={menu.superAdminVisible}
-                      onChange={() => handleToggle(menu.id, 'superAdminVisible')}
+            {menuConfig.map((menu) => {
+              const isSuperAdminMenu = menu.targetRole === 'SUPER_ADMIN';
+              return (
+                <tr
+                  key={menu.id}
+                  style={{
+                    borderBottom: '1px solid rgba(147, 51, 234, 0.1)',
+                    background: isSuperAdminMenu ? 'rgba(239, 68, 68, 0.08)' : 'transparent',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSuperAdminMenu) {
+                      e.currentTarget.style.background = 'rgba(147, 51, 234, 0.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = isSuperAdminMenu
+                      ? 'rgba(239, 68, 68, 0.08)'
+                      : 'transparent';
+                  }}
+                >
+                  <td style={{ padding: '16px 20px' }}>
+                    <div>
+                      <p
+                        style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#1f2937' }}
+                      >
+                        {menu.label}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>{menu.path}</p>
+                    </div>
+                  </td>
+                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                    <label
                       style={{
-                        width: '18px',
-                        height: '18px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         cursor: 'pointer',
-                        accentColor: '#9333ea',
                       }}
-                    />
-                  </label>
-                </td>
-                <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                  <label
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={menu.adminVisible}
-                      onChange={() => handleToggle(menu.id, 'adminVisible')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={menu.superAdminVisible}
+                        onChange={() => handleToggle(menu.id, 'superAdminVisible')}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          cursor: 'pointer',
+                          accentColor: '#9333ea',
+                        }}
+                      />
+                    </label>
+                  </td>
+                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                    <label
                       style={{
-                        width: '18px',
-                        height: '18px',
-                        cursor: 'pointer',
-                        accentColor: '#9333ea',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: isSuperAdminMenu ? 'not-allowed' : 'pointer',
+                        opacity: isSuperAdminMenu ? 0.5 : 1,
                       }}
-                    />
-                  </label>
-                </td>
-                <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                  <label
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={menu.userVisible}
-                      onChange={() => handleToggle(menu.id, 'userVisible')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={menu.adminVisible}
+                        onChange={() => handleToggle(menu.id, 'adminVisible')}
+                        disabled={isSuperAdminMenu}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          cursor: isSuperAdminMenu ? 'not-allowed' : 'pointer',
+                          accentColor: '#9333ea',
+                        }}
+                      />
+                    </label>
+                  </td>
+                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                    <label
                       style={{
-                        width: '18px',
-                        height: '18px',
-                        cursor: 'pointer',
-                        accentColor: '#9333ea',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: isSuperAdminMenu ? 'not-allowed' : 'pointer',
+                        opacity: isSuperAdminMenu ? 0.5 : 1,
                       }}
-                    />
-                  </label>
-                </td>
-              </tr>
-            ))}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={menu.userVisible}
+                        onChange={() => handleToggle(menu.id, 'userVisible')}
+                        disabled={isSuperAdminMenu}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          cursor: isSuperAdminMenu ? 'not-allowed' : 'pointer',
+                          accentColor: '#9333ea',
+                        }}
+                      />
+                    </label>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -321,15 +380,16 @@ export default function MenuConfigPage() {
         style={{
           marginTop: '20px',
           padding: '16px',
-          background: 'rgba(59, 130, 246, 0.1)',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
+          background: 'rgba(34, 197, 94, 0.1)',
+          border: '1px solid rgba(34, 197, 94, 0.2)',
           borderRadius: '12px',
         }}
       >
-        <p style={{ margin: 0, fontSize: '13px', color: '#1f2937' }}>
-          <strong>Note:</strong> Cette configuration est actuellement stockée en mémoire. Les
-          modifications seront perdues au rechargement. La persistance en base de données sera
-          implémentée prochainement via le modèle MenuPermission.
+        <p style={{ margin: 0, fontSize: '13px', color: '#1f2937', lineHeight: '1.6' }}>
+          <strong>ℹ️ Fonctionnement:</strong> Les modifications sont sauvegardées en temps réel dans
+          la base de données. La sidebar se met à jour automatiquement après chaque sauvegarde. Les
+          routes SUPER_ADMIN (fond rouge) ne peuvent pas être partagées avec ADMIN/USER pour des
+          raisons de sécurité.
         </p>
       </div>
     </div>

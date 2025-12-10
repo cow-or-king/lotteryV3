@@ -9,6 +9,7 @@
 import { MenuId } from '@/hooks/dashboard/useSidebar';
 import Link from 'next/link';
 import { ReactNode, useTransition } from 'react';
+import { ShieldCheck, User } from 'lucide-react';
 
 interface SidebarNavItemProps {
   id: MenuId;
@@ -19,6 +20,10 @@ interface SidebarNavItemProps {
   isCompactMode: boolean;
   onItemClick: (menu: MenuId) => void;
   onCloseSidebar: () => void;
+  targetRole?: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  currentRole?: 'SUPER_ADMIN' | 'ADMIN' | 'USER' | null;
+  adminVisible?: boolean;
+  userVisible?: boolean;
 }
 
 export function SidebarNavItem({
@@ -30,8 +35,15 @@ export function SidebarNavItem({
   isCompactMode,
   onItemClick,
   onCloseSidebar,
+  targetRole,
+  currentRole,
+  adminVisible,
+  userVisible,
 }: SidebarNavItemProps) {
   const [, startTransition] = useTransition();
+
+  // Afficher les badges uniquement si SUPER_ADMIN et le menu est partagé
+  const showSharedBadges = currentRole === 'SUPER_ADMIN' && (adminVisible || userVisible);
 
   return (
     <Link
@@ -55,7 +67,11 @@ export function SidebarNavItem({
         margin: '5px 0',
         padding: isCompactMode ? '10px 8px' : '10px 16px',
         background: isActive ? 'rgba(147, 51, 234, 0.15)' : 'transparent',
-        border: isActive ? '1px solid rgba(147, 51, 234, 0.3)' : '1px solid transparent',
+        border: isActive
+          ? '1px solid rgba(147, 51, 234, 0.3)'
+          : showSharedBadges
+            ? '2px solid rgba(59, 130, 246, 0.4)'
+            : '1px solid transparent',
         borderRadius: '12px',
         color: isActive ? '#9333ea' : '#4b5563',
         cursor: 'pointer',
@@ -70,14 +86,18 @@ export function SidebarNavItem({
       onMouseEnter={(e) => {
         if (!isActive) {
           e.currentTarget.style.background = 'rgba(147, 51, 234, 0.08)';
-          e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.15)';
+          if (!showSharedBadges) {
+            e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.15)';
+          }
           e.currentTarget.style.color = '#7c3aed';
         }
       }}
       onMouseLeave={(e) => {
         if (!isActive) {
           e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.borderColor = 'transparent';
+          e.currentTarget.style.borderColor = showSharedBadges
+            ? 'rgba(59, 130, 246, 0.4)'
+            : 'transparent';
           e.currentTarget.style.color = '#4b5563';
         }
       }}
@@ -114,6 +134,51 @@ export function SidebarNavItem({
             borderRadius: '2px',
           }}
         />
+      )}
+      {showSharedBadges && !isCompactMode && (
+        <div
+          style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            gap: '4px',
+            alignItems: 'center',
+          }}
+        >
+          {adminVisible && (
+            <div
+              title="Partagé avec ADMIN"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '3px',
+                background: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                borderRadius: '6px',
+                color: '#3b82f6',
+              }}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </div>
+          )}
+          {userVisible && (
+            <div
+              title="Partagé avec USER"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '3px',
+                background: 'rgba(16, 185, 129, 0.12)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                borderRadius: '6px',
+                color: '#10b981',
+              }}
+            >
+              <User className="w-3.5 h-3.5" />
+            </div>
+          )}
+        </div>
       )}
     </Link>
   );

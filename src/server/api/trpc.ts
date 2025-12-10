@@ -108,34 +108,42 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
     const verifyResult = await supabaseAuthService.verifyToken(ctx.accessToken);
 
     if (verifyResult.success) {
-      // Upsert l'utilisateur (créer ou mettre à jour) pour éviter les conflits d'email
-      user = await ctx.prisma.user.upsert({
-        where: { id: ctx.userId },
-        update: {
-          email: verifyResult.data.email || '',
-          emailVerified: verifyResult.data.emailVerified,
-        },
-        create: {
-          id: ctx.userId,
-          email: verifyResult.data.email || '',
-          emailVerified: verifyResult.data.emailVerified,
-          name: null,
-          avatarUrl: null,
-        },
-      });
+      try {
+        // Upsert l'utilisateur (créer ou mettre à jour) pour éviter les conflits d'email
+        user = await ctx.prisma.user.upsert({
+          where: { id: ctx.userId },
+          update: {
+            email: verifyResult.data.email || '',
+            emailVerified: verifyResult.data.emailVerified,
+          },
+          create: {
+            id: ctx.userId,
+            email: verifyResult.data.email || '',
+            emailVerified: verifyResult.data.emailVerified,
+            name: null,
+            avatarUrl: null,
+          },
+        });
 
-      // Créer aussi la subscription FREE par défaut si elle n'existe pas
-      await ctx.prisma.subscription.upsert({
-        where: { userId: ctx.userId },
-        update: {},
-        create: {
-          userId: ctx.userId,
-          plan: 'FREE',
-          status: 'ACTIVE',
-          storesLimit: 1,
-          campaignsLimit: 0,
-        },
-      });
+        // Créer aussi la subscription FREE par défaut si elle n'existe pas
+        await ctx.prisma.subscription.upsert({
+          where: { userId: ctx.userId },
+          update: {},
+          create: {
+            userId: ctx.userId,
+            plan: 'FREE',
+            status: 'ACTIVE',
+            storesLimit: 1,
+            campaignsLimit: 0,
+          },
+        });
+      } catch (error) {
+        // Si erreur de contrainte d'unicité (race condition sur batch calls parallèles),
+        // on réessaie de récupérer l'utilisateur qui a été créé par une requête parallèle
+        user = await ctx.prisma.user.findUnique({
+          where: { id: ctx.userId },
+        });
+      }
     }
   }
 

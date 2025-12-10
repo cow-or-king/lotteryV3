@@ -46,6 +46,7 @@ export const authRouter = createTRPCRouter({
     const authResult = await supabaseAuthService.signUp(input.email, input.password);
 
     if (!authResult.success) {
+      console.error('[AUTH] Erreur Supabase signUp:', authResult.error);
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: authResult.error.message,

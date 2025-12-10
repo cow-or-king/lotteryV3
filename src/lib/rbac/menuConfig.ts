@@ -15,13 +15,17 @@ export interface MenuConfig {
   adminVisible: boolean;
   userVisible: boolean;
   displayOrder: number;
+  targetRole?: 'SUPER_ADMIN' | 'ADMIN' | 'USER'; // Indique le rôle propriétaire de ce menu
 }
 
 /**
  * Configuration par défaut des menus
- * Cette configuration sera remplacée par les données de la BD ultérieurement
+ * SUPER_ADMIN a quelques pages exclusives (/dashboard/super-admin, home, analytics, settings)
+ * Pour le reste, il active les routes ADMIN si besoin
+ * ADMIN/USER ont leurs propres pages (ex: /dashboard)
  */
 export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
+  // === MENUS SUPER_ADMIN EXCLUSIFS (pages séparées) ===
   {
     id: 'super-admin',
     label: 'Super Admin',
@@ -31,96 +35,86 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     adminVisible: false,
     userVisible: false,
     displayOrder: 0,
+    targetRole: 'SUPER_ADMIN',
   },
   {
     id: 'dashboard',
     label: 'Dashboard',
-    path: '/dashboard',
+    path: '/dashboard/super-admin/home',
     icon: 'LayoutDashboard',
     superAdminVisible: true,
-    adminVisible: true,
-    userVisible: true,
+    adminVisible: false,
+    userVisible: false,
     displayOrder: 1,
-  },
-  {
-    id: 'stores',
-    label: 'Mes Commerces',
-    path: '/dashboard/stores',
-    icon: 'Store',
-    superAdminVisible: true,
-    adminVisible: true,
-    userVisible: false, // USER ne peut pas gérer de commerces
-    displayOrder: 2,
-  },
-  {
-    id: 'reviews',
-    label: 'Avis Google',
-    path: '/dashboard/reviews',
-    icon: 'Star',
-    superAdminVisible: true,
-    adminVisible: true,
-    userVisible: false, // USER ne peut pas voir les avis
-    displayOrder: 3,
-  },
-  {
-    id: 'prizes',
-    label: 'Gains & Lots',
-    path: '/dashboard/prizes',
-    icon: 'Gift',
-    superAdminVisible: true,
-    adminVisible: true,
-    userVisible: false,
-    displayOrder: 4,
-  },
-  {
-    id: 'campaigns',
-    label: 'Campagnes',
-    path: '/campaigns',
-    icon: 'Target',
-    superAdminVisible: true,
-    adminVisible: false, // Désactivé pour l'instant
-    userVisible: false,
-    displayOrder: 5,
-  },
-  {
-    id: 'lottery',
-    label: 'Lottery',
-    path: '/lottery',
-    icon: 'Dices',
-    superAdminVisible: true,
-    adminVisible: false, // Désactivé pour l'instant
-    userVisible: false,
-    displayOrder: 6,
-  },
-  {
-    id: 'participants',
-    label: 'Participants',
-    path: '/participants',
-    icon: 'Users',
-    superAdminVisible: true,
-    adminVisible: false, // Désactivé pour l'instant
-    userVisible: false,
-    displayOrder: 7,
+    targetRole: 'SUPER_ADMIN',
   },
   {
     id: 'analytics',
     label: 'Analytics',
-    path: '/analytics',
+    path: '/dashboard/super-admin/analytics',
     icon: 'TrendingUp',
     superAdminVisible: true,
-    adminVisible: false, // Désactivé pour l'instant
+    adminVisible: false,
     userVisible: false,
-    displayOrder: 8,
+    displayOrder: 2,
+    targetRole: 'SUPER_ADMIN',
   },
   {
     id: 'settings',
     label: 'Paramètres',
-    path: '/settings',
+    path: '/dashboard/super-admin/settings',
     icon: 'Settings',
     superAdminVisible: true,
-    adminVisible: false, // Désactivé pour l'instant
+    adminVisible: false,
     userVisible: false,
-    displayOrder: 9,
+    displayOrder: 3,
+    targetRole: 'SUPER_ADMIN',
+  },
+
+  // === MENUS ADMIN (pages séparées des SUPER_ADMIN) ===
+  {
+    id: 'admin-dashboard',
+    label: 'Dashboard',
+    path: '/dashboard',
+    icon: 'LayoutDashboard',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 4,
+    targetRole: 'ADMIN',
+  },
+  {
+    id: 'admin-stores',
+    label: 'Mes Commerces',
+    path: '/dashboard/stores',
+    icon: 'Store',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 5,
+    targetRole: 'ADMIN',
+  },
+  {
+    id: 'admin-reviews',
+    label: 'Avis Google',
+    path: '/dashboard/reviews',
+    icon: 'Star',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 6,
+    targetRole: 'ADMIN',
+  },
+  {
+    id: 'admin-prizes',
+    label: 'Gains & Lots',
+    path: '/dashboard/prizes',
+    icon: 'Gift',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 7,
+    targetRole: 'ADMIN',
   },
 ];
 
@@ -128,7 +122,9 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
  * Filtrer les menus visibles pour un rôle donné
  */
 export function getVisibleMenusForRole(role: UserRole | null): MenuConfig[] {
-  if (!role) return [];
+  if (!role) {
+    return [];
+  }
 
   return DEFAULT_MENU_CONFIG.filter((menu) => {
     switch (role) {
@@ -148,10 +144,14 @@ export function getVisibleMenusForRole(role: UserRole | null): MenuConfig[] {
  * Vérifier si un menu est visible pour un rôle
  */
 export function isMenuVisibleForRole(menuId: string, role: UserRole | null): boolean {
-  if (!role) return false;
+  if (!role) {
+    return false;
+  }
 
   const menu = DEFAULT_MENU_CONFIG.find((m) => m.id === menuId);
-  if (!menu) return false;
+  if (!menu) {
+    return false;
+  }
 
   switch (role) {
     case 'SUPER_ADMIN':
