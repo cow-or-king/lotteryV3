@@ -73,15 +73,6 @@ export function ReviewFilters({
           </button>
         </div>
       </div>
-
-      {/* Message d'aide */}
-      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-        <p className="text-sm text-blue-800">
-          💡 <strong>Mode développement :</strong> Le système utilise actuellement des avis de test.
-          Cliquez sur &quot;Synchroniser&quot; pour charger 10 avis français fictifs et tester
-          l&apos;interface.
-        </p>
-      </div>
     </div>
   );
 }

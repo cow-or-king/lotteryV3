@@ -153,21 +153,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* Info Banner */}
-      <div
-        style={{
-          background: 'rgba(147, 51, 234, 0.1)',
-          border: '1px solid rgba(147, 51, 234, 0.2)',
-          borderRadius: '12px',
-          padding: 'clamp(16px, 3vw, 20px)',
-        }}
-      >
-        <p style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', color: '#7c3aed', margin: 0 }}>
-          💡 <strong>Dashboard opérationnel !</strong> L'authentification fonctionne et votre
-          interface est prête. Navigation disponible via le menu latéral.
-        </p>
-      </div>
     </div>
   );
 }
