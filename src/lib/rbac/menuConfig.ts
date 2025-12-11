@@ -116,6 +116,17 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     displayOrder: 7,
     targetRole: 'ADMIN',
   },
+  {
+    id: 'admin-qr-codes',
+    label: 'QR Codes',
+    path: '/dashboard/qr-codes',
+    icon: 'QrCode',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 8,
+    targetRole: 'ADMIN',
+  },
 ];
 
 /**

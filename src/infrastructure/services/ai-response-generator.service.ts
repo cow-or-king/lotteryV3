@@ -236,8 +236,12 @@ Génère une réponse appropriée en ${input.language === 'fr' ? 'français' : '
    * Détermine le sentiment basé sur le rating
    */
   private determineSentiment(rating: number): 'positive' | 'neutral' | 'negative' {
-    if (rating >= 4) return 'positive';
-    if (rating === 3) return 'neutral';
+    if (rating >= 4) {
+      return 'positive';
+    }
+    if (rating === 3) {
+      return 'neutral';
+    }
     return 'negative';
   }
 
@@ -246,8 +250,12 @@ Génère une réponse appropriée en ${input.language === 'fr' ? 'français' : '
    */
   private calculateConfidence(rating: number): number {
     // Plus de confiance pour les avis extrêmes (très positifs ou très négatifs)
-    if (rating === 5 || rating === 1) return 0.95;
-    if (rating === 4 || rating === 2) return 0.85;
+    if (rating === 5 || rating === 1) {
+      return 0.95;
+    }
+    if (rating === 4 || rating === 2) {
+      return 0.85;
+    }
     return 0.75; // Rating 3 (neutre)
   }
 

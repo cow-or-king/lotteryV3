@@ -17,6 +17,7 @@ import {
   updateItemProbability,
   updateItemQuantity,
 } from './utils/prizeSetHelpers';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -27,6 +28,9 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
     description: '',
   });
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+
+  // Hook de confirmation
+  const { ConfirmDialogProps, confirm } = useConfirm();
 
   // Queries
   const { data: prizeSets, isLoading } = api.prizeSet.list.useQuery();
@@ -86,7 +90,9 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingSet) return;
+    if (!editingSet) {
+      return;
+    }
 
     const currentSet = prizeSets?.find((s) => s.id === editingSet.id);
     const currentItems = currentSet?.items || [];
@@ -100,9 +106,16 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
     );
   };
 
-  const handleDelete = (id: string, name: string) => {
-    // eslint-disable-next-line no-undef
-    if (window.confirm(`Supprimer le lot "${name}" ?`)) {
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: "Supprimer l'ensemble de lots",
+      message: `Êtes-vous sûr de vouloir supprimer l'ensemble de lots "${name}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
       deleteSet.mutate({ id });
     }
   };
@@ -154,5 +167,7 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
     handleUpdate,
     handleDelete,
     handleEditSet,
+    // Confirm Dialog
+    ConfirmDialogProps,
   };
 }

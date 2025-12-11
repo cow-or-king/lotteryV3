@@ -71,7 +71,9 @@ export function PrizeSetModal({
   onSubmit,
   isSubmitting,
 }: PrizeSetModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const currentBrandId = isEditing ? editingData?.brandId : formData?.brandId;
   const currentName = isEditing ? editingData?.name : formData?.name;

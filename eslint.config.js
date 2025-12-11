@@ -27,6 +27,12 @@ export default [
       '**/*.config.js',
       '**/*.config.mjs',
       'generated/**',
+      // Phase 2 - Quick Wins
+      'scripts/**', // Scripts Node.js
+      'prisma/**', // Scripts Prisma
+      '*.config.js', // Fichiers de config
+      '*.config.ts', // Fichiers de config TS
+      'src/generated/**', // Fichiers générés
     ],
   },
 
@@ -47,6 +53,27 @@ export default [
         React: 'readonly',
         NodeJS: 'readonly',
         JSX: 'readonly',
+        // Phase 2 - Globaux Node.js
+        process: 'readonly',
+        Buffer: 'readonly',
+        console: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        // Phase 2 - Globaux Browser
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearTimeout: 'readonly',
+        clearInterval: 'readonly',
+        fetch: 'readonly',
+        crypto: 'readonly',
+        global: 'readonly',
       },
     },
     plugins: {
@@ -58,6 +85,9 @@ export default [
     rules: {
       // TypeScript Rules - ZERO any types
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -74,7 +104,18 @@ export default [
       'react/react-in-jsx-scope': 'off', // Next.js n'en a pas besoin
       'react/prop-types': 'off', // TypeScript gère ça
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
+
+      // Code Quality Rules
+      'max-lines': [
+        'warn',
+        {
+          max: 400,
+          skipBlankLines: true,
+          skipComments: true,
+        },
+      ],
+      complexity: ['warn', 15],
 
       // Best Practices
       'no-console': ['warn', { allow: ['warn', 'error'] }],

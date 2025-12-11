@@ -15,6 +15,7 @@ export type MenuId =
   | 'stores'
   | 'reviews'
   | 'prizes'
+  | 'qr-codes'
   | 'campaigns'
   | 'lottery'
   | 'participants'
@@ -40,6 +41,8 @@ export function useSidebar() {
       setActiveMenu('reviews');
     } else if (pathname.startsWith('/dashboard/prizes')) {
       setActiveMenu('prizes');
+    } else if (pathname.startsWith('/dashboard/qr-codes')) {
+      setActiveMenu('qr-codes');
     } else if (pathname.startsWith('/campaigns')) {
       setActiveMenu('campaigns');
     } else if (pathname.startsWith('/lottery')) {

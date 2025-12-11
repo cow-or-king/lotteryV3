@@ -18,6 +18,7 @@ import {
   StoreModal,
   UpgradeModal,
 } from '@/components/stores';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useBrands, useStoreLimits, useStores } from '@/hooks/stores';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -169,6 +170,10 @@ export default function StoresPage() {
         onClose={() => limitsHook.setShowUpgradeModal(false)}
         limits={limitsHook.limits || null}
       />
+
+      {/* Confirm Dialogs */}
+      <ConfirmDialog {...storesHook.ConfirmDialogProps} />
+      <ConfirmDialog {...brandsHook.ConfirmDialogProps} />
     </div>
   );
 }

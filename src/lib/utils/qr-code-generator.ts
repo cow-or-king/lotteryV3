@@ -161,7 +161,7 @@ export function createQRCodeInstance(options: QRCodeGenerationOptions): QRCodeSt
       mode: 'Byte',
       errorCorrectionLevel: errorCorrectionLevel as 'L' | 'M' | 'Q' | 'H',
     },
-    imageOptions: styleConfig.imageOptions,
+    ...(styleConfig.imageOptions && { imageOptions: styleConfig.imageOptions }),
     dotsOptions: styleConfig.dotsOptions,
     backgroundOptions: styleConfig.backgroundOptions,
     cornersSquareOptions: styleConfig.cornersSquareOptions,
@@ -169,7 +169,7 @@ export function createQRCodeInstance(options: QRCodeGenerationOptions): QRCodeSt
       color: foregroundColor,
       type: undefined,
     },
-    image: logoUrl || undefined,
+    ...(logoUrl && { image: logoUrl }),
   });
 
   return qrCode;
@@ -339,8 +339,8 @@ export function validateQRCodeOptions(options: QRCodeGenerationOptions): string[
     errors.push('Logo size must be a positive number');
   }
 
-  if (options.logoSize && options.size && options.logoSize > options.size * 0.3) {
-    errors.push('Logo size should not exceed 30% of QR code size');
+  if (options.logoSize && options.size && options.logoSize > options.size * 0.8) {
+    errors.push('Logo size should not exceed 80% of QR code size');
   }
 
   return errors;

@@ -10,7 +10,7 @@ import type { QRCodeListItem } from '@/lib/types/qr-code.types';
  * @returns Object containing QR codes state, loading state, error state, and management functions
  */
 export function useQRCodeList() {
-  const [qrCodes, setQRCodes] = useState<QRCodeListItem[]>([]);
+  const [qrCodes] = useState<QRCodeListItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -21,7 +21,7 @@ export function useQRCodeList() {
    */
   const filteredQRCodes = qrCodes.filter((qrCode) => {
     // Filter by store if specified
-    if (filterByStore && qrCode.store_id !== filterByStore) {
+    if (filterByStore && qrCode.storeId !== filterByStore) {
       return false;
     }
 
@@ -29,9 +29,9 @@ export function useQRCodeList() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
-        qrCode.code.toLowerCase().includes(query) ||
-        qrCode.store_name?.toLowerCase().includes(query) ||
-        qrCode.campaign_name?.toLowerCase().includes(query)
+        qrCode.name.toLowerCase().includes(query) ||
+        qrCode.storeName?.toLowerCase().includes(query) ||
+        qrCode.campaignName?.toLowerCase().includes(query)
       );
     }
 

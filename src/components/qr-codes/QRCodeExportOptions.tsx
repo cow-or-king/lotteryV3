@@ -43,10 +43,13 @@ export default function QRCodeExportOptions({
   };
 
   return (
-    <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
+    <div className="space-y-6">
+      {/* Title */}
+      <h3 className="text-lg font-semibold text-gray-800">Exporter le QR Code</h3>
+
       {/* Export Format Selection */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-white/90 mb-3">Export Format</label>
+      <div>
+        <label className="block text-sm font-semibold text-gray-800 mb-3">Export Format</label>
         <div className="flex gap-3">
           <button
             type="button"
@@ -56,8 +59,8 @@ export default function QRCodeExportOptions({
               flex-1 px-4 py-3 rounded-xl font-medium transition-all
               ${
                 selectedFormat === ExportFormat.PNG
-                  ? 'bg-white/20 border-2 border-white/40 text-white shadow-lg'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20'
+                  ? 'bg-purple-500/20 border-2 border-purple-400/50 text-gray-900 shadow-lg'
+                  : 'bg-white/20 border border-gray-300/40 text-gray-800 hover:bg-white/30 hover:border-gray-400/50'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
@@ -72,8 +75,8 @@ export default function QRCodeExportOptions({
               flex-1 px-4 py-3 rounded-xl font-medium transition-all
               ${
                 selectedFormat === ExportFormat.SVG
-                  ? 'bg-white/20 border-2 border-white/40 text-white shadow-lg'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20'
+                  ? 'bg-purple-500/20 border-2 border-purple-400/50 text-gray-900 shadow-lg'
+                  : 'bg-white/20 border border-gray-300/40 text-gray-800 hover:bg-white/30 hover:border-gray-400/50'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
@@ -85,7 +88,7 @@ export default function QRCodeExportOptions({
             disabled
             className="
               relative flex-1 px-4 py-3 rounded-xl font-medium
-              bg-white/5 border border-white/10 text-white/40 cursor-not-allowed
+              bg-white/10 border border-gray-300/30 text-gray-500 cursor-not-allowed
             "
           >
             PDF
@@ -97,8 +100,8 @@ export default function QRCodeExportOptions({
       </div>
 
       {/* Size Selection */}
-      <div className="mb-6">
-        <label htmlFor="size-select" className="block text-sm font-medium text-white/90 mb-3">
+      <div>
+        <label htmlFor="size-select" className="block text-sm font-semibold text-gray-800 mb-3">
           Export Size
         </label>
         <select
@@ -108,15 +111,15 @@ export default function QRCodeExportOptions({
           disabled={disabled}
           className="
             w-full px-4 py-3 rounded-xl
-            bg-white/5 border border-white/20
-            text-white font-medium
-            focus:outline-none focus:ring-2 focus:ring-white/40
+            bg-white/20 border border-gray-300
+            text-gray-900 font-medium
+            focus:outline-none focus:ring-2 focus:ring-purple-500
             disabled:opacity-50 disabled:cursor-not-allowed
             cursor-pointer
           "
         >
           {QR_CODE_SIZES.map((size) => (
-            <option key={size} value={size} className="bg-gray-900 text-white">
+            <option key={size} value={size} className="bg-white text-gray-900">
               {size} x {size}px
             </option>
           ))}

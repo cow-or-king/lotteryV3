@@ -4,7 +4,7 @@
  */
 
 import { google } from 'googleapis';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -12,7 +12,7 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback',
 );
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Générer l'URL d'autorisation Google
     const authUrl = oauth2Client.generateAuthUrl({

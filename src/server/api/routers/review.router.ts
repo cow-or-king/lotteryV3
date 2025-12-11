@@ -37,8 +37,10 @@ const storeRepository = new PrismaStoreRepository();
 // Instancier encryption service (utilisé par le service production)
 const encryptionService = new ApiKeyEncryptionService();
 
+import { logger } from '@/lib/utils/logger';
+
 // Utiliser Google My Business API avec OAuth2
-console.log('[INFO] 🏢 Using MY BUSINESS API service (OAuth2, read + write)');
+logger.info('Using MY BUSINESS API service (OAuth2, read + write)');
 const googleService = new GoogleMyBusinessProductionService(encryptionService);
 
 const aiService = new AiResponseGeneratorService(prisma, encryptionService);

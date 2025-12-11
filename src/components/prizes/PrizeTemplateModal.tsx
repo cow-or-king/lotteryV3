@@ -80,7 +80,9 @@ export function PrizeTemplateModal({
   onSubmit,
   isSubmitting,
 }: PrizeTemplateModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const currentColor = isEditing ? editingData?.color : formData?.color;
   const currentIconUrl = isEditing ? editingData?.iconUrl : formData?.iconUrl;

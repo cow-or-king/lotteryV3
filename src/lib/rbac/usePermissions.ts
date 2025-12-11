@@ -26,7 +26,9 @@ export function usePermissions() {
      * Vérifie si l'utilisateur a accès à une fonctionnalité
      */
     canAccess: (feature: Feature): boolean => {
-      if (!effectiveUser) return false;
+      if (!effectiveUser) {
+        return false;
+      }
       return canAccess(effectiveUser, feature);
     },
 
@@ -35,7 +37,9 @@ export function usePermissions() {
      * Note: Retourne false si en mode impersonation avec un rôle inférieur
      */
     isSuperAdmin: (): boolean => {
-      if (!effectiveUser) return false;
+      if (!effectiveUser) {
+        return false;
+      }
       return isSuperAdmin(effectiveUser);
     },
 
@@ -43,7 +47,9 @@ export function usePermissions() {
      * Vérifie si l'utilisateur est au moins Admin
      */
     isAdmin: (): boolean => {
-      if (!effectiveUser) return false;
+      if (!effectiveUser) {
+        return false;
+      }
       return isAdmin(effectiveUser);
     },
 
@@ -51,7 +57,9 @@ export function usePermissions() {
      * Récupère toutes les permissions de l'utilisateur
      */
     getPermissions: (): readonly Feature[] => {
-      if (!effectiveUser) return [];
+      if (!effectiveUser) {
+        return [];
+      }
       return getUserPermissions(effectiveUser);
     },
 

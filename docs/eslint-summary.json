@@ -1,0 +1,205 @@
+{
+  "date": "2025-12-11",
+  "summary": {
+    "total_issues": 3829,
+    "total_errors": 3128,
+    "total_warnings": 701,
+    "files_affected": 150
+  },
+  "rules_added": [
+    "@typescript-eslint/no-unsafe-assignment",
+    "@typescript-eslint/no-unsafe-member-access",
+    "@typescript-eslint/no-unsafe-call",
+    "react-hooks/exhaustive-deps (upgraded to error)",
+    "max-lines",
+    "complexity"
+  ],
+  "errors_by_rule": {
+    "no-unused-vars": 2032,
+    "no-undef": 896,
+    "@typescript-eslint/no-explicit-any": 196,
+    "@typescript-eslint/no-unsafe-member-access": 187,
+    "@typescript-eslint/no-unused-vars": 176,
+    "no-console": 121,
+    "@typescript-eslint/no-unsafe-assignment": 95,
+    "@typescript-eslint/no-unsafe-call": 66,
+    "complexity": 30,
+    "@typescript-eslint/no-non-null-assertion": 25,
+    "no-redeclare": 24,
+    "max-lines": 8,
+    "react-hooks/exhaustive-deps": 1
+  },
+  "top_problematic_files": [
+    {
+      "path": "src/generated/prisma/index.d.ts",
+      "issues": 905,
+      "category": "generated",
+      "action": "ignore"
+    },
+    {
+      "path": "src/generated/prisma/runtime/library.d.ts",
+      "issues": 638,
+      "category": "generated",
+      "action": "ignore"
+    },
+    {
+      "path": "src/generated/prisma/runtime/library.js",
+      "issues": 204,
+      "category": "generated",
+      "action": "ignore"
+    },
+    {
+      "path": "src/test/unit/infrastructure/auth/session.service.test.ts",
+      "issues": 128,
+      "category": "test",
+      "action": "fix",
+      "priority": "medium"
+    },
+    {
+      "path": "scripts/check-user-status.ts",
+      "issues": 80,
+      "category": "script",
+      "action": "exclude_or_fix",
+      "priority": "low"
+    },
+    {
+      "path": "scripts/test-google-api.ts",
+      "issues": 48,
+      "category": "script",
+      "action": "exclude_or_fix",
+      "priority": "low"
+    },
+    {
+      "path": "src/app/dashboard/qr-codes/[id]/stats/page.tsx",
+      "issues": 36,
+      "category": "application",
+      "action": "fix",
+      "priority": "high"
+    },
+    {
+      "path": "src/infrastructure/repositories/prisma/subscription.repository.prisma.ts",
+      "issues": 35,
+      "category": "application",
+      "action": "fix",
+      "priority": "high"
+    },
+    {
+      "path": "src/server/api/routers/admin.router.ts",
+      "issues": 33,
+      "category": "application",
+      "action": "fix",
+      "priority": "high"
+    },
+    {
+      "path": "src/infrastructure/services/google-my-business-production.service.ts",
+      "issues": 32,
+      "category": "application",
+      "action": "fix",
+      "priority": "high"
+    },
+    {
+      "path": "scripts/test-db-connection.ts",
+      "issues": 32,
+      "category": "script",
+      "action": "exclude_or_fix",
+      "priority": "low"
+    }
+  ],
+  "categories": {
+    "generated_files": {
+      "count": 10,
+      "issues": 1800,
+      "action": "Already excluded in eslint.config.js"
+    },
+    "scripts": {
+      "count": 13,
+      "issues": 500,
+      "action": "Exclude from linting or add Node.js globals"
+    },
+    "tests": {
+      "count": 30,
+      "issues": 400,
+      "action": "Fix with proper type guards"
+    },
+    "application_code": {
+      "count": 17,
+      "issues": 300,
+      "action": "Fix with high priority"
+    }
+  },
+  "migration_phases": {
+    "phase_1": {
+      "name": "Configuration",
+      "duration": "1 hour",
+      "status": "completed",
+      "tasks": [
+        "Add strict rules to eslint.config.js",
+        "Run npm run lint for audit",
+        "Create ESLINT_MIGRATION.md"
+      ]
+    },
+    "phase_2": {
+      "name": "Quick Wins",
+      "duration": "2 hours",
+      "status": "pending",
+      "tasks": [
+        "Exclude scripts from linting",
+        "Add Node.js globals",
+        "Replace console.log with console.warn in scripts"
+      ],
+      "expected_reduction": 500
+    },
+    "phase_3": {
+      "name": "High Priority Fixes",
+      "duration": "2-3 days",
+      "status": "pending",
+      "tasks": ["Fix routers (6 files)", "Fix repositories (5 files)", "Fix services (5 files)"],
+      "expected_reduction": 200
+    },
+    "phase_4": {
+      "name": "Test Fixes",
+      "duration": "1-2 days",
+      "status": "pending",
+      "tasks": ["Fix integration tests", "Fix unit tests"],
+      "expected_reduction": 400
+    },
+    "phase_5": {
+      "name": "Final Fixes",
+      "duration": "1 day",
+      "status": "pending",
+      "tasks": ["Fix dashboard pages", "Fix UI components"],
+      "expected_reduction": 100
+    },
+    "phase_6": {
+      "name": "Optimization",
+      "duration": "1 day",
+      "status": "pending",
+      "tasks": ["Refactor complex functions", "Split large files", "Final review"]
+    }
+  },
+  "success_metrics": {
+    "current": {
+      "total_errors": 3128,
+      "total_warnings": 701,
+      "files_with_issues": 150,
+      "no_explicit_any": 196,
+      "no_unsafe": 348,
+      "complex_functions": 30,
+      "large_files": 8
+    },
+    "target_phase_2": {
+      "total_errors": 1500,
+      "total_warnings": 400,
+      "files_with_issues": 80
+    },
+    "target_final": {
+      "total_errors": 100,
+      "total_warnings": 50,
+      "files_with_issues": 20,
+      "no_explicit_any": 0,
+      "no_unsafe": 20,
+      "complex_functions": 10,
+      "large_files": 0
+    }
+  }
+}

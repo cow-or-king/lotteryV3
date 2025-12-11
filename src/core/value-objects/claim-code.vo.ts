@@ -81,7 +81,9 @@ export class ClaimCode {
    */
   formatMasked(): string {
     const parts = this.value.split('-');
-    if (parts.length !== 3) return this.value;
+    if (parts.length !== 3) {
+      return this.value;
+    }
 
     return `${parts[0]}-****-${parts[2]}`;
   }

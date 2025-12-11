@@ -4,14 +4,12 @@ import {
   QRCodeGenerationResult,
   QRCodeStyle,
   QRCodeAnimation,
-} from '@/lib/types/qr-code.types';
-import { generateQRCode } from '@/lib/utils/qr-code-generator';
-import {
   DEFAULT_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_QR_CODE_SIZE,
   DEFAULT_LOGO_SIZE,
-} from '@/lib/constants/qr-code.constants';
+} from '@/lib/types/qr-code.types';
+import { generateQRCode } from '@/lib/utils/qr-code-generator';
 
 /**
  * Custom hook for QR code generation with configurable options
@@ -24,6 +22,7 @@ export function useQRCodeGenerator() {
   const [animation, setAnimation] = useState<QRCodeAnimation | null>('NONE');
   const [foregroundColor, setForegroundColor] = useState<string>(DEFAULT_FOREGROUND_COLOR);
   const [backgroundColor, setBackgroundColor] = useState<string>(DEFAULT_BACKGROUND_COLOR);
+  const [animationColor, setAnimationColor] = useState<string>('#8b5cf6'); // Purple by default
   const [size, setSize] = useState<number>(DEFAULT_QR_CODE_SIZE);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState<number>(DEFAULT_LOGO_SIZE);
@@ -48,6 +47,7 @@ export function useQRCodeGenerator() {
         foregroundColor,
         backgroundColor,
         size,
+        errorCorrectionLevel: 'M',
         logoUrl,
         logoSize,
       };
@@ -72,6 +72,7 @@ export function useQRCodeGenerator() {
     setAnimation('NONE');
     setForegroundColor(DEFAULT_FOREGROUND_COLOR);
     setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+    setAnimationColor('#8b5cf6');
     setSize(DEFAULT_QR_CODE_SIZE);
     setLogoUrl(null);
     setLogoSize(DEFAULT_LOGO_SIZE);
@@ -91,6 +92,8 @@ export function useQRCodeGenerator() {
     setForegroundColor,
     backgroundColor,
     setBackgroundColor,
+    animationColor,
+    setAnimationColor,
     size,
     setSize,
     logoUrl,

@@ -9,7 +9,22 @@ import { QRCodeAnimation } from '@/lib/types/qr-code.types';
 interface QRCodePreviewProps {
   qrCodeDataUrl: string | null;
   animation: QRCodeAnimation | null;
+  animationColor?: string;
   isGenerating: boolean;
+}
+
+/**
+ * Convert hex color to RGB values
+ */
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1] ?? 'ff', 16),
+        g: parseInt(result[2] ?? 'ff', 16),
+        b: parseInt(result[3] ?? 'ff', 16),
+      }
+    : { r: 139, g: 92, b: 246 }; // Default purple
 }
 
 /**
@@ -19,8 +34,12 @@ interface QRCodePreviewProps {
 export default function QRCodePreview({
   qrCodeDataUrl,
   animation,
+  animationColor = '#8b5cf6',
   isGenerating,
 }: QRCodePreviewProps) {
+  const rgb = hexToRgb(animationColor);
+  const rgbaColor = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+
   useEffect(() => {
     // Component is mounted
   }, []);
@@ -29,7 +48,9 @@ export default function QRCodePreview({
    * Get the CSS class name based on the selected animation
    */
   const getAnimationClass = (): string => {
-    if (!animation) return '';
+    if (!animation) {
+      return '';
+    }
 
     switch (animation) {
       case 'RIPPLE':
@@ -63,18 +84,18 @@ export default function QRCodePreview({
         @keyframes ripple {
           0% {
             box-shadow:
-              0 0 0 0 rgba(139, 92, 246, 0.7),
-              0 0 0 0 rgba(139, 92, 246, 0.7);
+              0 0 0 0 rgba(${rgbaColor}, 0.7),
+              0 0 0 0 rgba(${rgbaColor}, 0.7);
           }
           50% {
             box-shadow:
-              0 0 0 10px rgba(139, 92, 246, 0.3),
-              0 0 0 20px rgba(139, 92, 246, 0.1);
+              0 0 0 10px rgba(${rgbaColor}, 0.3),
+              0 0 0 20px rgba(${rgbaColor}, 0.1);
           }
           100% {
             box-shadow:
-              0 0 0 20px rgba(139, 92, 246, 0),
-              0 0 0 40px rgba(139, 92, 246, 0);
+              0 0 0 20px rgba(${rgbaColor}, 0),
+              0 0 0 40px rgba(${rgbaColor}, 0);
           }
         }
 
@@ -104,13 +125,13 @@ export default function QRCodePreview({
           0%,
           100% {
             box-shadow:
-              0 0 20px rgba(139, 92, 246, 0.5),
-              0 0 30px rgba(139, 92, 246, 0.3);
+              0 0 20px rgba(${rgbaColor}, 0.5),
+              0 0 30px rgba(${rgbaColor}, 0.3);
           }
           50% {
             box-shadow:
-              0 0 40px rgba(139, 92, 246, 0.8),
-              0 0 60px rgba(139, 92, 246, 0.5);
+              0 0 40px rgba(${rgbaColor}, 0.8),
+              0 0 60px rgba(${rgbaColor}, 0.5);
           }
         }
 
@@ -158,13 +179,13 @@ export default function QRCodePreview({
         }
         @keyframes circular-ripple {
           0% {
-            box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+            box-shadow: 0 0 0 0 rgba(${rgbaColor}, 0.7);
           }
           50% {
-            box-shadow: 0 0 0 30px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 0 30px rgba(${rgbaColor}, 0.3);
           }
           100% {
-            box-shadow: 0 0 0 60px rgba(139, 92, 246, 0);
+            box-shadow: 0 0 0 60px rgba(${rgbaColor}, 0);
           }
         }
       `}</style>
@@ -176,7 +197,7 @@ export default function QRCodePreview({
           {isGenerating && (
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="w-16 h-16 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin"></div>
-              <p className="text-sm text-white/70">Generating QR code...</p>
+              <p className="text-sm font-medium text-gray-800">Generating QR code...</p>
             </div>
           )}
 
@@ -191,7 +212,9 @@ export default function QRCodePreview({
                 />
               </div>
               {animation && animation !== 'NONE' && (
-                <p className="text-xs text-white/60 italic">Hover to preview animation</p>
+                <p className="text-xs text-gray-700 italic font-medium">
+                  Hover to preview animation
+                </p>
               )}
             </div>
           )}
@@ -199,9 +222,9 @@ export default function QRCodePreview({
           {/* Empty state */}
           {!isGenerating && !qrCodeDataUrl && (
             <div className="flex flex-col items-center justify-center space-y-4 py-16">
-              <div className="w-24 h-24 rounded-lg bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-lg bg-white/20 border-2 border-dashed border-gray-300 flex items-center justify-center">
                 <svg
-                  className="w-12 h-12 text-white/30"
+                  className="w-12 h-12 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -214,7 +237,7 @@ export default function QRCodePreview({
                   />
                 </svg>
               </div>
-              <p className="text-sm text-white/60 text-center">
+              <p className="text-sm text-gray-700 text-center font-medium">
                 Configure your QR code to see preview
               </p>
             </div>

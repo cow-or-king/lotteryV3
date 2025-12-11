@@ -12,7 +12,9 @@ import { api } from '@/lib/trpc/client';
 export function RoleBadge() {
   const { data: user } = api.auth.getMe.useQuery();
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
   const roleConfig = {
     SUPER_ADMIN: {

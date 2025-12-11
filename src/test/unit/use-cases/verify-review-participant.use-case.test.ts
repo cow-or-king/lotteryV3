@@ -55,7 +55,9 @@ describe('VerifyReviewParticipantUseCase', () => {
       });
 
       expect(mockReview.success).toBe(true);
-      if (!mockReview.success) return;
+      if (!mockReview.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findByEmailAndStore).mockResolvedValue(mockReview.data);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
@@ -130,11 +132,15 @@ describe('VerifyReviewParticipantUseCase', () => {
       });
 
       expect(mockReviewResult.success).toBe(true);
-      if (!mockReviewResult.success) return;
+      if (!mockReviewResult.success) {
+        return;
+      }
 
       const verifiedResult = mockReviewResult.data.markAsVerified(participantId);
       expect(verifiedResult.success).toBe(true);
-      if (!verifiedResult.success) return;
+      if (!verifiedResult.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findByEmailAndStore).mockResolvedValue(verifiedResult.data);
 
@@ -167,7 +173,9 @@ describe('VerifyReviewParticipantUseCase', () => {
       });
 
       expect(mockReview.success).toBe(true);
-      if (!mockReview.success) return;
+      if (!mockReview.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findByEmailAndStore).mockResolvedValue(mockReview.data);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
@@ -201,7 +209,9 @@ describe('VerifyReviewParticipantUseCase', () => {
       });
 
       expect(mockReview.success).toBe(true);
-      if (!mockReview.success) return;
+      if (!mockReview.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findByEmailAndStore).mockResolvedValue(mockReview.data);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
@@ -234,7 +244,9 @@ describe('VerifyReviewParticipantUseCase', () => {
       });
 
       expect(mockReview.success).toBe(true);
-      if (!mockReview.success) return;
+      if (!mockReview.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findByEmailAndStore).mockResolvedValue(mockReview.data);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));

@@ -139,8 +139,12 @@ describe('SessionService', () => {
       // ARRANGE
       const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
       mockCookieStore.get.mockImplementation((name: string) => {
-        if (name === 'rl-access-token') return { value: 'valid-access-token' };
-        if (name === 'rl-refresh-token') return { value: 'valid-refresh-token' };
+        if (name === 'rl-access-token') {
+          return { value: 'valid-access-token' };
+        }
+        if (name === 'rl-refresh-token') {
+          return { value: 'valid-refresh-token' };
+        }
         return undefined;
       });
 
@@ -181,7 +185,9 @@ describe('SessionService', () => {
     it('should return null when access token is missing', async () => {
       // ARRANGE
       mockCookieStore.get.mockImplementation((name: string) => {
-        if (name === 'rl-refresh-token') return { value: 'valid-refresh-token' };
+        if (name === 'rl-refresh-token') {
+          return { value: 'valid-refresh-token' };
+        }
         return undefined;
       });
 
@@ -197,8 +203,12 @@ describe('SessionService', () => {
       // ARRANGE
       const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
       mockCookieStore.get.mockImplementation((name: string) => {
-        if (name === 'rl-access-token') return { value: 'expired-access-token' };
-        if (name === 'rl-refresh-token') return { value: 'valid-refresh-token' };
+        if (name === 'rl-access-token') {
+          return { value: 'expired-access-token' };
+        }
+        if (name === 'rl-refresh-token') {
+          return { value: 'valid-refresh-token' };
+        }
         return undefined;
       });
 
@@ -248,8 +258,12 @@ describe('SessionService', () => {
     it('should return null when refresh fails', async () => {
       // ARRANGE
       mockCookieStore.get.mockImplementation((name: string) => {
-        if (name === 'rl-access-token') return { value: 'expired-access-token' };
-        if (name === 'rl-refresh-token') return { value: 'invalid-refresh-token' };
+        if (name === 'rl-access-token') {
+          return { value: 'expired-access-token' };
+        }
+        if (name === 'rl-refresh-token') {
+          return { value: 'invalid-refresh-token' };
+        }
         return undefined;
       });
 
@@ -462,8 +476,12 @@ describe('SessionService', () => {
       const request = {
         cookies: {
           get: vi.fn((name: string) => {
-            if (name === 'rl-access-token') return { value: 'valid-access-token' };
-            if (name === 'rl-refresh-token') return { value: 'valid-refresh-token' };
+            if (name === 'rl-access-token') {
+              return { value: 'valid-access-token' };
+            }
+            if (name === 'rl-refresh-token') {
+              return { value: 'valid-refresh-token' };
+            }
             return undefined;
           }),
         },
@@ -505,8 +523,12 @@ describe('SessionService', () => {
       const request = {
         cookies: {
           get: vi.fn((name: string) => {
-            if (name === 'rl-access-token') return { value: 'expired-access-token' };
-            if (name === 'rl-refresh-token') return { value: 'valid-refresh-token' };
+            if (name === 'rl-access-token') {
+              return { value: 'expired-access-token' };
+            }
+            if (name === 'rl-refresh-token') {
+              return { value: 'valid-refresh-token' };
+            }
             return undefined;
           }),
         },
@@ -540,8 +562,12 @@ describe('SessionService', () => {
       const request = {
         cookies: {
           get: vi.fn((name: string) => {
-            if (name === 'rl-access-token') return { value: 'expired-access-token' };
-            if (name === 'rl-refresh-token') return { value: 'invalid-refresh-token' };
+            if (name === 'rl-access-token') {
+              return { value: 'expired-access-token' };
+            }
+            if (name === 'rl-refresh-token') {
+              return { value: 'invalid-refresh-token' };
+            }
             return undefined;
           }),
         },

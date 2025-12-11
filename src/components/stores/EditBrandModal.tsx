@@ -23,7 +23,9 @@ export function EditBrandModal({
   onSubmit,
   isSubmitting,
 }: EditBrandModalProps) {
-  if (!isOpen || !brand) return null;
+  if (!isOpen || !brand) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 rounded-3xl">

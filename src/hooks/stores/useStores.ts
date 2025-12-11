@@ -6,6 +6,7 @@ import type { EditingStore, StoreFormData, StoreFormErrors } from '@/lib/types/s
 import { useStoreMutations } from './mutations/useStoreMutations';
 import { validateStoreForm } from './utils/storeValidation';
 import { useStoreEffects } from './effects/useStoreEffects';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 export function useStores() {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -23,6 +24,9 @@ export function useStores() {
     googleApiKey: '',
   });
   const [errors, setErrors] = useState<StoreFormErrors>({});
+
+  // Hook de confirmation
+  const { ConfirmDialogProps, confirm } = useConfirm();
 
   // Queries
   const { data: stores, isLoading } = api.store.list.useQuery();
@@ -67,16 +71,25 @@ export function useStores() {
     setOpenMenuId,
   });
 
-  const handleDeleteStore = (storeId: string, storeName: string) => {
-    // eslint-disable-next-line no-undef
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le commerce "${storeName}" ?`)) {
+  const handleDeleteStore = async (storeId: string, storeName: string) => {
+    const confirmed = await confirm({
+      title: 'Supprimer le commerce',
+      message: `Êtes-vous sûr de vouloir supprimer le commerce "${storeName}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
       deleteStore.mutate({ id: storeId });
     }
   };
 
   const handleUpdateStore = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingStore) return;
+    if (!editingStore) {
+      return;
+    }
 
     updateStore.mutate({
       id: editingStore.id,
@@ -159,5 +172,8 @@ export function useStores() {
     handleUpdateStore,
     handleSubmit,
     resetForm,
+
+    // Confirm Dialog
+    ConfirmDialogProps,
   };
 }

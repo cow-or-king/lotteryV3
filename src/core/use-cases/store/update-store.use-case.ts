@@ -54,12 +54,21 @@ export class UpdateStoreUseCase {
 
     // 3. Préparer les données de mise à jour (seulement les champs fournis)
     const updateData: Partial<UpdateStoreInput> = {};
-    if (input.name !== undefined) updateData.name = input.name;
-    if (input.googleBusinessUrl !== undefined)
+    if (input.name !== undefined) {
+      updateData.name = input.name;
+    }
+    if (input.googleBusinessUrl !== undefined) {
       updateData.googleBusinessUrl = input.googleBusinessUrl;
-    if (input.googlePlaceId !== undefined) updateData.googlePlaceId = input.googlePlaceId;
-    if (input.description !== undefined) updateData.description = input.description;
-    if (input.isActive !== undefined) updateData.isActive = input.isActive;
+    }
+    if (input.googlePlaceId !== undefined) {
+      updateData.googlePlaceId = input.googlePlaceId;
+    }
+    if (input.description !== undefined) {
+      updateData.description = input.description;
+    }
+    if (input.isActive !== undefined) {
+      updateData.isActive = input.isActive;
+    }
 
     // 4. Chiffrer la clé API Google si fournie (AES-256-GCM)
     if (input.googleApiKey !== undefined) {

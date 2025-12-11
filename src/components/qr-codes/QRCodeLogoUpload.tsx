@@ -68,7 +68,9 @@ export default function QRCodeLogoUpload({
    */
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (validateFile(file)) {
       const url = URL.createObjectURL(file);
@@ -99,7 +101,9 @@ export default function QRCodeLogoUpload({
     setIsDragging(false);
 
     const file = e.dataTransfer.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (validateFile(file)) {
       const url = URL.createObjectURL(file);
@@ -133,16 +137,19 @@ export default function QRCodeLogoUpload({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Title */}
+      <label className="block text-sm font-semibold text-gray-800">Logo (Optionnel)</label>
+
       {/* Input Mode Toggle */}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={() => setInputMode('upload')}
-          className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+          className={`flex-1 px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${
             inputMode === 'upload'
-              ? 'bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg'
-              : 'bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10'
+              ? 'bg-purple-500/20 backdrop-blur-sm border border-purple-400/40 shadow-lg text-gray-900'
+              : 'bg-white/10 backdrop-blur-sm border border-gray-300/30 hover:bg-white/20 text-gray-800'
           }`}
         >
           Upload File
@@ -150,10 +157,10 @@ export default function QRCodeLogoUpload({
         <button
           type="button"
           onClick={() => setInputMode('url')}
-          className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+          className={`flex-1 px-3 py-1.5 rounded-lg transition-all font-medium text-xs ${
             inputMode === 'url'
-              ? 'bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg'
-              : 'bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10'
+              ? 'bg-purple-500/20 backdrop-blur-sm border border-purple-400/40 shadow-lg text-gray-900'
+              : 'bg-white/10 backdrop-blur-sm border border-gray-300/30 hover:bg-white/20 text-gray-800'
           }`}
         >
           From URL
@@ -166,23 +173,24 @@ export default function QRCodeLogoUpload({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+          className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-all cursor-pointer ${
             isDragging
-              ? 'border-blue-400 bg-blue-500/10 backdrop-blur-sm'
-              : 'border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10'
+              ? 'border-purple-400 bg-purple-500/10 backdrop-blur-sm'
+              : 'border-gray-300 bg-white/10 backdrop-blur-sm hover:bg-white/20'
           }`}
+          onClick={() => fileInputRef.current?.click()}
         >
           <input
             ref={fileInputRef}
             type="file"
             accept={ACCEPTED_LOGO_FORMATS.join(',')}
             onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="hidden"
           />
-          <div className="pointer-events-none">
-            <Upload className="w-12 h-12 mx-auto mb-4 text-white/60" />
-            <p className="text-lg font-medium mb-2">Drop your logo here or click to browse</p>
-            <p className="text-sm text-white/60">Formats: PNG, JPEG, SVG, WebP • Max 2MB</p>
+          <div>
+            <Upload className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+            <p className="text-sm font-medium mb-1 text-gray-900">Drop logo or click</p>
+            <p className="text-xs text-gray-700">PNG, JPEG, SVG, WebP • Max 2MB</p>
           </div>
         </div>
       )}
@@ -196,16 +204,16 @@ export default function QRCodeLogoUpload({
             onChange={(e) => setUrlInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
             placeholder="Enter image URL..."
-            className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder:text-white/40"
+            className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
           />
           <button
             type="button"
             onClick={handleUrlSubmit}
-            className="w-full px-4 py-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 rounded-lg hover:bg-blue-500/30 transition-all"
+            className="w-full px-4 py-2 bg-purple-500/20 backdrop-blur-sm border border-purple-400/40 rounded-lg hover:bg-purple-500/30 transition-all font-medium text-gray-900"
           >
             Load from URL
           </button>
-          <p className="text-sm text-white/60 text-center">
+          <p className="text-sm text-gray-700 text-center">
             Formats: PNG, JPEG, SVG, WebP • Max 2MB
           </p>
         </div>
@@ -213,19 +221,19 @@ export default function QRCodeLogoUpload({
 
       {/* Logo Preview */}
       {logoUrl && (
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">Logo Preview</span>
+        <div className="bg-white/10 backdrop-blur-sm border border-gray-300/30 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-gray-900">Logo Preview</span>
             <button
               type="button"
               onClick={handleRemoveLogo}
               className="p-1 hover:bg-red-500/20 rounded-lg transition-all group"
               aria-label="Remove logo"
             >
-              <X className="w-5 h-5 text-white/60 group-hover:text-red-400" />
+              <X className="w-4 h-4 text-gray-600 group-hover:text-red-600" />
             </button>
           </div>
-          <div className="flex justify-center p-4 bg-white/5 rounded-lg">
+          <div className="flex justify-center p-2 bg-white/20 rounded-lg">
             <img
               src={logoUrl}
               alt="Logo preview"
@@ -238,19 +246,19 @@ export default function QRCodeLogoUpload({
 
       {/* Logo Size Slider */}
       {logoUrl && (
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 space-y-3">
+        <div className="bg-white/10 backdrop-blur-sm border border-gray-300/30 rounded-lg p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Logo Size</label>
-            <span className="text-sm text-white/60">{logoSize}px</span>
+            <label className="text-xs font-semibold text-gray-900">Logo Size</label>
+            <span className="text-xs font-medium text-gray-700">{logoSize}px</span>
           </div>
           <input
             type="range"
             min="40"
-            max="200"
+            max="400"
             step="10"
             value={logoSize}
             onChange={(e) => onLogoSizeChange(Number(e.target.value))}
-            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
           <style jsx>{`
             .slider::-webkit-slider-thumb {

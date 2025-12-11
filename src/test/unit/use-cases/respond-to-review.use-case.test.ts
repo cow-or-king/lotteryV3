@@ -148,7 +148,9 @@ describe('RespondToReviewUseCase', () => {
 
       const withResponse = mockReview.addResponse('Already responded', userId);
       expect(withResponse.success).toBe(true);
-      if (!withResponse.success) return;
+      if (!withResponse.success) {
+        return;
+      }
 
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(withResponse.data);
 

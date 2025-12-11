@@ -8,7 +8,7 @@ import { PrismaClient } from '@/generated/prisma';
 
 declare global {
   // Nécessaire pour le hot-reload en dev
-  // eslint-disable-next-line no-var
+
   var prisma: PrismaClient | undefined;
 }
 

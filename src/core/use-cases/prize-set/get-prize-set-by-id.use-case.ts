@@ -18,14 +18,22 @@ export class GetPrizeSetByIdUseCase {
   ): Promise<Result<PrizeSetWithItems, Error>> {
     try {
       const prizeSet = await this.prizeSetRepository.findById(input.id);
-      if (!prizeSet) return Result.fail(new Error('Lot non trouvé'));
+      if (!prizeSet) {
+        return Result.fail(new Error('Lot non trouvé'));
+      }
 
       const brandResult = await this.brandRepository.findById(prizeSet.brandId);
-      if (!brandResult.success) return Result.fail(brandResult.error);
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
+      }
 
       const brand = brandResult.data;
-      if (!brand) return Result.fail(new Error('Enseigne non trouvée'));
-      if (brand.ownerId !== userId) return Result.fail(new Error('Ce lot ne vous appartient pas'));
+      if (!brand) {
+        return Result.fail(new Error('Enseigne non trouvée'));
+      }
+      if (brand.ownerId !== userId) {
+        return Result.fail(new Error('Ce lot ne vous appartient pas'));
+      }
 
       return Result.ok(prizeSet);
     } catch (error) {

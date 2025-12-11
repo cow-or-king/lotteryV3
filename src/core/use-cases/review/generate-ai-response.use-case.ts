@@ -136,8 +136,12 @@ export class GenerateAiResponseUseCase {
    * Détermine le ton approprié basé sur le rating
    */
   private determineToneFromRating(rating: number): 'professional' | 'friendly' | 'apologetic' {
-    if (rating <= 2) return 'apologetic'; // Avis très négatif
-    if (rating === 3) return 'professional'; // Avis neutre
+    if (rating <= 2) {
+      return 'apologetic';
+    } // Avis très négatif
+    if (rating === 3) {
+      return 'professional';
+    } // Avis neutre
     return 'friendly'; // Avis positif
   }
 }

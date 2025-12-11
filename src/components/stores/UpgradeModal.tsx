@@ -12,7 +12,9 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ isOpen, onClose, limits }: UpgradeModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50">

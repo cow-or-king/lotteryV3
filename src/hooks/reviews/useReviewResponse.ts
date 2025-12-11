@@ -157,7 +157,9 @@ export function useReviewResponse() {
    * Génère une suggestion IA
    */
   const generateAiSuggestion = () => {
-    if (!selectedReview) return;
+    if (!selectedReview) {
+      return;
+    }
 
     generateAiMutation.mutate({
       reviewId: selectedReview.reviewId,
@@ -190,7 +192,9 @@ export function useReviewResponse() {
    * Soumet la réponse
    */
   const submitResponse = () => {
-    if (!selectedReview) return;
+    if (!selectedReview) {
+      return;
+    }
 
     if (responseContent.trim().length < 10) {
       toast({

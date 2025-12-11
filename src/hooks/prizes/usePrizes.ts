@@ -3,6 +3,7 @@
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
 import { useState } from 'react';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 interface EditingTemplate {
   id: string;
@@ -37,6 +38,9 @@ export function usePrizes() {
     color: '#8B5CF6',
     iconUrl: '',
   });
+
+  // Hook de confirmation
+  const { ConfirmDialogProps, confirm } = useConfirm();
 
   // Queries
   const { data: prizeTemplates, isLoading } = api.prizeTemplate.list.useQuery();
@@ -105,7 +109,9 @@ export function usePrizes() {
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTemplate) return;
+    if (!editingTemplate) {
+      return;
+    }
     updateTemplate.mutate({
       id: editingTemplate.id,
       name: editingTemplate.name,
@@ -117,9 +123,16 @@ export function usePrizes() {
     });
   };
 
-  const handleDelete = (id: string, name: string) => {
-    // eslint-disable-next-line no-undef
-    if (window.confirm(`Supprimer le gain "${name}" ?`)) {
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: 'Supprimer le lot',
+      message: `Êtes-vous sûr de vouloir supprimer le lot "${name}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
       deleteTemplate.mutate({ id });
     }
   };
@@ -144,5 +157,7 @@ export function usePrizes() {
     handleCreate,
     handleUpdate,
     handleDelete,
+    // Confirm Dialog
+    ConfirmDialogProps,
   };
 }

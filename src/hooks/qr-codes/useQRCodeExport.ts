@@ -1,7 +1,11 @@
 import { useState, useCallback } from 'react';
-import type { ExportFormat, QRCodeExportOptions } from '@/lib/types/qr-code.types';
+import type {
+  ExportFormat,
+  QRCodeExportOptions,
+  QRCodeGenerationOptions,
+} from '@/lib/types/qr-code.types';
 import { createQRCodeInstance, exportQRCode } from '@/lib/utils/qr-code-generator';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Custom hook for exporting QR codes in various formats
@@ -10,7 +14,11 @@ import { toast } from '@/hooks/use-toast';
  * @param qrCodeOptions - Options used to recreate the QR code instance
  * @returns Object containing export state and exportAs function
  */
-export function useQRCodeExport(qrCodeDataUrl: string | null, qrCodeOptions: QRCodeExportOptions) {
+export function useQRCodeExport(
+  qrCodeDataUrl: string | null,
+  qrCodeOptions: QRCodeGenerationOptions,
+) {
+  const { toast } = useToast();
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,14 +30,14 @@ export function useQRCodeExport(qrCodeDataUrl: string | null, qrCodeOptions: QRC
    * @param filename - Optional custom filename for the exported file
    */
   const exportAs = useCallback(
-    async (format: ExportFormat, size: number, filename?: string): Promise<void> => {
+    async (format: ExportFormat, _size: number, filename?: string): Promise<void> => {
       if (!qrCodeDataUrl) {
         const errorMessage = 'No QR code available to export';
         setError(errorMessage);
         toast({
           title: 'Export Failed',
           description: errorMessage,
-          variant: 'destructive',
+          variant: 'error',
         });
         return;
       }
@@ -42,7 +50,8 @@ export function useQRCodeExport(qrCodeDataUrl: string | null, qrCodeOptions: QRC
         const qrCodeInstance = createQRCodeInstance(qrCodeOptions);
 
         // Export in specified format
-        const blob = await exportQRCode(qrCodeInstance, format, size);
+        const exportOptions: QRCodeExportOptions = { format, filename };
+        const blob = await exportQRCode(qrCodeInstance, exportOptions);
 
         // Download file
         const url = URL.createObjectURL(blob);
@@ -65,7 +74,7 @@ export function useQRCodeExport(qrCodeDataUrl: string | null, qrCodeOptions: QRC
         toast({
           title: 'Export Failed',
           description: errorMessage,
-          variant: 'destructive',
+          variant: 'error',
         });
       } finally {
         setIsExporting(false);

@@ -20,7 +20,9 @@ export function filterAvailablePrizeTemplates(
   prizeTemplates: PrizeTemplate[] | undefined,
   brandId: string | undefined,
 ): PrizeTemplate[] {
-  if (!prizeTemplates || !brandId) return [];
+  if (!prizeTemplates || !brandId) {
+    return [];
+  }
   return prizeTemplates.filter(
     (template) => template.brandId === null || template.brandId === brandId,
   );

@@ -20,7 +20,9 @@ export class UserRepositoryPrisma implements IUserRepository {
         where: { id },
       });
 
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
 
       return this.toDomainEntity(user);
     } catch (error) {
@@ -35,7 +37,9 @@ export class UserRepositoryPrisma implements IUserRepository {
         where: { email: email.getValue() },
       });
 
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
 
       return this.toDomainEntity(user);
     } catch (error) {

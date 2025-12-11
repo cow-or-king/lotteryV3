@@ -47,7 +47,9 @@ export function RoleIndicator({
   }, []);
 
   // Ne rien afficher si pas SUPER_ADMIN
-  if (!isSuperAdmin) return null;
+  if (!isSuperAdmin) {
+    return null;
+  }
 
   const roleConfig = {
     SUPER_ADMIN: {

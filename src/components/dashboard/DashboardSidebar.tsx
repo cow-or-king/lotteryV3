@@ -12,6 +12,7 @@ import {
   Dices,
   Gift,
   LayoutDashboard,
+  QrCode,
   Star,
   Store,
   Target,
@@ -59,6 +60,7 @@ const ICON_MAP = {
   Store: Store,
   Star: Star,
   Gift: Gift,
+  QrCode: QrCode,
   Target: Target,
   Dices: Dices,
   Users: Users,
@@ -90,7 +92,9 @@ export function DashboardSidebar({
 
   // Filtrer les menus visibles selon le rôle et les permissions de la DB
   const visibleMenus = useMemo(() => {
-    if (!role) return [];
+    if (!role) {
+      return [];
+    }
 
     // Merger DEFAULT_MENU_CONFIG avec les permissions de la DB
     let menuConfig: MenuConfig[] = DEFAULT_MENU_CONFIG;

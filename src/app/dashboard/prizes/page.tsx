@@ -16,6 +16,7 @@ import {
   PrizeSetCard,
   PrizeSetModal,
 } from '@/components/prizes';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function PrizesPage() {
   const [activeTab, setActiveTab] = useState<'templates' | 'sets'>('templates');
@@ -25,7 +26,9 @@ export default function PrizesPage() {
 
   // Extract unique brands from stores
   const brands = useMemo(() => {
-    if (!storesList) return [];
+    if (!storesList) {
+      return [];
+    }
     const brandMap = new Map();
     storesList.forEach((store: { brandId: string; brandName: string; logoUrl: string }) => {
       if (!brandMap.has(store.brandId)) {
@@ -275,6 +278,10 @@ export default function PrizesPage() {
         onSubmit={prizeSetHook.handleUpdate}
         isSubmitting={prizeSetHook.updateSet.isPending}
       />
+
+      {/* Confirm Dialogs */}
+      <ConfirmDialog {...prizeHook.ConfirmDialogProps} />
+      <ConfirmDialog {...prizeSetHook.ConfirmDialogProps} />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/trpc/client';
 import { useEffect, useState } from 'react';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 interface EditingBrand {
   id: string;
@@ -31,6 +32,9 @@ export function useBrands() {
   const { toast } = useToast();
   const [openBrandMenuId, setOpenBrandMenuId] = useState<string | null>(null);
   const [editingBrand, setEditingBrand] = useState<EditingBrand | null>(null);
+
+  // Hook de confirmation
+  const { ConfirmDialogProps, confirm } = useConfirm();
 
   // Utils
   const utils = api.useUtils();
@@ -72,20 +76,25 @@ export function useBrands() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const handleDeleteBrand = (brandId: string, brandName: string) => {
-    // eslint-disable-next-line no-undef
-    if (
-      window.confirm(
-        `Êtes-vous sûr de vouloir supprimer l'enseigne "${brandName}" et tous ses commerces ?`,
-      )
-    ) {
+  const handleDeleteBrand = async (brandId: string, brandName: string) => {
+    const confirmed = await confirm({
+      title: 'Supprimer la marque',
+      message: `Êtes-vous sûr de vouloir supprimer la marque "${brandName}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
       deleteBrand.mutate({ id: brandId });
     }
   };
 
   const handleUpdateBrand = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingBrand) return;
+    if (!editingBrand) {
+      return;
+    }
 
     updateBrand.mutate({
       id: editingBrand.id,
@@ -129,5 +138,8 @@ export function useBrands() {
     // Handlers
     handleDeleteBrand,
     handleUpdateBrand,
+
+    // Confirm Dialog
+    ConfirmDialogProps,
   };
 }

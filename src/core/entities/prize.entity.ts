@@ -181,7 +181,9 @@ export class PrizeEntity {
   }
 
   getAvailabilityPercentage(): number {
-    if (this.props.quantity === 0) return 0;
+    if (this.props.quantity === 0) {
+      return 0;
+    }
     return (this.props.remaining / this.props.quantity) * 100;
   }
 

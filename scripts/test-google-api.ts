@@ -53,9 +53,7 @@ async function main() {
   const testPlaceId = 'YOUR_PLACE_ID_HERE';
 
   if (testPlaceId !== 'YOUR_PLACE_ID_HERE') {
-    const reviewsResult = await googleService.fetchReviews(testPlaceId, {
-      apiKey: encryptedToken,
-    });
+    const reviewsResult = await googleService.fetchReviews(testPlaceId);
 
     if (reviewsResult.success) {
       console.log(`✅ Found ${reviewsResult.data.length} reviews`);

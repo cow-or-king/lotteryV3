@@ -202,9 +202,13 @@ export class PrismaReviewRepository implements IReviewRepository {
       ratingDistribution[rating]++;
       totalRating += rating;
 
-      if (rating >= 4) positiveCount++;
-      else if (rating === 3) neutralCount++;
-      else negativeCount++;
+      if (rating >= 4) {
+        positiveCount++;
+      } else if (rating === 3) {
+        neutralCount++;
+      } else {
+        negativeCount++;
+      }
     });
 
     const averageRating = totalRating / total;
@@ -285,7 +289,9 @@ export class PrismaReviewRepository implements IReviewRepository {
   private buildWhereClause(storeId: StoreId, filters?: ReviewFilters): Prisma.ReviewWhereInput {
     const where: Prisma.ReviewWhereInput = { storeId };
 
-    if (!filters) return where;
+    if (!filters) {
+      return where;
+    }
 
     if (filters.campaignId) {
       where.campaignId = filters.campaignId;

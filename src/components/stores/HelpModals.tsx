@@ -8,7 +8,9 @@ interface GoogleUrlHelpModalProps {
 }
 
 export function GoogleUrlHelpModal({ isOpen, onClose }: GoogleUrlHelpModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
@@ -86,7 +88,9 @@ interface PlaceIdHelpModalProps {
 }
 
 export function PlaceIdHelpModal({ isOpen, onClose }: PlaceIdHelpModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
@@ -162,7 +166,9 @@ interface GoogleApiHelpModalProps {
 }
 
 export function GoogleApiHelpModal({ isOpen, onClose }: GoogleApiHelpModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 z-50">

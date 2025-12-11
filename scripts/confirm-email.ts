@@ -54,12 +54,9 @@ async function main() {
       console.log('📧 Email non confirmé, confirmation en cours...');
 
       // 3. Confirmer l'email via l'API Admin
-      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
-        authUser.id,
-        {
-          email_confirm: true,
-        },
-      );
+      const { error: updateError } = await supabase.auth.admin.updateUserById(authUser.id, {
+        email_confirm: true,
+      });
 
       if (updateError) {
         console.error('❌ Erreur lors de la confirmation:', updateError.message);

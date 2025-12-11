@@ -22,7 +22,6 @@ export default function MagicLinkPage() {
     setError(null);
 
     try {
-      // eslint-disable-next-line no-undef
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email,
         options: {

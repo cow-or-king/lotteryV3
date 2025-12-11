@@ -23,21 +23,29 @@ export class AddItemToSetUseCase {
   ): Promise<Result<PrizeSetItemEntity, Error>> {
     try {
       const prizeSet = await this.prizeSetRepository.findById(input.prizeSetId);
-      if (!prizeSet) return Result.fail(new Error('Lot non trouvé'));
+      if (!prizeSet) {
+        return Result.fail(new Error('Lot non trouvé'));
+      }
 
       const brandResult = await this.brandRepository.findById(prizeSet.brandId);
-      if (!brandResult.success) return Result.fail(brandResult.error);
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
+      }
 
       const brand = brandResult.data;
-      if (!brand || brand.ownerId !== userId)
+      if (!brand || brand.ownerId !== userId) {
         return Result.fail(new Error('Ce lot ne vous appartient pas'));
+      }
 
       const prizeTemplate = await this.prizeTemplateRepository.findById(input.prizeTemplateId);
-      if (!prizeTemplate) return Result.fail(new Error('Gain non trouvé'));
+      if (!prizeTemplate) {
+        return Result.fail(new Error('Gain non trouvé'));
+      }
 
       // Vérifier que le gain appartient à la même enseigne OU est commun (null)
-      if (prizeTemplate.brandId !== null && prizeTemplate.brandId !== prizeSet.brandId)
+      if (prizeTemplate.brandId !== null && prizeTemplate.brandId !== prizeSet.brandId) {
         return Result.fail(new Error('Le gain doit appartenir à la même enseigne ou être commun'));
+      }
 
       const item = await this.prizeSetRepository.addItem({
         prizeSetId: input.prizeSetId,

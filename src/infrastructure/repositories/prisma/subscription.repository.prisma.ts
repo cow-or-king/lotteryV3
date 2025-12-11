@@ -19,7 +19,9 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         where: { id },
       });
 
-      if (!subscription) return null;
+      if (!subscription) {
+        return null;
+      }
 
       return this.toDomainEntity(subscription);
     } catch (error) {
@@ -34,7 +36,9 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         where: { userId },
       });
 
-      if (!subscription) return null;
+      if (!subscription) {
+        return null;
+      }
 
       return this.toDomainEntity(subscription);
     } catch (error) {
@@ -49,7 +53,9 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         where: { stripeCustomerId },
       });
 
-      if (!subscription) return null;
+      if (!subscription) {
+        return null;
+      }
 
       return this.toDomainEntity(subscription);
     } catch (error) {
@@ -66,7 +72,9 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         where: { stripeSubscriptionId },
       });
 
-      if (!subscription) return null;
+      if (!subscription) {
+        return null;
+      }
 
       return this.toDomainEntity(subscription);
     } catch (error) {

@@ -16,14 +16,19 @@ export class RemoveItemFromSetUseCase {
   async execute(input: RemoveItemFromSetInput, userId: string): Promise<Result<void, Error>> {
     try {
       const prizeSet = await this.prizeSetRepository.findById(input.prizeSetId);
-      if (!prizeSet) return Result.fail(new Error('Lot non trouvé'));
+      if (!prizeSet) {
+        return Result.fail(new Error('Lot non trouvé'));
+      }
 
       const brandResult = await this.brandRepository.findById(prizeSet.brandId);
-      if (!brandResult.success) return Result.fail(brandResult.error);
+      if (!brandResult.success) {
+        return Result.fail(brandResult.error);
+      }
 
       const brand = brandResult.data;
-      if (!brand || brand.ownerId !== userId)
+      if (!brand || brand.ownerId !== userId) {
         return Result.fail(new Error('Ce lot ne vous appartient pas'));
+      }
 
       await this.prizeSetRepository.removeItem(input.prizeSetId, input.prizeTemplateId);
       return Result.ok(undefined);

@@ -316,8 +316,12 @@ export class ReviewEntity {
 
   // Private Helpers
   private static calculateSentiment(rating: number): ReviewSentiment {
-    if (rating >= 4) return 'POSITIVE';
-    if (rating <= 2) return 'NEGATIVE';
+    if (rating >= 4) {
+      return 'POSITIVE';
+    }
+    if (rating <= 2) {
+      return 'NEGATIVE';
+    }
     return 'NEUTRAL';
   }
 

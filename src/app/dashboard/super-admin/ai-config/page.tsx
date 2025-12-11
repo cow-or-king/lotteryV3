@@ -18,11 +18,16 @@ import {
   AIServiceConfig,
 } from '@/components/admin/ai-config';
 import { useToast } from '@/hooks/use-toast';
+import { useConfirm } from '@/hooks/ui/useConfirm';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function AIConfigPage() {
   const router = useRouter();
   const { isSuperAdmin } = usePermissions();
   const { toast } = useToast();
+
+  // Hook de confirmation
+  const { ConfirmDialogProps, confirm } = useConfirm();
 
   // Queries
   const { data: configs, refetch } = api.admin.listAiConfigs.useQuery(undefined, {
@@ -309,8 +314,16 @@ export default function AIConfigPage() {
   };
 
   const handleDelete = async (id: string) => {
-    // eslint-disable-next-line no-undef
-    if (window.confirm('Supprimer cette configuration ?')) {
+    const confirmed = await confirm({
+      title: 'Réinitialiser la configuration IA',
+      message:
+        'Êtes-vous sûr de vouloir réinitialiser la configuration IA ? Cette action est irréversible.',
+      confirmText: 'Réinitialiser',
+      cancelText: 'Annuler',
+      variant: 'warning',
+    });
+
+    if (confirmed) {
       await deleteMutation.mutateAsync({ id });
     }
   };
@@ -466,6 +479,9 @@ export default function AIConfigPage() {
           </p>
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog {...ConfirmDialogProps} />
     </div>
   );
 }

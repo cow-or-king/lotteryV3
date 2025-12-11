@@ -27,10 +27,10 @@ interface QRCodeStyleSelectorProps {
  */
 export function QRCodeStyleSelector({ value, onChange }: QRCodeStyleSelectorProps) {
   return (
-    <div className="space-y-4">
-      <label className="block text-sm font-semibold text-gray-700">Style du QR Code</label>
+    <div className="space-y-2">
+      <label className="block text-sm font-semibold text-gray-800">Style</label>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="flex flex-wrap gap-2">
         {QR_CODE_STYLE_PREVIEWS.map((preview) => {
           const isSelected = value === preview.style;
 
@@ -40,61 +40,18 @@ export function QRCodeStyleSelector({ value, onChange }: QRCodeStyleSelectorProp
               type="button"
               onClick={() => onChange(preview.style)}
               className={cn(
-                'relative group',
-                'flex flex-col items-center justify-center',
-                'p-6 rounded-2xl',
-                'border-2 backdrop-blur-xl',
-                'transition-all duration-300 ease-out',
-                'hover:scale-105 hover:shadow-xl',
-                'focus:outline-none focus:ring-4 focus:ring-purple-500/30',
+                'relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all',
                 isSelected
-                  ? 'bg-gradient-to-br from-purple-500/30 to-pink-500/30 border-purple-500 shadow-lg scale-105'
-                  : 'bg-white/40 border-white/40 hover:border-purple-300',
+                  ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
+                  : 'bg-white/80 text-gray-700 border border-gray-200 hover:bg-gray-50',
               )}
             >
-              {/* Recommended Badge */}
+              <span className="text-base">{preview.icon}</span>
+              <span className="truncate">{preview.label}</span>
               {preview.recommended && (
-                <div className="absolute -top-2 -right-2">
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                    Recommandé
-                  </div>
-                </div>
-              )}
-
-              {/* Style Icon */}
-              <div
-                className={cn(
-                  'text-5xl mb-3 transition-transform duration-300',
-                  'group-hover:scale-110',
-                  isSelected && 'scale-110',
-                )}
-              >
-                {preview.icon}
-              </div>
-
-              {/* Style Label */}
-              <div
-                className={cn(
-                  'text-base font-bold mb-1 transition-colors',
-                  isSelected ? 'text-purple-900' : 'text-gray-800',
-                )}
-              >
-                {preview.label}
-              </div>
-
-              {/* Style Description */}
-              <div
-                className={cn(
-                  'text-xs text-center transition-colors',
-                  isSelected ? 'text-purple-700' : 'text-gray-600',
-                )}
-              >
-                {preview.description}
-              </div>
-
-              {/* Selected Indicator */}
-              {isSelected && (
-                <div className="absolute bottom-3 w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+                <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded-full">
+                  ★
+                </span>
               )}
             </button>
           );

@@ -66,7 +66,9 @@ describe('ResponseTemplate Use Cases', () => {
       });
 
       expect(mockTemplate.success).toBe(true);
-      if (!mockTemplate.success) return;
+      if (!mockTemplate.success) {
+        return;
+      }
 
       vi.mocked(mockTemplateRepo.create).mockResolvedValue(Result.ok(mockTemplate.data));
 
@@ -144,17 +146,23 @@ describe('ResponseTemplate Use Cases', () => {
       });
 
       expect(existingTemplate.success).toBe(true);
-      if (!existingTemplate.success) return;
+      if (!existingTemplate.success) {
+        return;
+      }
 
       const updatedTemplate = existingTemplate.data.updateName('Updated Positive Response');
       expect(updatedTemplate.success).toBe(true);
-      if (!updatedTemplate.success) return;
+      if (!updatedTemplate.success) {
+        return;
+      }
 
       const withContent = updatedTemplate.data.updateContent(
         'Updated content - Thank you so much!',
       );
       expect(withContent.success).toBe(true);
-      if (!withContent.success) return;
+      if (!withContent.success) {
+        return;
+      }
 
       vi.mocked(mockTemplateRepo.findById).mockResolvedValue(existingTemplate.data);
       vi.mocked(mockTemplateRepo.update).mockResolvedValue(Result.ok(withContent.data));
@@ -217,7 +225,9 @@ describe('ResponseTemplate Use Cases', () => {
 
       expect(template1Result.success).toBe(true);
       expect(template2Result.success).toBe(true);
-      if (!template1Result.success || !template2Result.success) return;
+      if (!template1Result.success || !template2Result.success) {
+        return;
+      }
 
       const templates = [template1Result.data, template2Result.data];
 
@@ -248,7 +258,9 @@ describe('ResponseTemplate Use Cases', () => {
       });
 
       expect(mockTemplate.success).toBe(true);
-      if (!mockTemplate.success) return;
+      if (!mockTemplate.success) {
+        return;
+      }
 
       vi.mocked(mockTemplateRepo.findByStoreAndCategory).mockResolvedValue([mockTemplate.data]);
 
@@ -277,7 +289,9 @@ describe('ResponseTemplate Use Cases', () => {
       });
 
       expect(mockTemplate.success).toBe(true);
-      if (!mockTemplate.success) return;
+      if (!mockTemplate.success) {
+        return;
+      }
 
       vi.mocked(mockTemplateRepo.findPopularByStore).mockResolvedValue([mockTemplate.data]);
 
@@ -312,7 +326,9 @@ describe('ResponseTemplate Use Cases', () => {
       });
 
       expect(mockTemplate.success).toBe(true);
-      if (!mockTemplate.success) return;
+      if (!mockTemplate.success) {
+        return;
+      }
 
       vi.mocked(mockTemplateRepo.findById).mockResolvedValue(mockTemplate.data);
       vi.mocked(mockTemplateRepo.delete).mockResolvedValue(Result.ok(undefined));

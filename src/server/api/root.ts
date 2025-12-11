@@ -15,6 +15,7 @@ import { reviewRouter } from './routers/review.router';
 import { responseTemplateRouter } from './routers/response-template.router';
 import { adminRouter } from './routers/admin.router';
 import { menuRouter } from './routers/menu.router';
+import { qrCodeRouter } from './routers/qr-code.router';
 
 /**
  * Router principal de l'API
@@ -31,6 +32,7 @@ export const appRouter = createTRPCRouter({
   responseTemplate: responseTemplateRouter,
   admin: adminRouter,
   menu: menuRouter,
+  qrCode: qrCodeRouter,
   // TODO: Ajouter les autres routers
   // campaign: campaignRouter,
   // lottery: lotteryRouter,

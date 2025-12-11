@@ -75,7 +75,9 @@ export function StoreModal({
   onShowPlaceIdHelp,
   onShowGoogleApiHelp,
 }: StoreModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   // Helper pour mettre à jour un champ du formulaire
   const updateField = (field: keyof typeof formData, value: string) => {

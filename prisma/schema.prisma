@@ -518,8 +518,9 @@ model QRCode {
   id String @id @default(cuid())
 
   // Informations de base
-  name String // Nom descriptif
-  url  String // URL de destination
+  name      String  // Nom descriptif
+  url       String  // URL de destination
+  shortCode String? @unique @map("short_code") // Code court pour URL dynamique (ex: "abc123")
 
   type QRCodeType @default(STATIC)
 
@@ -554,11 +555,48 @@ model QRCode {
   createdBy String   @map("created_by")
   user      User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 
+  // Relations
+  scans QRCodeScan[]
+
   @@index([storeId])
   @@index([createdBy])
   @@index([type])
+  @@index([shortCode])
   @@index([createdBy, createdAt(sort: Desc)])
   @@map("qr_codes")
+}
+
+// =====================
+// QR CODE SCANS (Tracking détaillé)
+// =====================
+
+model QRCodeScan {
+  id       String @id @default(cuid())
+  qrCodeId String @map("qr_code_id")
+
+  // Métadonnées du scan
+  userAgent String? @map("user_agent") @db.Text
+  referrer  String? @db.Text
+  ipAddress String? @map("ip_address")
+  language  String?
+  country   String? // Géolocalisation IP (Phase 3)
+  city      String? // Géolocalisation IP (Phase 3)
+
+  // Device info (détection depuis userAgent)
+  deviceType String? @map("device_type") // "mobile" | "tablet" | "desktop"
+  os         String? // "iOS" | "Android" | "Windows" | etc.
+  browser    String? // "Chrome" | "Safari" | "Firefox" | etc.
+
+  // Timestamps
+  scannedAt DateTime @default(now()) @map("scanned_at")
+
+  // Relations
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([qrCodeId])
+  @@index([qrCodeId, scannedAt(sort: Desc)])
+  @@index([scannedAt])
+  @@map("qr_code_scans")
 }
 
 enum QRCodeType {

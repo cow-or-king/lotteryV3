@@ -30,7 +30,9 @@ export function EditStoreModal({
   onShowGoogleUrlHelp,
   storeBrand,
 }: EditStoreModalProps) {
-  if (!isOpen || !store) return null;
+  if (!isOpen || !store) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 rounded-3xl">

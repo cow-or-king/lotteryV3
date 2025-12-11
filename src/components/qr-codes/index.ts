@@ -5,3 +5,5 @@ export { default as QRCodeLogoUpload } from './QRCodeLogoUpload';
 export { default as QRCodePreview } from './QRCodePreview';
 export { default as QRCodeExportOptions } from './QRCodeExportOptions';
 export { default as QRCodeListItem } from './QRCodeListItem';
+export { default as QRCodeStoreSelector } from './QRCodeStoreSelector';
+export { default as QRCodeTemplateSelector } from './QRCodeTemplateSelector';

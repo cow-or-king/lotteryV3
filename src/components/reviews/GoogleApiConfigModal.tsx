@@ -43,7 +43,9 @@ export function GoogleApiConfigModal({
   const [showPlaceIdHelp, setShowPlaceIdHelp] = useState(false);
   const [showGoogleApiHelp, setShowGoogleApiHelp] = useState(false);
 
-  if (!isOpen || !store) return null;
+  if (!isOpen || !store) {
+    return null;
+  }
 
   return (
     <>
