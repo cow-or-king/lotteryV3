@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Animation - Demo Interactive</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1f2937;
+      margin-bottom: 16px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 48px;
+      font-size: 16px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .qr-demo-card {
+      background: linear-gradient(135deg, #f0f4ff 0%, #fef3f9 100%);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qr-demo-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .qr-demo-card h3 {
+      color: #1f2937;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+
+    .qr-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 24px;
+    }
+
+    /* QR Code simulé */
+    .qr-code {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 4px;
+      padding: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .qr-dot {
+      background: #000;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    /* Style 1: Ripple Effect */
+    .qr-demo-card.ripple:hover .ripple-ring {
+      animation: ripple 1.5s ease-out infinite;
+    }
+
+    .ripple-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border: 3px solid #667eea;
+      border-radius: 16px;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    /* Style 2: Pulse */
+    .qr-demo-card.pulse:hover .qr-code {
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      }
+    }
+
+    /* Style 3: Dots Wave */
+    .qr-demo-card.wave:hover .qr-dot {
+      animation: wave 0.6s ease-in-out;
+    }
+
+    @keyframes wave {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+      }
+    }
+
+    .qr-demo-card.wave:hover .qr-dot:nth-child(1) { animation-delay: 0s; }
+    .qr-demo-card.wave:hover .qr-dot:nth-child(2) { animation-delay: 0.05s; }
+    .qr-demo-card.wave:hover .qr-dot:nth-child(3) { animation-delay: 0.1s; }
+    .qr-demo-card.wave:hover .qr-dot:nth-child(4) { animation-delay: 0.15s; }
+    /* ... etc pour tous les dots */
+
+    /* Style 4: Rotate 3D */
+    .qr-demo-card.rotate3d:hover .qr-code {
+      animation: rotate3d 1s ease-in-out;
+    }
+
+    @keyframes rotate3d {
+      0% {
+        transform: perspective(600px) rotateY(0deg);
+      }
+      50% {
+        transform: perspective(600px) rotateY(180deg);
+      }
+      100% {
+        transform: perspective(600px) rotateY(360deg);
+      }
+    }
+
+    /* Style 5: Glow */
+    .qr-demo-card.glow:hover .qr-code {
+      animation: glow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.8),
+                    0 0 60px rgba(118, 75, 162, 0.6);
+      }
+    }
+
+    /* Style 6: Circular Ripple (pour QR rond) */
+    .qr-demo-card.circular .qr-code {
+      border-radius: 50%;
+    }
+
+    .qr-demo-card.circular:hover .circular-ripple {
+      animation: circularRipple 1.5s ease-out infinite;
+    }
+
+    .circular-ripple {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border: 3px solid #667eea;
+      border-radius: 50%;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    @keyframes circularRipple {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1.8);
+        opacity: 0;
+      }
+    }
+
+    .description {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+      border: 2px solid #10b981;
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+
+    .info-box h2 {
+      color: #065f46;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+
+    .info-box p {
+      color: #047857;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .info-box code {
+      background: rgba(255, 255, 255, 0.5);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Animations QR Code Interactives</h1>
+    <p class="subtitle">Passez la souris sur chaque QR code pour voir l'animation</p>
+
+    <div class="demo-grid">
+      <!-- Animation 1: Ripple Effect -->
+      <div class="qr-demo-card ripple">
+        <h3>Ripple Effect</h3>
+        <div class="qr-container">
+          <div class="ripple-ring"></div>
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Onde de choc qui se propage autour du QR code</p>
+        <span class="badge">Recommandé</span>
+      </div>
+
+      <!-- Animation 2: Pulse -->
+      <div class="qr-demo-card pulse">
+        <h3>Pulse</h3>
+        <div class="qr-container">
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Pulsation douce qui attire l'attention</p>
+        <span class="badge">Subtil</span>
+      </div>
+
+      <!-- Animation 3: Dots Wave -->
+      <div class="qr-demo-card wave">
+        <h3>Dots Wave</h3>
+        <div class="qr-container">
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Vague animée dans les points du QR code</p>
+        <span class="badge">Dynamique</span>
+      </div>
+
+      <!-- Animation 4: Rotate 3D -->
+      <div class="qr-demo-card rotate3d">
+        <h3>Rotate 3D</h3>
+        <div class="qr-container">
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Rotation 3D spectaculaire</p>
+        <span class="badge">Premium</span>
+      </div>
+
+      <!-- Animation 5: Glow -->
+      <div class="qr-demo-card glow">
+        <h3>Glow</h3>
+        <div class="qr-container">
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Effet de lumière néon pulsante</p>
+        <span class="badge">Moderne</span>
+      </div>
+
+      <!-- Animation 6: Circular Ripple (QR Rond) -->
+      <div class="qr-demo-card circular">
+        <h3>Circular Ripple</h3>
+        <div class="qr-container">
+          <div class="circular-ripple"></div>
+          <div class="qr-code">
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+            <div class="qr-dot"></div>
+          </div>
+        </div>
+        <p class="description">Onde circulaire pour QR code rond</p>
+        <span class="badge">Nouveau !</span>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <h2>💡 Comment ça fonctionne ?</h2>
+      <p>
+        <strong>Animations CSS uniquement</strong> : Toutes ces animations sont réalisées avec du CSS pur,
+        sans JavaScript. Elles sont performantes et légères.
+      </p>
+      <p>
+        <strong>Déclenchement au scan</strong> : Quand un utilisateur scanne le QR code,
+        il arrive sur une page avec le paramètre <code>?qr=true</code> qui déclenche l'animation de bienvenue.
+      </p>
+      <p>
+        <strong>Intégration dans le générateur</strong> : Vous pourrez choisir l'animation lors de la création du QR code,
+        et la prévisualiser en temps réel en passant la souris dessus.
+      </p>
+      <p>
+        <strong>Mobile-friendly</strong> : Sur mobile, les animations se déclenchent au touch/tap au lieu du hover.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
