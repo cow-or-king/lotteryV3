@@ -1,0 +1,355 @@
+/**
+ * QR Code Types
+ * IMPORTANT: ZERO any types
+ */
+
+// =====================
+// ENUMS (Mirror Prisma)
+// =====================
+
+export const QRCodeType = {
+  STATIC: 'STATIC', // Pour print, ne change jamais
+  DYNAMIC: 'DYNAMIC', // Pour campagnes, peut être réassigné
+} as const;
+
+export type QRCodeType = (typeof QRCodeType)[keyof typeof QRCodeType];
+
+export const QRCodeStyle = {
+  DOTS: 'DOTS', // Points arrondis
+  ROUNDED: 'ROUNDED', // Coins arrondis
+  SQUARE: 'SQUARE', // Carré classique
+  CLASSY: 'CLASSY', // Style élégant avec dégradés
+  CIRCULAR: 'CIRCULAR', // Forme ronde (QR code circulaire)
+} as const;
+
+export type QRCodeStyle = (typeof QRCodeStyle)[keyof typeof QRCodeStyle];
+
+export const QRCodeAnimation = {
+  NONE: 'NONE', // Pas d'animation
+  RIPPLE: 'RIPPLE', // Onde de choc (recommandé)
+  PULSE: 'PULSE', // Pulsation douce
+  WAVE: 'WAVE', // Vague dans les points
+  ROTATE3D: 'ROTATE3D', // Rotation 3D
+  GLOW: 'GLOW', // Lumière néon
+  CIRCULAR_RIPPLE: 'CIRCULAR_RIPPLE', // Onde circulaire (pour CIRCULAR style)
+} as const;
+
+export type QRCodeAnimation = (typeof QRCodeAnimation)[keyof typeof QRCodeAnimation];
+
+export const ErrorCorrectionLevel = {
+  L: 'L', // ~7% correction
+  M: 'M', // ~15% correction (recommandé)
+  Q: 'Q', // ~25% correction
+  H: 'H', // ~30% correction (avec logo)
+} as const;
+
+export type ErrorCorrectionLevel = (typeof ErrorCorrectionLevel)[keyof typeof ErrorCorrectionLevel];
+
+// =====================
+// QR CODE DATA
+// =====================
+
+/**
+ * Données complètes d'un QR code (DB)
+ */
+export interface QRCodeData {
+  id: string;
+  name: string;
+  url: string;
+  type: QRCodeType;
+  style: QRCodeStyle;
+  animation: QRCodeAnimation | null;
+  foregroundColor: string;
+  backgroundColor: string;
+  logoUrl: string | null;
+  logoStoragePath: string | null;
+  logoSize: number | null;
+  size: number;
+  errorCorrectionLevel: ErrorCorrectionLevel;
+  storeId: string | null;
+  campaignId: string | null;
+  scanCount: number;
+  lastScannedAt: Date | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+/**
+ * Input pour créer un QR code
+ */
+export interface CreateQRCodeInput {
+  name: string;
+  url: string;
+  type?: QRCodeType;
+  style?: QRCodeStyle;
+  animation?: QRCodeAnimation | null;
+  foregroundColor?: string;
+  backgroundColor?: string;
+  logoUrl?: string | null;
+  logoStoragePath?: string | null;
+  logoSize?: number | null;
+  size?: number;
+  errorCorrectionLevel?: ErrorCorrectionLevel;
+  storeId?: string | null;
+  campaignId?: string | null;
+}
+
+/**
+ * Input pour mettre à jour un QR code
+ */
+export interface UpdateQRCodeInput {
+  id: string;
+  name?: string;
+  url?: string;
+  style?: QRCodeStyle;
+  animation?: QRCodeAnimation | null;
+  foregroundColor?: string;
+  backgroundColor?: string;
+  logoUrl?: string | null;
+  logoStoragePath?: string | null;
+  logoSize?: number | null;
+  size?: number;
+  errorCorrectionLevel?: ErrorCorrectionLevel;
+  storeId?: string | null;
+  campaignId?: string | null;
+}
+
+// =====================
+// QR CODE GENERATION
+// =====================
+
+/**
+ * Options pour générer un QR code
+ */
+export interface QRCodeGenerationOptions {
+  url: string;
+  style: QRCodeStyle;
+  animation?: QRCodeAnimation | null;
+  foregroundColor: string;
+  backgroundColor: string;
+  size: number;
+  errorCorrectionLevel: ErrorCorrectionLevel;
+  logoUrl?: string | null;
+  logoSize?: number;
+  margin?: number;
+}
+
+/**
+ * Résultat de génération QR code
+ */
+export interface QRCodeGenerationResult {
+  dataUrl: string; // Base64 data URL
+  svg: string; // SVG string
+  blob: Blob; // Blob pour téléchargement
+}
+
+/**
+ * Format d'export
+ */
+export const ExportFormat = {
+  PNG: 'PNG',
+  SVG: 'SVG',
+  PDF: 'PDF',
+} as const;
+
+export type ExportFormat = (typeof ExportFormat)[keyof typeof ExportFormat];
+
+/**
+ * Options d'export
+ */
+export interface QRCodeExportOptions {
+  format: ExportFormat;
+  filename?: string;
+  quality?: number; // 0-1 pour PNG
+}
+
+// =====================
+// UI HELPERS
+// =====================
+
+/**
+ * Style prévisualisé pour UI
+ */
+export interface QRCodeStylePreview {
+  style: QRCodeStyle;
+  label: string;
+  description: string;
+  icon: string;
+  recommended?: boolean;
+}
+
+/**
+ * Animation prévisualisée pour UI
+ */
+export interface QRCodeAnimationPreview {
+  animation: QRCodeAnimation;
+  label: string;
+  description: string;
+  badge?: string;
+}
+
+/**
+ * Statistiques QR code (pour liste)
+ */
+export interface QRCodeStats {
+  totalScans: number;
+  lastScanDate: Date | null;
+  daysUntilExpiry: number | null;
+  isExpired: boolean;
+}
+
+/**
+ * Liste complète pour affichage
+ */
+export interface QRCodeListItem extends QRCodeData {
+  stats: QRCodeStats;
+  storeName?: string | null;
+  campaignName?: string | null;
+}
+
+// =====================
+// VALIDATION
+// =====================
+
+/**
+ * Erreurs de validation
+ */
+export interface QRCodeValidationError {
+  field: string;
+  message: string;
+}
+
+/**
+ * Résultat de validation
+ */
+export interface QRCodeValidationResult {
+  isValid: boolean;
+  errors: QRCodeValidationError[];
+}
+
+// =====================
+// CONSTANTS
+// =====================
+
+/**
+ * Tailles disponibles
+ */
+export const QR_CODE_SIZES = [256, 512, 1024, 2048] as const;
+export type QRCodeSize = (typeof QR_CODE_SIZES)[number];
+
+/**
+ * Taille par défaut
+ */
+export const DEFAULT_QR_CODE_SIZE = 512;
+
+/**
+ * Couleurs par défaut
+ */
+export const DEFAULT_FOREGROUND_COLOR = '#000000';
+export const DEFAULT_BACKGROUND_COLOR = '#FFFFFF';
+
+/**
+ * Taille logo par défaut (en px)
+ */
+export const DEFAULT_LOGO_SIZE = 80;
+
+/**
+ * Taille max fichier logo (2MB)
+ */
+export const MAX_LOGO_FILE_SIZE = 2 * 1024 * 1024;
+
+/**
+ * Formats logo acceptés
+ */
+export const ACCEPTED_LOGO_FORMATS = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+
+/**
+ * URL max length (pour QR code)
+ */
+export const MAX_URL_LENGTH = 2048;
+
+/**
+ * Prévisualisations styles
+ */
+export const QR_CODE_STYLE_PREVIEWS: QRCodeStylePreview[] = [
+  {
+    style: QRCodeStyle.DOTS,
+    label: 'Dots',
+    description: 'Points arrondis modernes',
+    icon: '⚫',
+    recommended: true,
+  },
+  {
+    style: QRCodeStyle.ROUNDED,
+    label: 'Rounded',
+    description: 'Coins arrondis élégants',
+    icon: '▢',
+  },
+  {
+    style: QRCodeStyle.SQUARE,
+    label: 'Square',
+    description: 'Classique carré',
+    icon: '■',
+  },
+  {
+    style: QRCodeStyle.CLASSY,
+    label: 'Classy',
+    description: 'Style premium avec dégradés',
+    icon: '✨',
+  },
+  {
+    style: QRCodeStyle.CIRCULAR,
+    label: 'Circular',
+    description: 'Forme ronde unique',
+    icon: '⭕',
+  },
+];
+
+/**
+ * Prévisualisations animations
+ */
+export const QR_CODE_ANIMATION_PREVIEWS: QRCodeAnimationPreview[] = [
+  {
+    animation: QRCodeAnimation.NONE,
+    label: 'Aucune',
+    description: "Pas d'animation",
+  },
+  {
+    animation: QRCodeAnimation.RIPPLE,
+    label: 'Ripple',
+    description: 'Onde de choc',
+    badge: 'Recommandé',
+  },
+  {
+    animation: QRCodeAnimation.PULSE,
+    label: 'Pulse',
+    description: 'Pulsation douce',
+    badge: 'Subtil',
+  },
+  {
+    animation: QRCodeAnimation.WAVE,
+    label: 'Wave',
+    description: 'Vague dans les points',
+    badge: 'Dynamique',
+  },
+  {
+    animation: QRCodeAnimation.ROTATE3D,
+    label: 'Rotate 3D',
+    description: 'Rotation spectaculaire',
+    badge: 'Premium',
+  },
+  {
+    animation: QRCodeAnimation.GLOW,
+    label: 'Glow',
+    description: 'Lumière néon pulsante',
+    badge: 'Moderne',
+  },
+  {
+    animation: QRCodeAnimation.CIRCULAR_RIPPLE,
+    label: 'Circular Ripple',
+    description: 'Onde circulaire',
+    badge: 'Nouveau !',
+  },
+];
