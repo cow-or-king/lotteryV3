@@ -33,6 +33,7 @@ model User {
   brands           Brand[]
   prizeTemplates   PrizeTemplate[]
   reviewsResponded Review[]
+  qrCodes          QRCode[]
 
   @@index([email])
   @@map("users")
@@ -103,6 +104,8 @@ model Store {
   lastReviewSync     DateTime? @map("last_review_sync")
   autoSyncEnabled    Boolean   @default(false) @map("auto_sync_enabled")
   syncFrequencyHours Int       @default(24) @map("sync_frequency_hours")
+  logoUrl            String?   @map("logo_url") // URL externe OU URL publique Supabase
+  logoStoragePath    String?   @map("logo_storage_path") // Path Supabase Storage (si uploadé)
   isActive           Boolean   @default(true) @map("is_active")
   isPaid             Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
   createdAt          DateTime  @default(now()) @map("created_at")
@@ -113,6 +116,7 @@ model Store {
   campaigns         Campaign[]
   reviews           Review[]
   responseTemplates ResponseTemplate[]
+  qrCodes           QRCode[]
 
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
@@ -504,4 +508,78 @@ model MenuPermission {
 
   @@index([menuId])
   @@map("menu_permissions")
+}
+
+// =====================
+// QR CODES
+// =====================
+
+model QRCode {
+  id String @id @default(cuid())
+
+  // Informations de base
+  name String // Nom descriptif
+  url  String // URL de destination
+
+  type QRCodeType @default(STATIC)
+
+  // Style & Apparence
+  style           QRCodeStyle      @default(DOTS)
+  animation       QRCodeAnimation? @default(NONE)
+  foregroundColor String           @default("#000000") @map("foreground_color")
+  backgroundColor String           @default("#FFFFFF") @map("background_color")
+
+  // Logo (optionnel)
+  logoUrl         String? @map("logo_url") // URL externe OU URL publique Supabase
+  logoStoragePath String? @map("logo_storage_path") // Path Supabase Storage (si uploadé)
+  logoSize        Int?    @default(80) @map("logo_size") // Taille en px
+
+  // Qualité
+  size                 Int    @default(512) // 256, 512, 1024, 2048
+  errorCorrectionLevel String @default("M") @map("error_correction_level") // L, M, Q, H
+
+  // Relations (Phase 2)
+  storeId    String? @map("store_id")
+  store      Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  campaignId String? @map("campaign_id")
+  // campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  // Métadonnées
+  scanCount     Int       @default(0) @map("scan_count") // Phase 2
+  lastScannedAt DateTime? @map("last_scanned_at") // Phase 2
+  expiresAt     DateTime? @map("expires_at") // Phase 2
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String   @map("created_by")
+  user      User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([createdBy])
+  @@index([type])
+  @@index([createdBy, createdAt(sort: Desc)])
+  @@map("qr_codes")
+}
+
+enum QRCodeType {
+  STATIC  // Pour print, ne change jamais
+  DYNAMIC // Pour campagnes, peut être réassigné
+}
+
+enum QRCodeStyle {
+  DOTS     // Points arrondis
+  ROUNDED  // Coins arrondis
+  SQUARE   // Carré classique
+  CLASSY   // Style élégant avec dégradés
+  CIRCULAR // Forme ronde (QR code circulaire)
+}
+
+enum QRCodeAnimation {
+  NONE            // Pas d'animation
+  RIPPLE          // Onde de choc (recommandé)
+  PULSE           // Pulsation douce
+  WAVE            // Vague dans les points
+  ROTATE3D        // Rotation 3D
+  GLOW            // Lumière néon
+  CIRCULAR_RIPPLE // Onde circulaire (pour CIRCULAR style)
 }
