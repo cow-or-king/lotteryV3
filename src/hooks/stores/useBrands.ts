@@ -73,8 +73,9 @@ export function useBrands() {
   }, []);
 
   const handleDeleteBrand = (brandId: string, brandName: string) => {
+    // eslint-disable-next-line no-undef
     if (
-      confirm(
+      window.confirm(
         `Êtes-vous sûr de vouloir supprimer l'enseigne "${brandName}" et tous ses commerces ?`,
       )
     ) {

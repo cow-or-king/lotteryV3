@@ -12,10 +12,12 @@ import { usePermissions } from '@/lib/rbac/usePermissions';
 import { DEFAULT_MENU_CONFIG, MenuConfig } from '@/lib/rbac/menuConfig';
 import { Settings, Save, RotateCcw } from 'lucide-react';
 import { api } from '@/lib/trpc/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MenuConfigPage() {
   const router = useRouter();
   const { isSuperAdmin } = usePermissions();
+  const { toast } = useToast();
   const [menuConfig, setMenuConfig] = useState<MenuConfig[]>(DEFAULT_MENU_CONFIG);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -88,10 +90,18 @@ export default function MenuConfigPage() {
 
       await savePermissions.mutateAsync(permissions);
       setHasChanges(false);
-      alert('✅ Configuration sauvegardée avec succès');
+      toast({
+        title: 'Configuration sauvegardée',
+        description: 'Les permissions ont été mises à jour avec succès',
+        variant: 'success',
+      });
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      alert('❌ Erreur lors de la sauvegarde. Vérifiez que la migration Prisma est effectuée.');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      toast({
+        title: 'Erreur de sauvegarde',
+        description: `Vérifiez que la migration Prisma est effectuée. ${errorMessage}`,
+        variant: 'error',
+      });
     }
   };
 

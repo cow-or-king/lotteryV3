@@ -90,25 +90,18 @@ export default function ReviewsPage() {
   // Trouver le store sélectionné pour vérifier l'API key
   const selectedStore = stores?.find((s) => s.id === selectedStoreId);
 
-  // IMPORTANT: En mode mock (dev), on a juste besoin du Place ID
-  // En production, on a besoin du Place ID ET de l'API Key
-  const useMockService = process.env.NEXT_PUBLIC_USE_MOCK_GOOGLE_SERVICE === 'true';
-  const hasApiKey = useMockService
-    ? selectedStore?.googlePlaceId && selectedStore.googlePlaceId.trim().length > 0
-    : selectedStore?.googlePlaceId &&
-      selectedStore.googlePlaceId.trim().length > 0 &&
-      selectedStore?.googleApiKeyStatus === 'configured';
+  // Vérifier que le commerce a un Place ID ET une API Key configurée
+  const hasApiKey =
+    selectedStore?.googlePlaceId &&
+    selectedStore.googlePlaceId.trim().length > 0 &&
+    selectedStore?.googleApiKeyStatus === 'configured';
 
-  // Compter les commerces avec et sans API (basé sur googlePlaceId qui indique si configuré)
+  // Compter les commerces sans API configurée
   const storesWithoutApi =
-    stores?.filter((s) => {
-      if (useMockService) {
-        return !s.googlePlaceId || s.googlePlaceId.length === 0;
-      }
-      return (
-        !s.googlePlaceId || s.googlePlaceId.length === 0 || s.googleApiKeyStatus !== 'configured'
-      );
-    }) || [];
+    stores?.filter(
+      (s) =>
+        !s.googlePlaceId || s.googlePlaceId.length === 0 || s.googleApiKeyStatus !== 'configured',
+    ) || [];
   const isSingleStoreWithoutApi = stores && stores.length === 1 && storesWithoutApi.length === 1;
 
   return (

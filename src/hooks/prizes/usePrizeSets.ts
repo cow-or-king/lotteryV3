@@ -101,7 +101,8 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Supprimer le lot "${name}" ?`)) {
+    // eslint-disable-next-line no-undef
+    if (window.confirm(`Supprimer le lot "${name}" ?`)) {
       deleteSet.mutate({ id });
     }
   };

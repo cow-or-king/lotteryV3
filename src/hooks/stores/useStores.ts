@@ -68,7 +68,8 @@ export function useStores() {
   });
 
   const handleDeleteStore = (storeId: string, storeName: string) => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le commerce "${storeName}" ?`)) {
+    // eslint-disable-next-line no-undef
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le commerce "${storeName}" ?`)) {
       deleteStore.mutate({ id: storeId });
     }
   };

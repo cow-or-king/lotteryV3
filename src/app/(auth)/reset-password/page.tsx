@@ -39,6 +39,7 @@ export default function ResetPasswordPage() {
       setSuccess(true);
       setError('');
       // Rediriger vers login après 3s
+      // eslint-disable-next-line no-undef
       setTimeout(() => router.push('/login'), 3000);
     },
     onError: (err) => {

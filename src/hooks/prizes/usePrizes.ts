@@ -118,7 +118,8 @@ export function usePrizes() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Supprimer le gain "${name}" ?`)) {
+    // eslint-disable-next-line no-undef
+    if (window.confirm(`Supprimer le gain "${name}" ?`)) {
       deleteTemplate.mutate({ id });
     }
   };

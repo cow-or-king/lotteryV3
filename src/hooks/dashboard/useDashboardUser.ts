@@ -25,8 +25,8 @@ export function useDashboardUser() {
         headers: { 'Content-Type': 'application/json' },
       });
       router.push('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
+    } catch {
+      // Silently handle logout error
       setIsLoggingOut(false);
     }
   };

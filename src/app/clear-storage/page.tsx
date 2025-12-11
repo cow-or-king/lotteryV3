@@ -34,8 +34,8 @@ export default function ClearStoragePage() {
         setTimeout(() => {
           router.push('/login');
         }, 2000);
-      } catch (error) {
-        console.error('Error clearing storage:', error);
+      } catch {
+        // Silently handle error and continue with redirect
         setStatus('done');
         setTimeout(() => {
           router.push('/login');

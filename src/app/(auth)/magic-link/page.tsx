@@ -7,13 +7,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 export default function MagicLinkPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -25,6 +22,7 @@ export default function MagicLinkPage() {
     setError(null);
 
     try {
+      // eslint-disable-next-line no-undef
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -37,7 +35,7 @@ export default function MagicLinkPage() {
       } else {
         setEmailSent(true);
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
