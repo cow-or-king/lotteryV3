@@ -137,7 +137,17 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   // Private helpers
-  private toDomainEntity(data: any): UserEntity {
+  private toDomainEntity(data: {
+    id: string;
+    email: string;
+    emailVerified: boolean;
+    hashedPassword: string | null;
+    name: string | null;
+    avatarUrl: string | null;
+    role: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): UserEntity {
     return UserEntity.fromPersistence({
       id: data.id as UserId,
       email: data.email as EmailBrand,

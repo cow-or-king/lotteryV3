@@ -37,7 +37,7 @@ export function usePrizeSetMutations({
   });
 
   const createSet = api.prizeSet.create.useMutation({
-    onSuccess: async (data, variables, context) => {
+    onSuccess: async () => {
       utils.prizeSet.list.invalidate();
       onCreateSuccess?.();
     },

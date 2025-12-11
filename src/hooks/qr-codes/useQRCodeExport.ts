@@ -80,7 +80,7 @@ export function useQRCodeExport(
         setIsExporting(false);
       }
     },
-    [qrCodeDataUrl, qrCodeOptions],
+    [qrCodeDataUrl, qrCodeOptions, toast],
   );
 
   return {

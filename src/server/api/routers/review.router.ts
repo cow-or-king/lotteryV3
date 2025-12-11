@@ -106,7 +106,7 @@ export const reviewRouter = createTRPCRouter({
         templateId: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const result = await respondToReviewUseCase.execute({
         reviewId: input.reviewId as string & { readonly __brand: unique symbol },
         responseContent: input.responseContent,

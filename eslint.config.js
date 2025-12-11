@@ -95,8 +95,9 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'warn',
       '@typescript-eslint/no-unsafe-member-access': 'warn',
       '@typescript-eslint/no-unsafe-call': 'warn',
+      'no-unused-vars': 'off', // Use @typescript-eslint/no-unused-vars instead
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
@@ -128,6 +129,8 @@ export default [
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
       'no-var': 'error',
+      'no-undef': 'error',
+      'no-redeclare': 'off', // TypeScript handles this better with declaration merging
       eqeqeq: ['error', 'always'],
       curly: ['error', 'all'],
       'no-debugger': 'warn',

@@ -7,14 +7,14 @@
 // ENUMS (Mirror Prisma)
 // =====================
 
-export const QRCodeType = {
+export const QRCodeTypeEnum = {
   STATIC: 'STATIC', // Pour print, ne change jamais
   DYNAMIC: 'DYNAMIC', // Pour campagnes, peut être réassigné
 } as const;
 
-export type QRCodeType = (typeof QRCodeType)[keyof typeof QRCodeType];
+export type QRCodeType = (typeof QRCodeTypeEnum)[keyof typeof QRCodeTypeEnum];
 
-export const QRCodeStyle = {
+export const QRCodeStyleEnum = {
   DOTS: 'DOTS', // Points arrondis
   ROUNDED: 'ROUNDED', // Coins arrondis
   SQUARE: 'SQUARE', // Carré classique
@@ -22,9 +22,9 @@ export const QRCodeStyle = {
   CIRCULAR: 'CIRCULAR', // Forme ronde (QR code circulaire)
 } as const;
 
-export type QRCodeStyle = (typeof QRCodeStyle)[keyof typeof QRCodeStyle];
+export type QRCodeStyle = (typeof QRCodeStyleEnum)[keyof typeof QRCodeStyleEnum];
 
-export const QRCodeAnimation = {
+export const QRCodeAnimationEnum = {
   NONE: 'NONE', // Pas d'animation
   RIPPLE: 'RIPPLE', // Onde de choc (recommandé)
   PULSE: 'PULSE', // Pulsation douce
@@ -34,16 +34,17 @@ export const QRCodeAnimation = {
   CIRCULAR_RIPPLE: 'CIRCULAR_RIPPLE', // Onde circulaire (pour CIRCULAR style)
 } as const;
 
-export type QRCodeAnimation = (typeof QRCodeAnimation)[keyof typeof QRCodeAnimation];
+export type QRCodeAnimation = (typeof QRCodeAnimationEnum)[keyof typeof QRCodeAnimationEnum];
 
-export const ErrorCorrectionLevel = {
+export const ErrorCorrectionLevelEnum = {
   L: 'L', // ~7% correction
   M: 'M', // ~15% correction (recommandé)
   Q: 'Q', // ~25% correction
   H: 'H', // ~30% correction (avec logo)
 } as const;
 
-export type ErrorCorrectionLevel = (typeof ErrorCorrectionLevel)[keyof typeof ErrorCorrectionLevel];
+export type ErrorCorrectionLevel =
+  (typeof ErrorCorrectionLevelEnum)[keyof typeof ErrorCorrectionLevelEnum];
 
 // =====================
 // QR CODE DATA
@@ -148,13 +149,13 @@ export interface QRCodeGenerationResult {
 /**
  * Format d'export
  */
-export const ExportFormat = {
+export const ExportFormatEnum = {
   PNG: 'PNG',
   SVG: 'SVG',
   PDF: 'PDF',
 } as const;
 
-export type ExportFormat = (typeof ExportFormat)[keyof typeof ExportFormat];
+export type ExportFormat = (typeof ExportFormatEnum)[keyof typeof ExportFormatEnum];
 
 /**
  * Options d'export
@@ -275,32 +276,32 @@ export const MAX_URL_LENGTH = 2048;
  */
 export const QR_CODE_STYLE_PREVIEWS: QRCodeStylePreview[] = [
   {
-    style: QRCodeStyle.DOTS,
+    style: QRCodeStyleEnum.DOTS,
     label: 'Dots',
     description: 'Points arrondis modernes',
     icon: '⚫',
     recommended: true,
   },
   {
-    style: QRCodeStyle.ROUNDED,
+    style: QRCodeStyleEnum.ROUNDED,
     label: 'Rounded',
     description: 'Coins arrondis élégants',
     icon: '▢',
   },
   {
-    style: QRCodeStyle.SQUARE,
+    style: QRCodeStyleEnum.SQUARE,
     label: 'Square',
     description: 'Classique carré',
     icon: '■',
   },
   {
-    style: QRCodeStyle.CLASSY,
+    style: QRCodeStyleEnum.CLASSY,
     label: 'Classy',
     description: 'Style premium avec dégradés',
     icon: '✨',
   },
   {
-    style: QRCodeStyle.CIRCULAR,
+    style: QRCodeStyleEnum.CIRCULAR,
     label: 'Circular',
     description: 'Forme ronde unique',
     icon: '⭕',
@@ -312,42 +313,42 @@ export const QR_CODE_STYLE_PREVIEWS: QRCodeStylePreview[] = [
  */
 export const QR_CODE_ANIMATION_PREVIEWS: QRCodeAnimationPreview[] = [
   {
-    animation: QRCodeAnimation.NONE,
+    animation: QRCodeAnimationEnum.NONE,
     label: 'Aucune',
     description: "Pas d'animation",
   },
   {
-    animation: QRCodeAnimation.RIPPLE,
+    animation: QRCodeAnimationEnum.RIPPLE,
     label: 'Ripple',
     description: 'Onde de choc',
     badge: 'Recommandé',
   },
   {
-    animation: QRCodeAnimation.PULSE,
+    animation: QRCodeAnimationEnum.PULSE,
     label: 'Pulse',
     description: 'Pulsation douce',
     badge: 'Subtil',
   },
   {
-    animation: QRCodeAnimation.WAVE,
+    animation: QRCodeAnimationEnum.WAVE,
     label: 'Wave',
     description: 'Vague dans les points',
     badge: 'Dynamique',
   },
   {
-    animation: QRCodeAnimation.ROTATE3D,
+    animation: QRCodeAnimationEnum.ROTATE3D,
     label: 'Rotate 3D',
     description: 'Rotation spectaculaire',
     badge: 'Premium',
   },
   {
-    animation: QRCodeAnimation.GLOW,
+    animation: QRCodeAnimationEnum.GLOW,
     label: 'Glow',
     description: 'Lumière néon pulsante',
     badge: 'Moderne',
   },
   {
-    animation: QRCodeAnimation.CIRCULAR_RIPPLE,
+    animation: QRCodeAnimationEnum.CIRCULAR_RIPPLE,
     label: 'Circular Ripple',
     description: 'Onde circulaire',
     badge: 'Nouveau !',

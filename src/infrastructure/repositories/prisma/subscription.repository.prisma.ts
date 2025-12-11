@@ -387,7 +387,22 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   }
 
   // Private helpers
-  private toDomainEntity(data: any): SubscriptionEntity {
+  private toDomainEntity(data: {
+    id: string;
+    userId: string;
+    plan: string;
+    status: string;
+    storesLimit: number;
+    campaignsLimit: number;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    trialEndsAt: Date | null;
+    currentPeriodStart: Date | null;
+    currentPeriodEnd: Date | null;
+    cancelledAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): SubscriptionEntity {
     return SubscriptionEntity.fromPersistence({
       id: data.id as SubscriptionId,
       userId: data.userId as UserId,

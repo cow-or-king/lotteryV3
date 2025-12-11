@@ -35,7 +35,6 @@ export function SidebarNavItem({
   isCompactMode,
   onItemClick,
   onCloseSidebar,
-  targetRole,
   currentRole,
   adminVisible,
   userVisible,

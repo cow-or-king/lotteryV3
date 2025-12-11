@@ -43,14 +43,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('='.repeat(80));
-    console.log('✅ GOOGLE OAUTH SUCCESS');
-    console.log('='.repeat(80));
-    console.log('Refresh Token:', tokens.refresh_token);
-    console.log('');
-    console.log('⚠️  IMPORTANT: Copy this refresh token and store it encrypted in your database');
-    console.log('   It will be used to fetch reviews from Google My Business');
-    console.log('='.repeat(80));
+    console.warn('='.repeat(80));
+    console.warn('✅ GOOGLE OAUTH SUCCESS');
+    console.warn('='.repeat(80));
+    console.warn('Refresh Token:', tokens.refresh_token);
+    console.warn('');
+    console.warn('⚠️  IMPORTANT: Copy this refresh token and store it encrypted in your database');
+    console.warn('   It will be used to fetch reviews from Google My Business');
+    console.warn('='.repeat(80));
 
     // TODO: Stocker le refresh_token chiffré dans la BDD
     // const encryptedToken = await encryptionService.encrypt(tokens.refresh_token);

@@ -3,8 +3,6 @@
  * Logs uniquement en développement, silencieux en production
  */
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug';
-
 class Logger {
   private isDev = process.env.NODE_ENV === 'development';
 
