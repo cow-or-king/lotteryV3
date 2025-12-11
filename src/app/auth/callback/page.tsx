@@ -53,7 +53,7 @@ export default function AuthCallbackPage() {
         setStatus('success');
         setMessage('Authentification réussie! Redirection...');
         setTimeout(() => router.push(next), 1500);
-      } catch (err) {
+      } catch (_err) {
         setStatus('error');
         setMessage("Échec de l'authentification. Redirection...");
         setTimeout(() => router.push('/login'), 3000);

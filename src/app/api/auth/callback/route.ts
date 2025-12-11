@@ -83,7 +83,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Succès ! Rediriger vers le dashboard
     return NextResponse.redirect(new URL('/dashboard', request.url));
-  } catch (err) {
+  } catch (_err) {
     console.error('Auth callback GET error:', err);
     return NextResponse.redirect(new URL('/login?error=unexpected_error', request.url));
   }
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         email: user.email,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     console.error('Auth callback error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

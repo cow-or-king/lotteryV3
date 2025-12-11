@@ -53,7 +53,7 @@ export class ApiKeyEncryptionService {
       const encryptedText = `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
 
       return Result.ok(encryptedText);
-    } catch (error) {
+    } catch (_error) {
       return Result.fail(new Error('Encryption failed'));
     }
   }
@@ -87,7 +87,7 @@ export class ApiKeyEncryptionService {
       decrypted += decipher.final('utf8');
 
       return Result.ok(decrypted);
-    } catch (error) {
+    } catch (_error) {
       return Result.fail(new Error('Decryption failed'));
     }
   }

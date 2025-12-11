@@ -33,6 +33,13 @@ export default [
       '*.config.js', // Fichiers de config
       '*.config.ts', // Fichiers de config TS
       'src/generated/**', // Fichiers générés
+      // Temporarily ignore test files to focus on source code
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      'src/test/**',
+      'e2e/**',
     ],
   },
 

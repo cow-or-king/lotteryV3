@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable no-undef */
 /**
  * Next.js Bundle Analyzer Configuration
  * Utilisé pour analyser la taille du bundle

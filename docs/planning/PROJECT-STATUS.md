@@ -1,27 +1,27 @@
 # 📊 ReviewLottery V3 - Project Status
 
-**Last Update**: 2025-12-10
-**Current Phase**: Phase 2 - Reviews & IA (partial)
+**Last Update**: 2025-12-11
+**Current Phase**: Phase 2 - Reviews & IA (80% complété)
 **Latest Commit**: `e6c743d` - Complete authentication system with Supabase Auth
 
 ---
 
 ## 📈 Project Overview
 
-**Completion**: ~40% (Foundation & Auth complete, Core Lottery feature missing)
+**Completion**: ~60% (Foundation, Auth, Reviews & QR Codes complets, Lottery système manquant)
 
 ### Tech Stack
 
 - **Framework**: Next.js 16.0.7 with App Router
 - **Language**: TypeScript 5.x (ultra-strict, ZERO `any` types)
 - **Architecture**: Hexagonal (Ports & Adapters) + Domain-Driven Design
-- **Database**: PostgreSQL via Supabase + Prisma 7.1.0
+- **Database**: PostgreSQL via Supabase + Prisma 5.22
 - **API**: tRPC 11.7.2 for type-safe endpoints
 - **Auth**: Supabase Auth with HTTP-only cookies
 - **State**: Zustand 5.0.9
 - **UI**: Tailwind CSS 4 + Radix UI
 - **Design**: Glassmorphism V5 (blue-violet gradient, backdrop-blur)
-- **Testing**: Vitest 4.0.15 + Testing Library
+- **Testing**: Vitest 4.0.15 + Playwright
 - **AI**: OpenAI (gpt-4o-mini) for review response generation
 
 ### Architecture Principles
@@ -31,6 +31,7 @@
 - ✅ **Branded Types** - Type-safe IDs (UserId, StoreId, etc.)
 - ✅ **Hexagonal Architecture** - Clear separation: core → infrastructure → presentation
 - ✅ **Domain-Driven Design** - Rich domain entities with business logic
+- ✅ **Modular Structure** - Organisation claire par feature (docs/, scripts/, prisma/)
 
 ---
 
@@ -132,6 +133,28 @@
 - [x] Probability configuration with decimals
 - [x] Quantity management (0 = unlimited)
 - [x] Visual indicators (brand logo or "C" badge for common prizes)
+
+### 📱 QR Codes System
+
+- [x] CRUD QR Codes (create, read, update, delete)
+- [x] 5 visual styles (DOTS, ROUNDED, SQUARE, CLASSY, CIRCULAR)
+- [x] 6 animation types (RIPPLE, PULSE, GLOW, ROTATE3D, WAVE, CIRCULAR_RIPPLE)
+- [x] Full customization (colors: QR, background, animation)
+- [x] Logo upload via Supabase Storage
+- [x] Templates by industry (Restaurant, E-commerce, Event, Professional, Tech)
+- [x] Real-time preview with animations
+- [x] Multi-format export (PNG, SVG, PDF)
+- [x] Store association
+- [x] Scan tracking and analytics
+- [x] Glassmorphism design integration
+
+**Files**:
+
+- Pages: `src/app/dashboard/qr-codes/` (list, new, [id]/edit, [id]/stats)
+- Components: `src/components/qr-codes/` (9 components)
+- Hooks: `src/hooks/qr-codes/` (useQRCodeGenerator, useQRCodeExport)
+- Router: `src/server/api/routers/qr-code.router.ts`
+- Storage: Supabase bucket `qr-logos`
 
 ### 🎨 UI/UX
 
@@ -335,24 +358,50 @@
 
 ```
 reviewLotteryV3/
-├── docs/
-│   ├── planning/          # This file, TODO.md, ROADMAP.md
-│   ├── architecture/      # ARCHITECTURE.md, DDD patterns
-│   ├── development/       # DEVELOPMENT.md, TESTING-GUIDE.md
-│   ├── reviews/           # REVIEWS-TECHNICAL.md
-│   ├── api/              # (cleaned - outdated docs removed)
-│   ├── authentication/    # MAGIC-LINK-SETUP.md (postponed)
-│   └── archive/          # Unimplemented features (SUPER-ADMIN-ARCHITECTURE, etc.)
-├── src/
-│   ├── core/             # Domain layer (entities, use cases, ports)
-│   ├── infrastructure/   # Adapters (Prisma, APIs, services)
-│   ├── app/              # Next.js pages (presentation layer)
-│   ├── server/           # tRPC routers
-│   └── shared/           # Result type, Branded types
-├── prisma/
-│   └── schema.prisma     # Database schema
-├── scripts/              # Utility scripts (Google API test, DB setup, etc.)
-└── email-templates/      # HTML email templates (not integrated yet)
+├── docs/                  # Documentation complète
+│   ├── ai/               # Documentation IA
+│   ├── api/              # APIs externes
+│   ├── architecture/     # Architecture & Design patterns
+│   ├── authentication/   # MAGIC-LINK-SETUP.md (postponed)
+│   ├── development/      # Guides de développement
+│   ├── features/         # Documentation par feature
+│   │   ├── qr-codes/    # QR codes (README, plan, status)
+│   │   └── reviews/     # Reviews
+│   ├── guides/           # Coding guidelines
+│   │   └── components/  # Guides composants
+│   ├── planning/         # Roadmap, PRD, Status
+│   ├── reviews/          # Système de reviews
+│   ├── setup/            # Setup guides (Supabase, etc.)
+│   └── archive/          # Documentation archivée
+│
+├── prisma/               # Database schema & migrations
+│   ├── schema.prisma    # Database schema
+│   └── migrations/      # Migration history
+│
+├── scripts/              # Utility scripts
+│   ├── admin/           # Scripts d'administration
+│   ├── database/        # Scripts de base de données
+│   ├── setup/           # Scripts de configuration
+│   ├── testing/         # Scripts de test
+│   └── archive/         # Scripts historiques
+│
+├── src/                  # Code source
+│   ├── app/             # Next.js App Router (Pages & Layouts)
+│   ├── components/      # Composants UI réutilisables
+│   ├── core/            # Domain layer (Entities, Use Cases, Ports)
+│   ├── hooks/           # Custom React hooks par feature
+│   ├── infrastructure/  # Adapters (Prisma, APIs, Services)
+│   ├── lib/             # Utilitaires et configuration
+│   ├── server/          # Backend (tRPC routers)
+│   └── test/            # Tests unitaires et d'intégration
+│
+├── e2e/                  # Tests end-to-end (Playwright)
+│
+├── email-templates/      # HTML email templates (not integrated yet)
+│
+├── README.md             # Documentation principale
+├── CONTRIBUTING.md       # Guide de contribution
+└── package.json          # Dependencies & scripts
 ```
 
 ---
@@ -426,15 +475,81 @@ GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
 
 ## 📚 Related Documentation
 
-- **Quick Start**: `/docs/QUICK-START.md`
-- **TODO List**: `/docs/TODO.md`
-- **Roadmap**: `/docs/planning/ROADMAP.md`
-- **Architecture**: `/docs/architecture/ARCHITECTURE.md`
-- **Development Guide**: `/docs/development/DEVELOPMENT.md`
-- **Testing Guide**: `/docs/development/TESTING-GUIDE.md`
-- **Reviews Technical**: `/docs/reviews/REVIEWS-TECHNICAL.md`
+### Pour Démarrer
+
+- **[../README.md](../../README.md)** - Documentation principale du projet
+- **[../CONTRIBUTING.md](../../CONTRIBUTING.md)** - Guide de contribution
+- **[../QUICK-START.md](../QUICK-START.md)** - Démarrage rapide
+- **[../README.md](../README.md)** - Index complet de la documentation
+
+### Planning & Roadmap
+
+- **[TODO.md](./TODO.md)** - Liste des tâches
+- **[ROADMAP.md](./ROADMAP.md)** - Feuille de route
+- **[PRD_ReviewLottery_v3.md](./PRD_ReviewLottery_v3.md)** - Product Requirements
+
+### Development
+
+- **[../development/DEVELOPMENT.md](../development/DEVELOPMENT.md)** - Guide de développement complet
+- **[../development/TESTING-GUIDE.md](../development/TESTING-GUIDE.md)** - Guide des tests
+- **[../guides/CODING_GUIDELINES.md](../guides/CODING_GUIDELINES.md)** - Standards de code
+
+### Architecture & Features
+
+- **[../architecture/ARCHITECTURE.md](../architecture/ARCHITECTURE.md)** - Architecture hexagonale
+- **[../features/qr-codes/README.md](../features/qr-codes/README.md)** - Documentation QR codes
+- **[../reviews/REVIEWS-TECHNICAL.md](../reviews/REVIEWS-TECHNICAL.md)** - Documentation reviews
+
+### Scripts & Setup
+
+- **[../../scripts/README.md](../../scripts/README.md)** - Documentation des scripts
+- **[../setup/SUPABASE_SETUP.md](../setup/SUPABASE_SETUP.md)** - Configuration Supabase
+
+---
+
+## 📝 Notes de Mise à Jour
+
+### 2025-12-11 - Réorganisation Complète
+
+**Changements majeurs**:
+
+- ✅ Réorganisation de la documentation dans `docs/`
+- ✅ Création de `CONTRIBUTING.md`
+- ✅ Amélioration du README principal
+- ✅ Documentation complète des scripts dans `scripts/README.md`
+- ✅ Création de `docs/README.md` comme index
+- ✅ Documentation complète des QR codes dans `docs/features/qr-codes/`
+- ✅ Mise à jour de PROJECT-STATUS.md avec nouvelle structure
+
+**Améliorations de la documentation**:
+
+- Structure claire et navigable
+- Guides par catégorie
+- Documentation par feature
+- Standards de contribution clairs
+- Scripts documentés par catégorie
+
+**Structure finale**:
+
+```
+docs/
+├── ai/                # IA & prompts
+├── api/               # APIs externes
+├── architecture/      # Architecture & patterns
+├── authentication/    # Auth system
+├── development/       # Dev guides
+├── features/          # Features documentation
+│   ├── qr-codes/     # QR codes system
+│   └── reviews/      # Reviews system
+├── guides/            # Coding standards
+├── planning/          # Roadmap & status (ce fichier)
+├── reviews/           # Reviews technical
+├── setup/             # Setup guides
+└── archive/           # Archived docs
+```
 
 ---
 
 **Created by**: Claude Code
+**Last Updated**: 2025-12-11
 **Contact**: See GitHub issues for feedback

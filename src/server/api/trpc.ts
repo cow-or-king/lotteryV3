@@ -137,7 +137,7 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
             campaignsLimit: 0,
           },
         });
-      } catch (error) {
+      } catch (_error) {
         // Si erreur de contrainte d'unicité (race condition sur batch calls parallèles),
         // on réessaie de récupérer l'utilisateur qui a été créé par une requête parallèle
         user = await ctx.prisma.user.findUnique({
