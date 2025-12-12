@@ -65,7 +65,7 @@ export function BrandSection({
               className="w-10 h-10 rounded-xl object-cover border border-purple-600/20"
             />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
               {brand.brandName.charAt(0).toUpperCase()}
             </div>
           )}

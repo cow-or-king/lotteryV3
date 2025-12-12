@@ -52,5 +52,6 @@ export interface StoreRepository {
   findManyByOwnerId(ownerId: string): Promise<StoreEntity[]>;
   update(id: string, input: UpdateStoreInput): Promise<StoreEntity>;
   delete(id: string): Promise<void>;
+  deleteManyByBrandId(brandId: string): Promise<void>;
   countByBrandId(brandId: string): Promise<number>;
 }

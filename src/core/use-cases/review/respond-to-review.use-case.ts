@@ -9,7 +9,7 @@ import { IReviewRepository } from '@/core/repositories/review.repository.interfa
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 import { IStoreRepository } from '@/core/repositories/store.repository.interface';
 import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
-import { ApiKeyEncryptionService } from '@/infrastructure/security/api-key-encryption.service';
+import type { IEncryptionService } from '@/core/ports/encryption.service';
 import { ReviewId, UserId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
@@ -54,7 +54,7 @@ export class RespondToReviewUseCase {
     private readonly reviewRepository: IReviewRepository,
     private readonly templateRepository: IResponseTemplateRepository,
     private readonly googleService: IGoogleMyBusinessService,
-    private readonly encryptionService: ApiKeyEncryptionService,
+    private readonly encryptionService: IEncryptionService,
     private readonly storeRepository: IStoreRepository,
   ) {}
 

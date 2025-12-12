@@ -105,7 +105,7 @@ export default function QRCodeStatsPage() {
         {/* Total Scans */}
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
               <Scan className="w-6 h-6 text-white" />
             </div>
             <TrendingUp className="w-5 h-5 text-purple-600" />
@@ -117,7 +117,7 @@ export default function QRCodeStatsPage() {
         {/* Scans Today */}
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
               <Calendar className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function QRCodeStatsPage() {
         {/* Scans This Week */}
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
               <Calendar className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function QRCodeStatsPage() {
         {/* Scans This Month */}
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
               <Clock className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function QRCodeStatsPage() {
                   {count > 0 && <span className="text-xs font-bold text-purple-600">{count}</span>}
                   <div className="w-full bg-gray-100 rounded-t-lg flex-1 flex items-end overflow-hidden">
                     <div
-                      className="w-full bg-gradient-to-t from-purple-500 to-pink-500 rounded-t-lg transition-all duration-300"
+                      className="w-full bg-linear-to-t from-purple-500 to-pink-500 rounded-t-lg transition-all duration-300"
                       style={{ height: `${percentage}%` }}
                     ></div>
                   </div>

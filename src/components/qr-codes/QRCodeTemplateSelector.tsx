@@ -170,7 +170,7 @@ export default function QRCodeTemplateSelector({ onSelect }: QRCodeTemplateSelec
               </div>
 
               {/* Hover overlay */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="absolute inset-0 rounded-xl bg-linear-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </button>
           );
         })}

@@ -71,7 +71,7 @@ export default function GamesPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard/games/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer un jeu
@@ -136,7 +136,7 @@ export default function GamesPage() {
           </p>
           <button
             onClick={() => router.push('/dashboard/games/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer mon premier jeu

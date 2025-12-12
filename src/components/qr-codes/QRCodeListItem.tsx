@@ -110,7 +110,7 @@ export default function QRCodeListItem({
     <div className="group relative overflow-hidden rounded-xl border-2 border-white/30 bg-white/60 backdrop-blur-xl transition-all duration-300 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/10">
       {/* Hover gradient effect */}
       <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 via-transparent to-blue-500/5" />
       </div>
 
       <div className="relative p-4">

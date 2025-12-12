@@ -5,14 +5,17 @@
 
 import { Result } from '@/lib/types/result.type';
 import type { BrandRepository } from '@/core/ports/brand.repository';
-import { prisma } from '@/infrastructure/database/prisma-client';
+import type { StoreRepository } from '@/core/ports/store.repository';
 
 export interface DeleteBrandInput {
   id: string;
 }
 
 export class DeleteBrandUseCase {
-  constructor(private readonly brandRepository: BrandRepository) {}
+  constructor(
+    private readonly brandRepository: BrandRepository,
+    private readonly storeRepository: StoreRepository,
+  ) {}
 
   async execute(input: DeleteBrandInput, userId: string): Promise<Result<void, Error>> {
     // 1. Vérifier que le brand existe
@@ -35,9 +38,7 @@ export class DeleteBrandUseCase {
 
     // 3. Supprimer manuellement les stores d'abord (Supabase RLS bloque le cascade)
     try {
-      await prisma.store.deleteMany({
-        where: { brandId: input.id },
-      });
+      await this.storeRepository.deleteManyByBrandId(input.id);
     } catch (error) {
       return Result.fail(error instanceof Error ? error : new Error('Failed to delete stores'));
     }

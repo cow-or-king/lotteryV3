@@ -47,7 +47,7 @@ export default function QRCodeRedirectPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-100 via-pink-50 to-blue-100">
         <div className="max-w-md w-full mx-4">
           <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 text-center border border-white/20">
             <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
@@ -80,7 +80,7 @@ export default function QRCodeRedirectPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-100 via-pink-50 to-blue-100">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 text-center border border-white/20">
           <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>

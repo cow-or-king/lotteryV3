@@ -2,7 +2,7 @@
  * Script pour vérifier et corriger le schéma de la table stores
  */
 
-import { PrismaClient } from '../src/generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -21,14 +21,16 @@ async function fixSchema() {
     );
 
     console.log('📋 Colonnes actuelles de la table stores:');
-    columns.forEach((col) => {
+    columns.forEach((col: { column_name: string; data_type: string; is_nullable: string }) => {
       console.log(
         `  - ${col.column_name} (${col.data_type}) ${col.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'}`,
       );
     });
 
     // Vérifier si owner_id existe encore
-    const hasOwnerId = columns.some((col) => col.column_name === 'owner_id');
+    const hasOwnerId = columns.some(
+      (col: { column_name: string }) => col.column_name === 'owner_id',
+    );
 
     if (hasOwnerId) {
       console.log('\n⚠️  La colonne owner_id existe encore ! Suppression...');
@@ -46,7 +48,9 @@ async function fixSchema() {
     }
 
     // Vérifier si brand_id existe
-    const hasBrandId = columns.some((col) => col.column_name === 'brand_id');
+    const hasBrandId = columns.some(
+      (col: { column_name: string }) => col.column_name === 'brand_id',
+    );
 
     if (!hasBrandId) {
       console.log("\n⚠️  La colonne brand_id n'existe pas ! Ajout...");

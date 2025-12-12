@@ -8,7 +8,7 @@
 import { Result } from '@/lib/types/result.type';
 import type { StoreRepository, StoreEntity } from '@/core/ports/store.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
-import type { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
+import type { IEncryptionService } from '@/core/ports/encryption.service';
 
 export interface UpdateStoreInput {
   id: string;
@@ -24,7 +24,7 @@ export class UpdateStoreUseCase {
   constructor(
     private readonly storeRepository: StoreRepository,
     private readonly brandRepository: BrandRepository,
-    private readonly encryptionService: ApiKeyEncryptionService,
+    private readonly encryptionService: IEncryptionService,
   ) {}
 
   async execute(input: UpdateStoreInput, userId: string): Promise<Result<StoreEntity, Error>> {

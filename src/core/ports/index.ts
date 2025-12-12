@@ -5,3 +5,4 @@
 
 export type { IAuthProvider, AuthUser, AuthTokens } from './auth.port';
 export type { ISessionManager, Session } from './session.port';
+export type { IEncryptionService } from './encryption.service';

@@ -6,8 +6,14 @@
 import { config } from 'dotenv';
 config(); // Charger les variables d'environnement depuis .env
 
-import { ApiKeyEncryptionService } from '../src/infrastructure/encryption/api-key-encryption.service';
-import { GoogleMyBusinessProductionService } from '../src/infrastructure/services/google-my-business-production.service';
+import { ApiKeyEncryptionService } from '../../src/infrastructure/encryption/api-key-encryption.service';
+import { GoogleMyBusinessProductionService } from '../../src/infrastructure/services/google-my-business-production.service';
+
+interface Review {
+  authorName: string;
+  rating: number;
+  comment?: string;
+}
 
 async function main() {
   console.log('🚀 Testing Google My Business API\n');
@@ -57,7 +63,7 @@ async function main() {
 
     if (reviewsResult.success) {
       console.log(`✅ Found ${reviewsResult.data.length} reviews`);
-      reviewsResult.data.forEach((review, index) => {
+      reviewsResult.data.forEach((review: Review, index: number) => {
         console.log(`\n  Review ${index + 1}:`);
         console.log(`    Author: ${review.authorName}`);
         console.log(`    Rating: ${'⭐'.repeat(review.rating)}`);

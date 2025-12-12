@@ -3,7 +3,7 @@
  * Vérifie que la base de données est accessible et les tables créées
  */
 
-import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

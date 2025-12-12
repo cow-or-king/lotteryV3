@@ -82,6 +82,12 @@ export class PrismaStoreRepository implements StoreRepository {
     });
   }
 
+  async deleteManyByBrandId(brandId: string): Promise<void> {
+    await prisma.store.deleteMany({
+      where: { brandId },
+    });
+  }
+
   async countByBrandId(brandId: string): Promise<number> {
     return await prisma.store.count({
       where: { brandId },
