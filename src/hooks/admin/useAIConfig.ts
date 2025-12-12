@@ -48,8 +48,8 @@ export function useAIConfig() {
       refetch();
       setHasChanges(false);
       toast({
-        title: 'Configuration créée',
-        description: 'La configuration a été créée avec succès',
+        title: 'Configuration crÃ©Ã©e',
+        description: 'La configuration a Ã©tÃ© crÃ©Ã©e avec succÃ¨s',
         variant: 'success',
       });
     },
@@ -67,8 +67,8 @@ export function useAIConfig() {
       refetch();
       setHasChanges(false);
       toast({
-        title: 'Configuration mise à jour',
-        description: 'Les modifications ont été enregistrées',
+        title: 'Configuration mise Ã  jour',
+        description: 'Les modifications ont Ã©tÃ© enregistrÃ©es',
         variant: 'success',
       });
     },
@@ -97,8 +97,8 @@ export function useAIConfig() {
     onSuccess: () => {
       refetch();
       toast({
-        title: 'Configuration supprimée',
-        description: 'La configuration a été supprimée avec succès',
+        title: 'Configuration supprimÃ©e',
+        description: 'La configuration a Ã©tÃ© supprimÃ©e avec succÃ¨s',
         variant: 'success',
       });
     },
@@ -107,14 +107,14 @@ export function useAIConfig() {
   const testMutation = api.admin.testAiConnection.useMutation({
     onSuccess: (data) => {
       toast({
-        title: 'Connexion réussie',
-        description: `${data.provider} / ${data.model} · ${data.tokensUsed} tokens utilisés`,
+        title: 'Connexion rÃ©ussie',
+        description: `${data.provider} / ${data.model} â€¢ ${data.tokensUsed} tokens utilisÃ©s`,
         variant: 'success',
       });
     },
     onError: (error) => {
       toast({
-        title: 'Test échoué',
+        title: 'Test Ã©chouÃ©',
         description: error.message,
         variant: 'error',
       });
@@ -157,7 +157,7 @@ export function useAIConfig() {
       }
     } else {
       toast({
-        title: 'Configuration non sauvegardée',
+        title: 'Configuration non sauvegardÃ©e',
         description: "Veuillez d'abord sauvegarder la configuration avant de l'activer",
         variant: 'warning',
       });
@@ -234,7 +234,7 @@ export function useAIConfig() {
     if (!serviceConfig || !serviceConfig.apiKey) {
       toast({
         title: 'API Key manquante',
-        description: 'Veuillez saisir une clé API avant de tester la connexion',
+        description: 'Veuillez saisir une clÃ© API avant de tester la connexion',
         variant: 'warning',
       });
       return;
