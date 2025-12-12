@@ -11,6 +11,10 @@ import {
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
+import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
+import { IEncryptionService } from '@/core/ports/encryption.service';
+import { IStoreRepository } from '@/core/repositories/store.repository.interface';
+import { StoreEntity } from '@/core/entities/store.entity';
 import { ReviewId, UserId, StoreId } from '@/lib/types/branded.type';
 import { Result } from '@/lib/types/result.type';
 
@@ -18,6 +22,9 @@ describe('RespondToReviewUseCase', () => {
   let useCase: RespondToReviewUseCase;
   let mockReviewRepo: IReviewRepository;
   let mockTemplateRepo: IResponseTemplateRepository;
+  let mockGoogleService: IGoogleMyBusinessService;
+  let mockEncryptionService: IEncryptionService;
+  let mockStoreRepo: IStoreRepository;
 
   const reviewId = 'review123' as ReviewId;
   const userId = 'user123' as UserId;
@@ -34,7 +41,38 @@ describe('RespondToReviewUseCase', () => {
       incrementUsage: vi.fn(),
     } as unknown as IResponseTemplateRepository;
 
-    useCase = new RespondToReviewUseCase(mockReviewRepo, mockTemplateRepo);
+    mockGoogleService = {
+      fetchReviews: vi.fn(),
+      publishResponse: vi.fn(),
+      validateCredentials: vi.fn(),
+    } as unknown as IGoogleMyBusinessService;
+
+    mockEncryptionService = {
+      encrypt: vi.fn(),
+      decrypt: vi.fn(),
+    } as unknown as IEncryptionService;
+
+    mockStoreRepo = {
+      findById: vi.fn(),
+      findBySlug: vi.fn(),
+      slugExists: vi.fn(),
+      findByOwner: vi.fn(),
+      findActiveStores: vi.fn(),
+      save: vi.fn(),
+      delete: vi.fn(),
+      countStoreCampaigns: vi.fn(),
+      isOwner: vi.fn(),
+      updatePaymentStatus: vi.fn(),
+      getStoreStats: vi.fn(),
+    } as unknown as IStoreRepository;
+
+    useCase = new RespondToReviewUseCase(
+      mockReviewRepo,
+      mockTemplateRepo,
+      mockGoogleService,
+      mockEncryptionService,
+      mockStoreRepo,
+    );
   });
 
   describe('execute', () => {
@@ -74,8 +112,17 @@ describe('RespondToReviewUseCase', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
+      // Mock store with Google API key configured
+      const mockStore = {
+        id: storeId,
+        googleApiKey: 'encrypted-key',
+        googleApiKeyStatus: 'configured',
+      } as any;
+
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(mockReview);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
+      vi.mocked(mockStoreRepo.findById).mockResolvedValue(mockStore);
+      vi.mocked(mockGoogleService.publishResponse).mockResolvedValue(Result.ok(undefined));
 
       const result = await useCase.execute(input);
 
@@ -90,6 +137,12 @@ describe('RespondToReviewUseCase', () => {
 
       expect(mockReviewRepo.findById).toHaveBeenCalledWith(reviewId);
       expect(mockReviewRepo.save).toHaveBeenCalled();
+      expect(mockStoreRepo.findById).toHaveBeenCalledWith(storeId);
+      expect(mockGoogleService.publishResponse).toHaveBeenCalledWith(
+        'google123',
+        responseContent,
+        'encrypted-key',
+      );
     });
 
     it('should fail when review not found', async () => {
@@ -199,7 +252,15 @@ describe('RespondToReviewUseCase', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
+      // Mock store with Google API key configured
+      const mockStore = {
+        id: storeId,
+        googleApiKey: 'encrypted-key',
+        googleApiKeyStatus: 'configured',
+      } as any;
+
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(mockReview);
+      vi.mocked(mockStoreRepo.findById).mockResolvedValue(mockStore);
 
       const result = await useCase.execute(input);
 
@@ -246,7 +307,15 @@ describe('RespondToReviewUseCase', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
+      // Mock store with Google API key configured
+      const mockStore = {
+        id: storeId,
+        googleApiKey: 'encrypted-key',
+        googleApiKeyStatus: 'configured',
+      } as any;
+
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(mockReview);
+      vi.mocked(mockStoreRepo.findById).mockResolvedValue(mockStore);
 
       const result = await useCase.execute(input);
 
@@ -295,8 +364,17 @@ describe('RespondToReviewUseCase', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
+      // Mock store with Google API key configured
+      const mockStore = {
+        id: storeId,
+        googleApiKey: 'encrypted-key',
+        googleApiKeyStatus: 'configured',
+      } as any;
+
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(mockReview);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
+      vi.mocked(mockStoreRepo.findById).mockResolvedValue(mockStore);
+      vi.mocked(mockGoogleService.publishResponse).mockResolvedValue(Result.ok(undefined));
       vi.mocked(mockTemplateRepo.incrementUsage).mockResolvedValue(Result.ok(undefined));
 
       const result = await useCase.execute(input);
@@ -341,8 +419,17 @@ describe('RespondToReviewUseCase', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
+      // Mock store with Google API key configured
+      const mockStore = {
+        id: storeId,
+        googleApiKey: 'encrypted-key',
+        googleApiKeyStatus: 'configured',
+      } as any;
+
       vi.mocked(mockReviewRepo.findById).mockResolvedValue(mockReview);
       vi.mocked(mockReviewRepo.save).mockImplementation(async (review) => Result.ok(review));
+      vi.mocked(mockStoreRepo.findById).mockResolvedValue(mockStore);
+      vi.mocked(mockGoogleService.publishResponse).mockResolvedValue(Result.ok(undefined));
 
       const result = await useCase.execute(input);
 

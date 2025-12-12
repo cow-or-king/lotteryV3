@@ -174,6 +174,27 @@ describe('auth.router (Integration Tests)', () => {
         },
       });
 
+      // Mock Supabase signIn (auto-login after registration)
+      mockSupabaseAuthService.signIn.mockResolvedValue({
+        success: true,
+        data: {
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
+          expiresIn: 3600,
+          expiresAt: Date.now() + 3600000,
+        },
+      });
+
+      // Mock Supabase verifyToken (for auto-login)
+      mockSupabaseAuthService.verifyToken.mockResolvedValue({
+        success: true,
+        data: {
+          id: mockUserId,
+          email: input.email,
+          emailVerified: true,
+        },
+      });
+
       // Mock email existence check (user doesn't exist yet)
       mockPrisma.user.count = vi.fn().mockResolvedValue(0);
 
@@ -183,6 +204,30 @@ describe('auth.router (Integration Tests)', () => {
         email: input.email,
         name: input.name,
         emailVerified: false,
+        hashedPassword: 'handled-by-supabase',
+        avatarUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Mock Prisma user update (for emailVerified in dev mode)
+      mockPrisma.user.update = vi.fn().mockResolvedValue({
+        id: mockUserId,
+        email: input.email,
+        name: input.name,
+        emailVerified: true,
+        hashedPassword: 'handled-by-supabase',
+        avatarUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Mock Prisma user findUnique (for auto-login)
+      mockPrisma.user.findUnique = vi.fn().mockResolvedValue({
+        id: mockUserId,
+        email: input.email,
+        name: input.name,
+        emailVerified: true,
         hashedPassword: 'handled-by-supabase',
         avatarUrl: null,
         createdAt: new Date(),
@@ -203,6 +248,12 @@ describe('auth.router (Integration Tests)', () => {
         cancelAtPeriodEnd: false,
         createdAt: new Date(),
         updatedAt: new Date(),
+      });
+
+      // Mock session creation (for auto-login)
+      mockSessionService.createSession.mockResolvedValue({
+        success: true,
+        data: undefined,
       });
 
       // ACT

@@ -1,6 +1,7 @@
 /**
  * Auth Callback Page Tests
  * Tests pour la gestion des callbacks d'authentification
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -37,7 +38,6 @@ describe('AuthCallbackPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
 
     (useRouter as any).mockReturnValue({
       push: mockPush,
@@ -49,7 +49,6 @@ describe('AuthCallbackPage', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     mockSearchParams.clear();
   });
 
@@ -87,10 +86,13 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText('Authentification réussie! Redirection...')).toBeInTheDocument();
     });
 
-    // Fast-forward timers pour tester la redirection
-    vi.advanceTimersByTime(1500);
-
-    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    // Wait for the redirect to be called
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/dashboard');
+      },
+      { timeout: 2000 },
+    );
   });
 
   it('redirects to custom next URL when provided', async () => {
@@ -107,9 +109,12 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText('Succès!')).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(1500);
-
-    expect(mockPush).toHaveBeenCalledWith('/custom-page');
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/custom-page');
+      },
+      { timeout: 2000 },
+    );
   });
 
   it('handles error from URL params', async () => {
@@ -123,9 +128,12 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText('User cancelled the authentication')).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(3000);
-
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/login');
+      },
+      { timeout: 3500 },
+    );
   });
 
   it('handles missing code parameter', async () => {
@@ -137,9 +145,12 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText("Code d'authentification manquant.")).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(3000);
-
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/login');
+      },
+      { timeout: 3500 },
+    );
   });
 
   it('handles failed API response', async () => {
@@ -156,9 +167,12 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText("Échec de l'authentification. Redirection...")).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(3000);
-
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/login');
+      },
+      { timeout: 3500 },
+    );
   });
 
   it('handles fetch exception', async () => {
@@ -172,9 +186,12 @@ describe('AuthCallbackPage', () => {
       expect(screen.getByText("Échec de l'authentification. Redirection...")).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(3000);
-
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/login');
+      },
+      { timeout: 3500 },
+    );
   });
 
   it('renders AnimatedBackground', () => {
@@ -211,10 +228,13 @@ describe('AuthCallbackPage', () => {
 
     const { container } = render(<AuthCallbackPage />);
 
-    await waitFor(() => {
-      const successIcon = container.querySelector('svg path[d*="M5 13l4 4L19 7"]');
-      expect(successIcon).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        const successIcon = container.querySelector('svg path[d*="M5 13l4 4L19 7"]');
+        expect(successIcon).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
   });
 
   it('displays error icon on failed auth', async () => {
@@ -222,9 +242,12 @@ describe('AuthCallbackPage', () => {
 
     const { container } = render(<AuthCallbackPage />);
 
-    await waitFor(() => {
-      const errorIcon = container.querySelector('svg path[d*="M6 18L18 6M6 6l12 12"]');
-      expect(errorIcon).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        const errorIcon = container.querySelector('svg path[d*="M6 18L18 6M6 6l12 12"]');
+        expect(errorIcon).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
   });
 });

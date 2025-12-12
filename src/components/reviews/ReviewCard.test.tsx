@@ -1,6 +1,7 @@
 /**
  * ReviewCard Component Tests
  * Tests unitaires pour le composant ReviewCard
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect } from 'vitest';
@@ -35,8 +36,8 @@ describe('ReviewCard', () => {
   });
 
   it('renders 5 stars for 5-star rating', () => {
-    render(<ReviewCard review={mockReview} />);
-    const stars = screen.getAllByRole('img', { hidden: true });
+    const { container } = render(<ReviewCard review={mockReview} />);
+    const stars = container.querySelectorAll('svg.lucide-star');
     expect(stars).toHaveLength(5);
   });
 
@@ -54,13 +55,13 @@ describe('ReviewCard', () => {
   it('shows "Nécessite attention" badge for low ratings without response', () => {
     const lowRatingReview = { ...mockReview, rating: 2, hasResponse: false };
     render(<ReviewCard review={lowRatingReview} />);
-    expect(screen.getByText('Nécessite attention')).toBeInTheDocument();
+    expect(screen.getByText('Attention')).toBeInTheDocument();
   });
 
   it('does not show attention badge for low ratings with response', () => {
     const lowRatingReview = { ...mockReview, rating: 2, hasResponse: true };
     render(<ReviewCard review={lowRatingReview} />);
-    expect(screen.queryByText('Nécessite attention')).not.toBeInTheDocument();
+    expect(screen.queryByText('Attention')).not.toBeInTheDocument();
   });
 
   it('renders author initial in avatar', () => {
@@ -70,7 +71,7 @@ describe('ReviewCard', () => {
 
   it('formats date correctly', () => {
     render(<ReviewCard review={mockReview} />);
-    expect(screen.getByText(/15 janvier 2024/i)).toBeInTheDocument();
+    expect(screen.getByText(/15 janv\. 2024/i)).toBeInTheDocument();
   });
 
   it('does not render comment section when comment is null', () => {

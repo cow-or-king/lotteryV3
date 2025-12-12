@@ -1,6 +1,7 @@
 /**
  * useReviews Hook Tests
  * Tests unitaires pour le hook useReviews
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
