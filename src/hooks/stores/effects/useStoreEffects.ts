@@ -45,14 +45,16 @@ export function useStoreEffects({
         logoUrl: '',
       }));
     }
-  }, [selectedBrand, isNewBrand, setFormData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBrand, isNewBrand]);
 
   // Ouvrir le modal si paramètre ?create=true
   useEffect(() => {
     if (searchParams.get('create') === 'true') {
       setShowCreateForm(true);
     }
-  }, [searchParams, setShowCreateForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Fermer le menu si on clique ailleurs
   useEffect(() => {
@@ -65,5 +67,6 @@ export function useStoreEffects({
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [setOpenMenuId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
