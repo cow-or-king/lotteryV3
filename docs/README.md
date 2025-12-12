@@ -12,6 +12,7 @@ Documentation complète du projet ReviewLottery V3 - Application SaaS de gestion
 ## 🚀 Démarrage Rapide
 
 - **[CONVENTIONS.md](./CONVENTIONS.md)** ⭐ Standards & conventions (LIRE EN PREMIER)
+- **[planning/DEVELOPMENT-TRACKER.md](./planning/DEVELOPMENT-TRACKER.md)** 🎯 Suivi du développement (METTRE À JOUR À CHAQUE COMMIT)
 - **[QUICK-START.md](./QUICK-START.md)** - Démarrage en 5 minutes
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Guide de contribution
 
@@ -47,11 +48,13 @@ Documentation complète du projet ReviewLottery V3 - Application SaaS de gestion
 
 **État du projet et feuille de route**
 
-- **[planning/PROJECT-STATUS.md](./planning/PROJECT-STATUS.md)** - État actuel détaillé du projet
-- **[planning/ROADMAP.md](./planning/ROADMAP.md)** - Feuille de route et phases de développement
-- **[planning/TODO.md](./planning/TODO.md)** - Liste des tâches à faire
-- **[planning/PRD_ReviewLottery_v3.md](./planning/PRD_ReviewLottery_v3.md)** - Product Requirements Document
-- **[planning/plan.md](./planning/plan.md)** - Plan de développement détaillé (30 jours)
+- **[planning/DEVELOPMENT-TRACKER.md](./planning/DEVELOPMENT-TRACKER.md)** ⭐ **FICHIER PRINCIPAL** - Suivi temps réel (METTRE À JOUR À CHAQUE COMMIT)
+- **[planning/PRD_ReviewLottery_v3.md](./planning/PRD_ReviewLottery_v3.md)** - Product Requirements Document (vision originale)
+- **[planning/PROJECT-STATUS.md](./planning/PROJECT-STATUS.md)** - État détaillé (historique, référence)
+- **[planning/ROADMAP.md](./planning/ROADMAP.md)** - Feuille de route originale (référence)
+- **[planning/TODO.md](./planning/TODO.md)** - Liste originale des tâches (référence)
+- **[planning/plan.md](./planning/plan.md)** - Plan détaillé 30 jours (référence)
+- **[planning/MAGIC-LINK-DECISION.md](./planning/MAGIC-LINK-DECISION.md)** - Décision Magic Link (feature postponed)
 
 ### 🎯 Features
 
