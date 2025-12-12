@@ -29,15 +29,9 @@ export class GetWinnerByClaimCodeUseCase {
     }
 
     // Récupérer le gagnant
-    const winnerResult = await this.winnerRepository.findByClaimCode(
-      input.claimCode.trim().toUpperCase(),
+    const winner = await this.winnerRepository.findByClaimCode(
+      input.claimCode.trim().toUpperCase() as string & { readonly __brand: unique symbol },
     );
-
-    if (!winnerResult.success) {
-      return fail(winnerResult.error);
-    }
-
-    const winner = winnerResult.value;
 
     if (!winner) {
       return fail(new Error('Invalid claim code'));

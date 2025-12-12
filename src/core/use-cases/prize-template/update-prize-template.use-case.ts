@@ -39,7 +39,7 @@ export class UpdatePrizeTemplateUseCase {
       }
 
       // Vérifier que le brand appartient à l'utilisateur
-      const brandResult = await this.brandRepository.findById(prizeTemplate.brandId);
+      const brandResult = await this.brandRepository.findById(prizeTemplate.brandId ?? '');
 
       if (!brandResult.success) {
         return Result.fail(brandResult.error);

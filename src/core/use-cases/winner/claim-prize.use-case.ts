@@ -28,15 +28,9 @@ export class ClaimPrizeUseCase {
     }
 
     // Récupérer le gagnant par le code
-    const winnerResult = await this.winnerRepository.findByClaimCode(
-      input.claimCode.trim().toUpperCase(),
+    const winner = await this.winnerRepository.findByClaimCode(
+      input.claimCode.trim().toUpperCase() as string & { readonly __brand: unique symbol },
     );
-
-    if (!winnerResult.success) {
-      return fail(winnerResult.error);
-    }
-
-    const winner = winnerResult.value;
 
     if (!winner) {
       return fail(new Error('Invalid claim code'));
@@ -51,31 +45,28 @@ export class ClaimPrizeUseCase {
     const now = new Date();
     if (winner.expiresAt < now) {
       // Marquer comme expiré
-      const expiredWinner: WinnerEntity = {
-        ...winner,
-        status: 'EXPIRED',
-      };
+      const expireResult = await this.winnerRepository.expire(winner.id);
 
-      await this.winnerRepository.save(expiredWinner);
+      if (!expireResult.success) {
+        return fail(expireResult.error);
+      }
 
       return fail(new Error('This prize has expired'));
     }
 
     // Marquer le gain comme réclamé
-    const claimedWinner: WinnerEntity = {
-      ...winner,
-      status: 'CLAIMED',
-      claimedAt: now,
-    };
+    const claimResult = await this.winnerRepository.claim(winner.id, now);
 
-    const saveResult = await this.winnerRepository.save(claimedWinner);
-
-    if (!saveResult.success) {
-      return fail(saveResult.error);
+    if (!claimResult.success) {
+      return fail(claimResult.error);
     }
 
     return ok({
-      winner: saveResult.value,
+      winner: {
+        ...winner,
+        status: 'CLAIMED',
+        claimedAt: now,
+      },
       message: 'Prize successfully claimed! Please show this confirmation to the merchant.',
     });
   }

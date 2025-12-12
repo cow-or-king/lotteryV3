@@ -30,21 +30,12 @@ export class ListWinnersUseCase {
 
     // Récupérer les gagnants selon les filtres
     if (input.campaignId) {
-      const winnersResult = await this.winnerRepository.findByCampaignId(input.campaignId);
-
-      if (!winnersResult.success) {
-        return fail(winnersResult.error);
-      }
-
-      winners = winnersResult.value;
+      winners = await this.winnerRepository.findByCampaign(
+        input.campaignId as string & { readonly __brand: unique symbol },
+      );
     } else {
-      const allWinnersResult = await this.winnerRepository.findAll();
-
-      if (!allWinnersResult.success) {
-        return fail(allWinnersResult.error);
-      }
-
-      winners = allWinnersResult.value;
+      // If no campaign ID, we can't list all winners - this should be handled at the router level
+      return fail(new Error('Campaign ID is required'));
     }
 
     // Filtrer par statut si demandé

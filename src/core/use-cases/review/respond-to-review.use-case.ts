@@ -54,7 +54,6 @@ export class RespondToReviewUseCase {
     private readonly reviewRepository: IReviewRepository,
     private readonly templateRepository: IResponseTemplateRepository,
     private readonly googleService: IGoogleMyBusinessService,
-    private readonly encryptionService: IEncryptionService,
     private readonly storeRepository: IStoreRepository,
   ) {}
 
@@ -103,21 +102,10 @@ export class RespondToReviewUseCase {
       return Result.fail(new Error('Store not found'));
     }
 
-    // Vérifier que le store a une API key configurée
-    if (!store.googleApiKey || store.googleApiKeyStatus !== 'configured') {
-      console.warn('[RespondToReview] No Google API key configured for store:', store.id);
-      return Result.fail(
-        new Error(
-          'Google API key not configured for this store. Please configure it in store settings.',
-        ),
-      );
-    }
-
     // Publier sur Google (nécessite le nom complet de la review)
     const publishResult = await this.googleService.publishResponse(
       updatedReview.googleReviewId,
       input.responseContent,
-      store.googleApiKey,
     );
 
     if (!publishResult.success) {

@@ -6,7 +6,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
-import type { GameType, GameStatus } from '@prisma/client';
 
 // Validation schemas
 const createGameSchema = z.object({
@@ -56,9 +55,9 @@ export const gameRouter = createTRPCRouter({
    * Créer un nouveau jeu
    */
   create: protectedProcedure.input(createGameSchema).mutation(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.userId;
 
-    const game = await ctx.db.game.create({
+    const game = await ctx.prisma.game.create({
       data: {
         ...input,
         userId,
@@ -72,9 +71,9 @@ export const gameRouter = createTRPCRouter({
    * Récupérer tous les jeux de l'utilisateur
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.userId;
 
-    const games = await ctx.db.game.findMany({
+    const games = await ctx.prisma.game.findMany({
       where: {
         userId,
       },
@@ -103,9 +102,9 @@ export const gameRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
+      const userId = ctx.userId;
 
-      const game = await ctx.db.game.findFirst({
+      const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
           userId,
@@ -133,11 +132,11 @@ export const gameRouter = createTRPCRouter({
    * Mettre à jour un jeu
    */
   update: protectedProcedure.input(updateGameSchema).mutation(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.userId;
     const { id, ...data } = input;
 
     // Vérifier que le jeu appartient à l'utilisateur
-    const game = await ctx.db.game.findFirst({
+    const game = await ctx.prisma.game.findFirst({
       where: {
         id,
         userId,
@@ -151,7 +150,7 @@ export const gameRouter = createTRPCRouter({
       });
     }
 
-    const updatedGame = await ctx.db.game.update({
+    const updatedGame = await ctx.prisma.game.update({
       where: { id },
       data,
     });
@@ -169,10 +168,10 @@ export const gameRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
+      const userId = ctx.userId;
 
       // Vérifier que le jeu appartient à l'utilisateur
-      const game = await ctx.db.game.findFirst({
+      const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
           userId,
@@ -186,7 +185,7 @@ export const gameRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.game.delete({
+      await ctx.prisma.game.delete({
         where: { id: input.id },
       });
 
@@ -197,10 +196,10 @@ export const gameRouter = createTRPCRouter({
    * Enregistrer une partie jouée
    */
   recordPlay: protectedProcedure.input(recordGamePlaySchema).mutation(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.userId;
 
     // Vérifier que le jeu appartient à l'utilisateur
-    const game = await ctx.db.game.findFirst({
+    const game = await ctx.prisma.game.findFirst({
       where: {
         id: input.gameId,
         userId,
@@ -214,7 +213,7 @@ export const gameRouter = createTRPCRouter({
       });
     }
 
-    const gamePlay = await ctx.db.gamePlay.create({
+    const gamePlay = await ctx.prisma.gamePlay.create({
       data: {
         gameId: input.gameId,
         result: input.result,
@@ -236,10 +235,10 @@ export const gameRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
+      const userId = ctx.userId;
 
       // Vérifier que le jeu appartient à l'utilisateur
-      const game = await ctx.db.game.findFirst({
+      const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
           userId,
@@ -254,11 +253,11 @@ export const gameRouter = createTRPCRouter({
       }
 
       // Statistiques globales
-      const totalPlays = await ctx.db.gamePlay.count({
+      const totalPlays = await ctx.prisma.gamePlay.count({
         where: { gameId: input.id },
       });
 
-      const totalWins = await ctx.db.gamePlay.count({
+      const totalWins = await ctx.prisma.gamePlay.count({
         where: {
           gameId: input.id,
           prizeWon: true,
@@ -266,7 +265,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       // Parties récentes
-      const recentPlays = await ctx.db.gamePlay.findMany({
+      const recentPlays = await ctx.prisma.gamePlay.findMany({
         where: { gameId: input.id },
         orderBy: { playedAt: 'desc' },
         take: 10,
@@ -276,7 +275,7 @@ export const gameRouter = createTRPCRouter({
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const dailyStats = await ctx.db.gamePlay.groupBy({
+      const dailyStats = await ctx.prisma.gamePlay.groupBy({
         by: ['playedAt'],
         where: {
           gameId: input.id,
@@ -308,7 +307,7 @@ export const gameRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const game = await ctx.db.game.findFirst({
+      const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
           active: true,

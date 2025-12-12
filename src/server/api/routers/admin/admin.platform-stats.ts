@@ -22,7 +22,7 @@ export const adminPlatformStatsRouter = createTRPCRouter({
     const totalUsers = await prisma.user.count();
     const activeUsers = await prisma.user.count({
       where: {
-        lastLoginAt: {
+        updatedAt: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 derniers jours
         },
       },
@@ -118,7 +118,7 @@ export const adminPlatformStatsRouter = createTRPCRouter({
           ? {
               OR: [
                 { email: { contains: input.search, mode: 'insensitive' as const } },
-                { fullName: { contains: input.search, mode: 'insensitive' as const } },
+                { name: { contains: input.search, mode: 'insensitive' as const } },
               ],
             }
           : {}),
@@ -130,13 +130,17 @@ export const adminPlatformStatsRouter = createTRPCRouter({
           select: {
             id: true,
             email: true,
-            fullName: true,
+            name: true,
             role: true,
             createdAt: true,
-            lastLoginAt: true,
-            _count: {
+            updatedAt: true,
+            brands: {
               select: {
-                stores: true,
+                stores: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -150,13 +154,15 @@ export const adminPlatformStatsRouter = createTRPCRouter({
       // Enrichir avec les stats de chaque client
       const enrichedClients = await Promise.all(
         clients.map(async (client) => {
-          const storesCount = client._count.stores;
+          const storesCount = client.brands.reduce((acc, brand) => acc + brand.stores.length, 0);
 
           // Stats reviews pour ce client
           const reviewsCount = await prisma.review.count({
             where: {
               store: {
-                ownerId: client.id,
+                brand: {
+                  ownerId: client.id,
+                },
               },
             },
           });
@@ -164,7 +170,9 @@ export const adminPlatformStatsRouter = createTRPCRouter({
           const reviewsWithResponseCount = await prisma.review.count({
             where: {
               store: {
-                ownerId: client.id,
+                brand: {
+                  ownerId: client.id,
+                },
               },
               hasResponse: true,
             },
@@ -173,10 +181,10 @@ export const adminPlatformStatsRouter = createTRPCRouter({
           return {
             id: client.id,
             email: client.email,
-            fullName: client.fullName,
+            name: client.name,
             role: client.role,
             createdAt: client.createdAt,
-            lastLoginAt: client.lastLoginAt,
+            updatedAt: client.updatedAt,
             storesCount,
             reviewsCount,
             reviewsWithResponseCount,
@@ -206,16 +214,20 @@ export const adminPlatformStatsRouter = createTRPCRouter({
       const client = await prisma.user.findUnique({
         where: { id: input.clientId },
         include: {
-          stores: {
-            select: {
-              id: true,
-              name: true,
-              isActive: true,
-              googleApiKeyStatus: true,
-              createdAt: true,
-              _count: {
+          brands: {
+            include: {
+              stores: {
                 select: {
-                  reviews: true,
+                  id: true,
+                  name: true,
+                  isActive: true,
+                  googleApiKeyStatus: true,
+                  createdAt: true,
+                  _count: {
+                    select: {
+                      reviews: true,
+                    },
+                  },
                 },
               },
             },
@@ -230,11 +242,16 @@ export const adminPlatformStatsRouter = createTRPCRouter({
         });
       }
 
+      // Flatten stores from all brands
+      const allStores = client.brands.flatMap((brand) => brand.stores);
+
       // Stats reviews globales du client
       const reviewsStats = await prisma.review.aggregate({
         where: {
           store: {
-            ownerId: client.id,
+            brand: {
+              ownerId: client.id,
+            },
           },
         },
         _count: { id: true },
@@ -244,7 +261,9 @@ export const adminPlatformStatsRouter = createTRPCRouter({
       const reviewsWithResponse = await prisma.review.count({
         where: {
           store: {
-            ownerId: client.id,
+            brand: {
+              ownerId: client.id,
+            },
           },
           hasResponse: true,
         },
@@ -253,11 +272,11 @@ export const adminPlatformStatsRouter = createTRPCRouter({
       return {
         id: client.id,
         email: client.email,
-        fullName: client.fullName,
+        name: client.name,
         role: client.role,
         createdAt: client.createdAt,
-        lastLoginAt: client.lastLoginAt,
-        stores: client.stores.map((store) => ({
+        updatedAt: client.updatedAt,
+        stores: allStores.map((store) => ({
           id: store.id,
           name: store.name,
           isActive: store.isActive,
@@ -266,13 +285,15 @@ export const adminPlatformStatsRouter = createTRPCRouter({
           reviewsCount: store._count.reviews,
         })),
         stats: {
-          totalStores: client.stores.length,
-          activeStores: client.stores.filter((s) => s.isActive).length,
-          totalReviews: reviewsStats._count.id,
+          totalStores: allStores.length,
+          activeStores: allStores.filter((s) => s.isActive).length,
+          totalReviews: reviewsStats._count?.id ?? 0,
           reviewsWithResponse,
           responseRate:
-            reviewsStats._count.id > 0 ? (reviewsWithResponse / reviewsStats._count.id) * 100 : 0,
-          averageRating: reviewsStats._avg.rating ?? 0,
+            (reviewsStats._count?.id ?? 0) > 0
+              ? (reviewsWithResponse / (reviewsStats._count?.id ?? 0)) * 100
+              : 0,
+          averageRating: reviewsStats._avg?.rating ?? 0,
         },
       };
     }),

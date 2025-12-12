@@ -44,16 +44,12 @@ export class CreateParticipantUseCase {
     }
 
     // Vérifier si le participant existe déjà
-    const existingParticipantResult = await this.participantRepository.findByEmailAndCampaignId(
-      input.email.trim().toLowerCase(),
-      input.campaignId,
+    const existingParticipant = await this.participantRepository.findByEmailAndCampaign(
+      input.email.trim().toLowerCase() as Email,
+      input.campaignId as CampaignId,
     );
 
-    if (!existingParticipantResult.success) {
-      return fail(existingParticipantResult.error);
-    }
-
-    if (existingParticipantResult.value) {
+    if (existingParticipant) {
       return fail(new Error('You have already registered for this campaign'));
     }
 

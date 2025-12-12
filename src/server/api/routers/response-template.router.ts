@@ -22,16 +22,13 @@ import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-stor
 
 // Instancier les repositories
 const templateRepository = new PrismaResponseTemplateRepository(prisma);
-const storeRepository = new PrismaStoreRepository();
+const storeRepository = new PrismaStoreRepository(prisma);
 
 // Instancier les use cases
-const createTemplateUseCase = new CreateResponseTemplateUseCase(
-  templateRepository,
-  storeRepository,
-);
+const createTemplateUseCase = new CreateResponseTemplateUseCase(templateRepository);
 const updateTemplateUseCase = new UpdateResponseTemplateUseCase(templateRepository);
 const deleteTemplateUseCase = new DeleteResponseTemplateUseCase(templateRepository);
-const listTemplatesUseCase = new ListResponseTemplatesUseCase(templateRepository, storeRepository);
+const listTemplatesUseCase = new ListResponseTemplatesUseCase(templateRepository);
 
 export const responseTemplateRouter = createTRPCRouter({
   /**
@@ -43,7 +40,7 @@ export const responseTemplateRouter = createTRPCRouter({
         storeId: z.string(),
         name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
         content: z.string().min(10, 'Le contenu doit contenir au moins 10 caractères'),
-        category: z.enum(['POSITIVE', 'NEUTRAL', 'NEGATIVE']),
+        category: z.enum(['positive', 'neutral', 'negative']),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -95,7 +92,7 @@ export const responseTemplateRouter = createTRPCRouter({
         templateId: z.string(),
         name: z.string().min(2).optional(),
         content: z.string().min(10).optional(),
-        category: z.enum(['POSITIVE', 'NEUTRAL', 'NEGATIVE']).optional(),
+        category: z.enum(['positive', 'neutral', 'negative']).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -125,7 +122,12 @@ export const responseTemplateRouter = createTRPCRouter({
         });
       }
 
-      const result = await updateTemplateUseCase.execute(input);
+      const result = await updateTemplateUseCase.execute({
+        templateId: input.templateId,
+        name: input.name,
+        content: input.content,
+        category: input.category,
+      });
 
       if (!result.success) {
         throw new TRPCError({
@@ -194,7 +196,7 @@ export const responseTemplateRouter = createTRPCRouter({
     .input(
       z.object({
         storeId: z.string(),
-        category: z.enum(['POSITIVE', 'NEUTRAL', 'NEGATIVE']).optional(),
+        category: z.enum(['positive', 'neutral', 'negative']).optional(),
         popularOnly: z.boolean().default(false),
       }),
     )
