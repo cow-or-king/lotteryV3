@@ -167,7 +167,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={cn(
               'flex-1 px-4 py-3 rounded-xl font-semibold transition-all duration-300',
-              'bg-gradient-to-r text-white shadow-lg',
+              'bg-linear-to-r text-white shadow-lg',
               'hover:scale-105 transform',
               'focus:outline-none focus:ring-2 focus:ring-offset-2',
               config.buttonColor,

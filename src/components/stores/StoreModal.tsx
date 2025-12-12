@@ -29,6 +29,8 @@ interface StoreModalProps {
   formData: {
     brandName: string;
     logoUrl: string;
+    logoFile?: File | null;
+    logoPreviewUrl?: string | null;
     name: string;
     googleBusinessUrl: string;
     googlePlaceId: string;
@@ -84,6 +86,11 @@ export function StoreModal({
     setFormData({ ...formData, [field]: value });
   };
 
+  // Helper pour mettre à jour le logo file
+  const updateLogoFile = (file: File | null, previewUrl: string | null) => {
+    setFormData({ ...formData, logoFile: file, logoPreviewUrl: previewUrl });
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 rounded-3xl">
       <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-8 max-w-md w-full shadow-2xl">
@@ -135,8 +142,11 @@ export function StoreModal({
             <BrandFormFields
               brandName={formData.brandName}
               logoUrl={formData.logoUrl}
+              logoFile={formData.logoFile ?? null}
+              logoPreviewUrl={formData.logoPreviewUrl ?? null}
               errors={errors}
               onChange={(field, value) => updateField(field, value)}
+              onLogoChange={updateLogoFile}
             />
           )}
 

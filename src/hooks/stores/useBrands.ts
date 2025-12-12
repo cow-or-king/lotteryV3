@@ -23,8 +23,12 @@ interface BrandGroup {
     googlePlaceId: string | null;
     brandId: string;
     brandName: string;
-    logoUrl: string;
-    createdAt: Date;
+    brandLogoUrl: string;
+    logoUrl: string | null; // Store logo (pas Brand logo)
+    defaultQrCodeId: string | null;
+    qrCodeCustomized: boolean;
+    qrCodeCustomizedAt: string | null; // tRPC serializes Date as string
+    createdAt: string | Date; // Can be either
   }>;
 }
 
@@ -111,7 +115,7 @@ export function useBrands() {
         acc[brandId] = {
           brandId,
           brandName: store.brandName,
-          logoUrl: store.logoUrl,
+          logoUrl: store.brandLogoUrl, // Brand logo (pas Store logo)
           stores: [],
         };
       }

@@ -1,7 +1,3 @@
-// ReviewLottery v3.0 - Database Schema
-// Architecture: Hexagonal / DDD
-// IMPORTANT: ZERO compromis sur la type-safety
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -13,27 +9,22 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// =====================
-// USERS & AUTHENTICATION
-// =====================
-
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  emailVerified  Boolean  @default(false) @map("email_verified")
-  hashedPassword String?  @map("hashed_password")
-  name           String?
-  avatarUrl      String?  @map("avatar_url")
-  role           String   @default("ADMIN") // "USER" | "ADMIN" | "SUPER_ADMIN"
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  subscription     Subscription?
+  id               String          @id @default(cuid())
+  email            String          @unique
+  emailVerified    Boolean         @default(false) @map("email_verified")
+  hashedPassword   String?         @map("hashed_password")
+  name             String?
+  avatarUrl        String?         @map("avatar_url")
+  role             String          @default("ADMIN")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
   brands           Brand[]
+  games            Game[]
   prizeTemplates   PrizeTemplate[]
-  reviewsResponded Review[]
   qrCodes          QRCode[]
+  reviewsResponded Review[]
+  subscription     Subscription?
 
   @@index([email])
   @@map("users")
@@ -52,71 +43,61 @@ model Subscription {
   cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([stripeCustomerId])
   @@map("subscriptions")
 }
 
-// =====================
-// BRANDS (Enseignes)
-// =====================
-
 model Brand {
-  id             String   @id @default(cuid())
-  name           String
-  logoUrl        String   @map("logo_url")
-  ownerId        String   @map("owner_id")
-  primaryColor   String   @default("#5B21B6") @map("primary_color")
-  secondaryColor String   @default("#FACC15") @map("secondary_color")
-  font           String   @default("inter")
-  isPaid         Boolean  @default(false) @map("is_paid") // true si c'est une enseigne payante (2ème+)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  stores         Store[]
-  prizeTemplates PrizeTemplate[]
-  prizeSets      PrizeSet[]
+  id              String          @id @default(cuid())
+  name            String
+  logoUrl         String?         @map("logo_url")
+  logoStoragePath String?         @map("logo_storage_path")
+  ownerId         String          @map("owner_id")
+  primaryColor    String          @default("#5B21B6") @map("primary_color")
+  secondaryColor  String          @default("#FACC15") @map("secondary_color")
+  font            String          @default("inter")
+  isPaid          Boolean         @default(false) @map("is_paid")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  owner           User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  prizeSets       PrizeSet[]
+  prizeTemplates  PrizeTemplate[]
+  stores          Store[]
 
   @@index([ownerId])
   @@index([ownerId, createdAt(sort: Desc)])
   @@map("brands")
 }
 
-// =====================
-// STORES (Commerces)
-// =====================
-
 model Store {
-  id                 String    @id @default(cuid())
-  slug               String    @unique
-  brandId            String    @map("brand_id")
-  name               String
-  description        String?
-  googlePlaceId      String?   @map("google_place_id")
-  googleBusinessUrl  String    @map("google_business_url")
-  googlePlacesApiKey String?   @map("google_places_api_key") // CHIFFRÉ AES-256-GCM
-  googleApiKeyStatus String?   @default("not_configured") @map("google_api_key_status")
-  lastReviewSync     DateTime? @map("last_review_sync")
-  autoSyncEnabled    Boolean   @default(false) @map("auto_sync_enabled")
-  syncFrequencyHours Int       @default(24) @map("sync_frequency_hours")
-  logoUrl            String?   @map("logo_url") // URL externe OU URL publique Supabase
-  logoStoragePath    String?   @map("logo_storage_path") // Path Supabase Storage (si uploadé)
-  isActive           Boolean   @default(true) @map("is_active")
-  isPaid             Boolean   @default(false) @map("is_paid") // true si c'est un commerce payant (2ème+)
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  brand             Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  campaigns         Campaign[]
-  reviews           Review[]
-  responseTemplates ResponseTemplate[]
-  qrCodes           QRCode[]
+  id                    String             @id @default(cuid())
+  slug                  String             @unique
+  brandId               String             @map("brand_id")
+  name                  String
+  description           String?
+  googlePlaceId         String?            @map("google_place_id")
+  googleBusinessUrl     String             @map("google_business_url")
+  googlePlacesApiKey    String?            @map("google_places_api_key")
+  googleApiKeyStatus    String?            @default("not_configured") @map("google_api_key_status")
+  lastReviewSync        DateTime?          @map("last_review_sync")
+  autoSyncEnabled       Boolean            @default(false) @map("auto_sync_enabled")
+  syncFrequencyHours    Int                @default(24) @map("sync_frequency_hours")
+  defaultQrCodeId       String?            @unique @map("default_qr_code_id")
+  qrCodeCustomized      Boolean            @default(false) @map("qr_code_customized")
+  qrCodeCustomizedAt    DateTime?          @map("qr_code_customized_at")
+  isActive              Boolean            @default(true) @map("is_active")
+  isPaid                Boolean            @default(false) @map("is_paid")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  campaigns             Campaign[]
+  games                 Game[]
+  qrCodes               QRCode[]
+  defaultQrCode         QRCode?            @relation("StoreDefaultQRCode", fields: [defaultQrCodeId], references: [id], onDelete: SetNull)
+  responseTemplates     ResponseTemplate[]
+  reviews               Review[]
+  brand                 Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
@@ -124,40 +105,30 @@ model Store {
   @@map("stores")
 }
 
-// =====================
-// CAMPAIGNS
-// =====================
-
 model Campaign {
-  id               String   @id @default(cuid())
+  id               String        @id @default(cuid())
   name             String
   description      String?
-  storeId          String   @map("store_id")
-  startDate        DateTime @map("start_date")
-  endDate          DateTime @map("end_date")
-  isActive         Boolean  @default(false) @map("is_active")
-  wheelStyle       String   @default("classic") @map("wheel_style")
-  wheelAnimation   String   @default("spin") @map("wheel_animation")
-  type             String   @default("generic") // "review" | "social" | "generic"
-  requireReview    Boolean  @default(false) @map("require_review")
-  requireInstagram Boolean  @default(false) @map("require_instagram") // future
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  prizes       Prize[]
-  participants Participant[]
-  reviews      Review[]
+  storeId          String        @map("store_id")
+  startDate        DateTime      @map("start_date")
+  endDate          DateTime      @map("end_date")
+  isActive         Boolean       @default(false) @map("is_active")
+  wheelStyle       String        @default("classic") @map("wheel_style")
+  wheelAnimation   String        @default("spin") @map("wheel_animation")
+  type             String        @default("generic")
+  requireReview    Boolean       @default(false) @map("require_review")
+  requireInstagram Boolean       @default(false) @map("require_instagram")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  store            Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  participants     Participant[]
+  prizes           Prize[]
+  reviews          Review[]
 
   @@index([storeId])
   @@index([isActive, startDate, endDate])
   @@map("campaigns")
 }
-
-// =====================
-// PRIZES
-// =====================
 
 model Prize {
   id          String   @id @default(cuid())
@@ -171,18 +142,12 @@ model Prize {
   remaining   Int
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  winners  Winner[]
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  winners     Winner[]
 
   @@index([campaignId])
   @@map("prizes")
 }
-
-// =====================
-// PARTICIPANTS
-// =====================
 
 model Participant {
   id                 String    @id @default(cuid())
@@ -198,12 +163,10 @@ model Participant {
   reviewRating       Int?      @map("review_rating")
   reviewComment      String?   @map("review_comment")
   consentDate        DateTime? @map("consent_date")
-  dataRetentionUntil DateTime? @map("data_retention_until") // 3 ans après dernière interaction
+  dataRetentionUntil DateTime? @map("data_retention_until")
   createdAt          DateTime  @default(now()) @map("created_at")
-
-  // Relations
-  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  review   Review?
+  campaign           Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  review             Review?
 
   @@unique([email, campaignId])
   @@index([campaignId])
@@ -211,10 +174,6 @@ model Participant {
   @@index([dataRetentionUntil])
   @@map("participants")
 }
-
-// =====================
-// WINNERS
-// =====================
 
 model Winner {
   id               String    @id @default(cuid())
@@ -226,52 +185,44 @@ model Winner {
   claimedAt        DateTime? @map("claimed_at")
   expiresAt        DateTime  @map("expires_at")
   createdAt        DateTime  @default(now()) @map("created_at")
-
-  // Relations
-  prize Prize @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  prize            Prize     @relation(fields: [prizeId], references: [id], onDelete: Cascade)
 
   @@index([claimCode])
   @@index([status])
   @@map("winners")
 }
 
-// =====================
-// GOOGLE REVIEWS
-// =====================
-
 model Review {
-  id              String    @id @default(cuid())
-  googleReviewId  String    @unique @map("google_review_id")
-  storeId         String    @map("store_id")
-  campaignId      String?   @map("campaign_id")
-  authorName      String    @map("author_name")
-  authorEmail     String?   @map("author_email")
-  authorGoogleId  String?   @map("author_google_id")
-  authorPhotoUrl  String?   @map("author_photo_url")
-  rating          Int // 1-5
-  comment         String?   @db.Text
-  publishedAt     DateTime  @map("published_at")
-  hasResponse     Boolean   @default(false) @map("has_response")
-  responseContent String?   @map("response_content") @db.Text
-  respondedAt     DateTime? @map("responded_at")
-  respondedBy     String?   @map("responded_by")
-  isVerified      Boolean   @default(false) @map("is_verified")
-  participantId   String?   @unique @map("participant_id")
-  aiSuggestion    Json?     @map("ai_suggestion")
-  aiSentiment     String?   @map("ai_sentiment")
-  reviewUrl       String    @map("review_url")
-  googlePlaceId   String    @map("google_place_id")
-  photoUrl        String?   @map("photo_url")
-  status          String    @default("NEW")
+  id              String       @id @default(cuid())
+  googleReviewId  String       @unique @map("google_review_id")
+  storeId         String       @map("store_id")
+  campaignId      String?      @map("campaign_id")
+  authorName      String       @map("author_name")
+  authorEmail     String?      @map("author_email")
+  authorGoogleId  String?      @map("author_google_id")
+  authorPhotoUrl  String?      @map("author_photo_url")
+  rating          Int
+  comment         String?
+  publishedAt     DateTime     @map("published_at")
+  hasResponse     Boolean      @default(false) @map("has_response")
+  responseContent String?      @map("response_content")
+  respondedAt     DateTime?    @map("responded_at")
+  respondedBy     String?      @map("responded_by")
+  isVerified      Boolean      @default(false) @map("is_verified")
+  participantId   String?      @unique @map("participant_id")
+  aiSuggestion    Json?        @map("ai_suggestion")
+  aiSentiment     String?      @map("ai_sentiment")
+  reviewUrl       String       @map("review_url")
+  googlePlaceId   String       @map("google_place_id")
+  photoUrl        String?      @map("photo_url")
+  status          String       @default("NEW")
   sentiment       String?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  campaign    Campaign?    @relation(fields: [campaignId], references: [id])
-  participant Participant? @relation(fields: [participantId], references: [id])
-  respondent  User?        @relation(fields: [respondedBy], references: [id])
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  campaign        Campaign?    @relation(fields: [campaignId], references: [id])
+  participant     Participant? @relation(fields: [participantId], references: [id])
+  respondent      User?        @relation(fields: [respondedBy], references: [id])
+  store           Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId, publishedAt])
   @@index([campaignId])
@@ -282,49 +233,37 @@ model Review {
   @@map("reviews")
 }
 
-// =====================
-// RESPONSE TEMPLATES
-// =====================
-
 model ResponseTemplate {
   id         String   @id @default(cuid())
   storeId    String   @map("store_id")
   name       String
-  content    String   @db.Text
-  category   String // "positive" | "neutral" | "negative"
+  content    String
+  category   String
   usageCount Int      @default(0) @map("usage_count")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId])
   @@index([storeId, category])
   @@map("response_templates")
 }
 
-// =====================
-// PRIZE TEMPLATES (Gains réutilisables)
-// =====================
-
 model PrizeTemplate {
-  id          String   @id @default(cuid())
-  brandId     String?  @map("brand_id") // null = gain commun à toutes les enseignes
-  ownerId     String   @map("owner_id") // Propriétaire du gain
-  name        String // "Café offert", "-10% sur votre commande"
+  id          String         @id @default(cuid())
+  brandId     String?        @map("brand_id")
+  ownerId     String         @map("owner_id")
+  name        String
   description String?
-  minPrice    Float?   @map("min_price") // Prix minimum (optionnel)
-  maxPrice    Float?   @map("max_price") // Prix maximum (optionnel)
-  color       String   @default("#8B5CF6") // Couleur par défaut
-  iconUrl     String?  @map("icon_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  brand     Brand?         @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  prizeSets PrizeSetItem[]
+  minPrice    Float?         @map("min_price")
+  maxPrice    Float?         @map("max_price")
+  color       String         @default("#8B5CF6")
+  iconUrl     String?        @map("icon_url")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  prizeSets   PrizeSetItem[]
+  brand       Brand?         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  owner       User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([brandId])
   @@index([ownerId])
@@ -333,42 +272,30 @@ model PrizeTemplate {
   @@map("prize_templates")
 }
 
-// =====================
-// PRIZE SETS (Lots de gains)
-// =====================
-
 model PrizeSet {
-  id          String   @id @default(cuid())
-  brandId     String   @map("brand_id")
-  name        String // "Lot Café", "Lot Printemps"
+  id          String         @id @default(cuid())
+  brandId     String         @map("brand_id")
+  name        String
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  brand Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  items PrizeSetItem[]
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  items       PrizeSetItem[]
+  brand       Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
   @@map("prize_sets")
 }
 
-// =====================
-// PRIZE SET ITEMS (Table de liaison)
-// =====================
-
 model PrizeSetItem {
-  id              String   @id @default(cuid())
-  prizeSetId      String   @map("prize_set_id")
-  prizeTemplateId String   @map("prize_template_id")
-  probability     Float    @default(10) // Probabilité par défaut (%)
-  quantity        Int      @default(1) // Quantité par défaut
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  // Relations
-  prizeSet      PrizeSet      @relation(fields: [prizeSetId], references: [id], onDelete: Cascade)
-  prizeTemplate PrizeTemplate @relation(fields: [prizeTemplateId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  prizeSetId      String        @map("prize_set_id")
+  prizeTemplateId String        @map("prize_template_id")
+  probability     Float         @default(10)
+  quantity        Int           @default(1)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  prizeSet        PrizeSet      @relation(fields: [prizeSetId], references: [id], onDelete: Cascade)
+  prizeTemplate   PrizeTemplate @relation(fields: [prizeTemplateId], references: [id], onDelete: Cascade)
 
   @@unique([prizeSetId, prizeTemplateId])
   @@index([prizeSetId])
@@ -376,108 +303,69 @@ model PrizeSetItem {
   @@map("prize_set_items")
 }
 
-// =====================
-// PLAN LIMITS (Configuration des limites)
-// =====================
-
 model PlanLimits {
-  id   String @id @default(cuid())
-  plan String @unique // FREE, STARTER, PRO
-
-  // Limites Brands & Stores
-  maxBrands         Int @map("max_brands")
-  maxStoresPerBrand Int @map("max_stores_per_brand")
-
-  // Limites Prizes & PrizeSets
-  maxPrizeTemplates Int @map("max_prize_templates")
-  maxPrizeSets      Int @map("max_prize_sets")
-
-  // Limites Campaigns
-  maxCampaigns    Int @map("max_campaigns")
-  maxParticipants Int @map("max_participants")
-
-  // Features activées
-  customBranding     Boolean @default(false) @map("custom_branding")
-  advancedAnalytics  Boolean @default(false) @map("advanced_analytics")
-  apiAccess          Boolean @default(false) @map("api_access")
-  prioritySupport    Boolean @default(false) @map("priority_support")
-  aiResponsesEnabled Boolean @default(false) @map("ai_responses_enabled")
-
-  // AI Limits
-  aiResponsesPerMonth Int? @map("ai_responses_per_month") // null = illimité
-
-  // Pricing
-  priceMonthly Float?  @map("price_monthly")
-  priceYearly  Float?  @map("price_yearly")
-  description  String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                  String   @id @default(cuid())
+  plan                String   @unique
+  maxBrands           Int      @map("max_brands")
+  maxStoresPerBrand   Int      @map("max_stores_per_brand")
+  maxPrizeTemplates   Int      @map("max_prize_templates")
+  maxPrizeSets        Int      @map("max_prize_sets")
+  maxCampaigns        Int      @map("max_campaigns")
+  maxParticipants     Int      @map("max_participants")
+  customBranding      Boolean  @default(false) @map("custom_branding")
+  advancedAnalytics   Boolean  @default(false) @map("advanced_analytics")
+  apiAccess           Boolean  @default(false) @map("api_access")
+  prioritySupport     Boolean  @default(false) @map("priority_support")
+  aiResponsesEnabled  Boolean  @default(false) @map("ai_responses_enabled")
+  aiResponsesPerMonth Int?     @map("ai_responses_per_month")
+  priceMonthly        Float?   @map("price_monthly")
+  priceYearly         Float?   @map("price_yearly")
+  description         String?
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@index([plan])
   @@map("plan_limits")
 }
 
-// =====================
-// AI SERVICE CONFIG (Super-Admin uniquement)
-// =====================
-
 model AiServiceConfig {
-  id       String @id @default(cuid())
-  provider String // "openai" | "anthropic"
-
-  // API Keys (CHIFFRÉES AES-256-GCM)
-  apiKey       String @map("api_key") @db.Text
-  apiKeyStatus String @default("active") @map("api_key_status") // "active" | "inactive" | "error"
-
-  // Configuration
-  model        String  @default("gpt-4") // "gpt-4" | "claude-3-opus" | "claude-3-sonnet"
-  maxTokens    Int     @default(500) @map("max_tokens")
-  temperature  Float   @default(0.7)
-  systemPrompt String? @map("system_prompt") @db.Text
-
-  // Monitoring
+  id                 String    @id @default(cuid())
+  provider           String
+  apiKey             String    @map("api_key")
+  apiKeyStatus       String    @default("active") @map("api_key_status")
+  model              String    @default("gpt-4")
+  maxTokens          Int       @default(500) @map("max_tokens")
+  temperature        Float     @default(0.7)
+  systemPrompt       String?   @map("system_prompt")
   isActive           Boolean   @default(true) @map("is_active")
-  dailyQuotaLimit    Int?      @map("daily_quota_limit") // Limite quotidienne globale
+  dailyQuotaLimit    Int?      @map("daily_quota_limit")
   lastUsedAt         DateTime? @map("last_used_at")
   totalRequestsCount Int       @default(0) @map("total_requests_count")
   totalTokensUsed    Int       @default(0) @map("total_tokens_used")
   lastErrorAt        DateTime? @map("last_error_at")
-  lastErrorMessage   String?   @map("last_error_message") @db.Text
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  lastErrorMessage   String?   @map("last_error_message")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   @@index([provider])
   @@index([isActive])
   @@map("ai_service_config")
 }
 
-// =====================
-// AI USAGE LOG (Facturation clients)
-// =====================
-
 model AiUsageLog {
-  id       String  @id @default(cuid())
-  userId   String  @map("user_id") // Admin qui a utilisé l'IA
-  storeId  String? @map("store_id") // Commerce concerné (optionnel)
-  reviewId String? @map("review_id") // Avis concerné (optionnel)
-
-  // Details de la requête
-  provider         String // "openai" | "anthropic"
-  model            String // "gpt-4" | "claude-3-opus"
-  promptTokens     Int    @map("prompt_tokens")
-  completionTokens Int    @map("completion_tokens")
-  totalTokens      Int    @map("total_tokens")
-
-  // Coût estimé (pour facturation)
-  estimatedCostUsd Float @map("estimated_cost_usd")
-
-  // Métadonnées
-  requestType String  @map("request_type") // "generate_response" | "sentiment_analysis"
-  wasUsed     Boolean @default(false) @map("was_used") // L'utilisateur a-t-il utilisé la suggestion ?
-
-  createdAt DateTime @default(now()) @map("created_at")
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  storeId          String?  @map("store_id")
+  reviewId         String?  @map("review_id")
+  provider         String
+  model            String
+  promptTokens     Int      @map("prompt_tokens")
+  completionTokens Int      @map("completion_tokens")
+  totalTokens      Int      @map("total_tokens")
+  estimatedCostUsd Float    @map("estimated_cost_usd")
+  requestType      String   @map("request_type")
+  wasUsed          Boolean  @default(false) @map("was_used")
+  createdAt        DateTime @default(now()) @map("created_at")
 
   @@index([userId, createdAt])
   @@index([storeId, createdAt])
@@ -486,77 +374,48 @@ model AiUsageLog {
   @@map("ai_usage_logs")
 }
 
-// =====================
-// MENU PERMISSIONS (Gestion des menus visibles par rôle)
-// =====================
-
 model MenuPermission {
-  id        String   @id @default(cuid())
-  menuId    String   @unique @map("menu_id") // "dashboard" | "stores" | "reviews" | etc.
-  label     String // "Dashboard" | "Mes Commerces" | etc.
-
-  // Permissions par rôle
-  superAdminVisible Boolean @default(true) @map("super_admin_visible")
-  adminVisible      Boolean @default(true) @map("admin_visible")
-  userVisible       Boolean @default(false) @map("user_visible")
-
-  // Ordre d'affichage
-  displayOrder Int @default(0) @map("display_order")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(cuid())
+  menuId            String   @unique @map("menu_id")
+  label             String
+  superAdminVisible Boolean  @default(true) @map("super_admin_visible")
+  adminVisible      Boolean  @default(true) @map("admin_visible")
+  userVisible       Boolean  @default(false) @map("user_visible")
+  displayOrder      Int      @default(0) @map("display_order")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@index([menuId])
   @@map("menu_permissions")
 }
 
-// =====================
-// QR CODES
-// =====================
-
 model QRCode {
-  id String @id @default(cuid())
-
-  // Informations de base
-  name      String  // Nom descriptif
-  url       String  // URL de destination
-  shortCode String? @unique @map("short_code") // Code court pour URL dynamique (ex: "abc123")
-
-  type QRCodeType @default(STATIC)
-
-  // Style & Apparence
-  style           QRCodeStyle      @default(DOTS)
-  animation       QRCodeAnimation? @default(NONE)
-  foregroundColor String           @default("#000000") @map("foreground_color")
-  backgroundColor String           @default("#FFFFFF") @map("background_color")
-
-  // Logo (optionnel)
-  logoUrl         String? @map("logo_url") // URL externe OU URL publique Supabase
-  logoStoragePath String? @map("logo_storage_path") // Path Supabase Storage (si uploadé)
-  logoSize        Int?    @default(80) @map("logo_size") // Taille en px
-
-  // Qualité
-  size                 Int    @default(512) // 256, 512, 1024, 2048
-  errorCorrectionLevel String @default("M") @map("error_correction_level") // L, M, Q, H
-
-  // Relations (Phase 2)
-  storeId    String? @map("store_id")
-  store      Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
-  campaignId String? @map("campaign_id")
-  // campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-
-  // Métadonnées
-  scanCount     Int       @default(0) @map("scan_count") // Phase 2
-  lastScannedAt DateTime? @map("last_scanned_at") // Phase 2
-  expiresAt     DateTime? @map("expires_at") // Phase 2
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  createdBy String   @map("created_by")
-  user      User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-
-  // Relations
-  scans QRCodeScan[]
+  id                   String           @id @default(cuid())
+  name                 String
+  url                  String
+  shortCode            String?          @unique @map("short_code")
+  type                 QRCodeType       @default(STATIC)
+  style                QRCodeStyle      @default(DOTS)
+  animation            QRCodeAnimation? @default(NONE)
+  foregroundColor      String           @default("#000000") @map("foreground_color")
+  backgroundColor      String           @default("#FFFFFF") @map("background_color")
+  logoUrl              String?          @map("logo_url")
+  logoStoragePath      String?          @map("logo_storage_path")
+  logoSize             Int?             @default(80) @map("logo_size")
+  size                 Int              @default(512)
+  errorCorrectionLevel String           @default("M") @map("error_correction_level")
+  storeId              String?          @map("store_id")
+  campaignId           String?          @map("campaign_id")
+  scanCount            Int              @default(0) @map("scan_count")
+  lastScannedAt        DateTime?        @map("last_scanned_at")
+  expiresAt            DateTime?        @map("expires_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+  createdBy            String           @map("created_by")
+  scans                QRCodeScan[]
+  user                 User             @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  store                Store?           @relation(fields: [storeId], references: [id])
+  storeDefault         Store?           @relation("StoreDefaultQRCode")
 
   @@index([storeId])
   @@index([createdBy])
@@ -566,32 +425,20 @@ model QRCode {
   @@map("qr_codes")
 }
 
-// =====================
-// QR CODE SCANS (Tracking détaillé)
-// =====================
-
 model QRCodeScan {
-  id       String @id @default(cuid())
-  qrCodeId String @map("qr_code_id")
-
-  // Métadonnées du scan
-  userAgent String? @map("user_agent") @db.Text
-  referrer  String? @db.Text
-  ipAddress String? @map("ip_address")
-  language  String?
-  country   String? // Géolocalisation IP (Phase 3)
-  city      String? // Géolocalisation IP (Phase 3)
-
-  // Device info (détection depuis userAgent)
-  deviceType String? @map("device_type") // "mobile" | "tablet" | "desktop"
-  os         String? // "iOS" | "Android" | "Windows" | etc.
-  browser    String? // "Chrome" | "Safari" | "Firefox" | etc.
-
-  // Timestamps
-  scannedAt DateTime @default(now()) @map("scanned_at")
-
-  // Relations
-  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  qrCodeId   String   @map("qr_code_id")
+  userAgent  String?  @map("user_agent")
+  referrer   String?
+  ipAddress  String?  @map("ip_address")
+  language   String?
+  country    String?
+  city       String?
+  deviceType String?  @map("device_type")
+  os         String?
+  browser    String?
+  scannedAt  DateTime @default(now()) @map("scanned_at")
+  qrCode     QRCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
 
   @@index([qrCodeId])
   @@index([qrCodeId, scannedAt(sort: Desc)])
@@ -599,25 +446,90 @@ model QRCodeScan {
   @@map("qr_code_scans")
 }
 
+model Game {
+  id               String     @id @default(cuid())
+  name             String
+  description      String?
+  type             GameType
+  primaryColor     String     @default("#5B21B6") @map("primary_color")
+  secondaryColor   String     @default("#EC4899") @map("secondary_color")
+  backgroundUrl    String?    @map("background_url")
+  logoUrl          String?    @map("logo_url")
+  logoSize         Int?       @default(60) @map("logo_size")
+  config           Json
+  vibrationEnabled Boolean    @default(true) @map("vibration_enabled")
+  playCount        Int        @default(0) @map("play_count")
+  lastPlayedAt     DateTime?  @map("last_played_at")
+  isActive         Boolean    @default(true) @map("is_active")
+  storeId          String?    @map("store_id")
+  campaignId       String?    @map("campaign_id")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  createdBy        String     @map("created_by")
+  plays            GamePlay[]
+  creator          User       @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  store            Store?     @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+  @@index([campaignId])
+  @@index([createdBy])
+  @@index([type])
+  @@index([isActive])
+  @@index([createdBy, createdAt(sort: Desc)])
+  @@map("games")
+}
+
+model GamePlay {
+  id               String   @id @default(cuid())
+  gameId           String   @map("game_id")
+  participantEmail String?  @map("participant_email")
+  participantName  String?  @map("participant_name")
+  result           Json
+  prizeWon         String?
+  prizeValue       Float?   @map("prize_value")
+  userAgent        String?  @map("user_agent")
+  ipAddress        String?  @map("ip_address")
+  deviceType       String?  @map("device_type")
+  duration         Int?
+  playedAt         DateTime @default(now()) @map("played_at")
+  game             Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([gameId, playedAt(sort: Desc)])
+  @@index([participantEmail])
+  @@index([playedAt])
+  @@map("game_plays")
+}
+
 enum QRCodeType {
-  STATIC  // Pour print, ne change jamais
-  DYNAMIC // Pour campagnes, peut être réassigné
+  STATIC
+  DYNAMIC
 }
 
 enum QRCodeStyle {
-  DOTS     // Points arrondis
-  ROUNDED  // Coins arrondis
-  SQUARE   // Carré classique
-  CLASSY   // Style élégant avec dégradés
-  CIRCULAR // Forme ronde (QR code circulaire)
+  DOTS
+  ROUNDED
+  SQUARE
+  CLASSY
+  CIRCULAR
 }
 
 enum QRCodeAnimation {
-  NONE            // Pas d'animation
-  RIPPLE          // Onde de choc (recommandé)
-  PULSE           // Pulsation douce
-  WAVE            // Vague dans les points
-  ROTATE3D        // Rotation 3D
-  GLOW            // Lumière néon
-  CIRCULAR_RIPPLE // Onde circulaire (pour CIRCULAR style)
+  NONE
+  RIPPLE
+  PULSE
+  WAVE
+  ROTATE3D
+  GLOW
+  CIRCULAR_RIPPLE
+}
+
+enum GameType {
+  WHEEL
+  SCRATCH
+  SLOT_MACHINE
+  MEMORY
+  SHAKE
+  DICE
+  MYSTERY_BOX
 }

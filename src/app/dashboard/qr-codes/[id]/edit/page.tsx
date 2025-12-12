@@ -6,23 +6,23 @@
 
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
-import { api } from '@/lib/trpc/client';
-import { useToast } from '@/hooks/use-toast';
-import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
-import { useQRCodeExport } from '@/hooks/qr-codes/useQRCodeExport';
 import {
-  QRCodeStyleSelector,
   QRCodeAnimationSelector,
   QRCodeColorPicker,
-  QRCodeLogoUpload,
   QRCodeExportOptions,
+  QRCodeLogoUpload,
   QRCodeStoreSelector,
+  QRCodeStyleSelector,
 } from '@/components/qr-codes';
 import QRCodePreview from '@/components/qr-codes/QRCodePreview';
-import { ArrowLeft, Save } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useQRCodeExport } from '@/hooks/qr-codes/useQRCodeExport';
+import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
+import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/trpc/client';
 import type { QRCodeGenerationOptions } from '@/lib/types/qr-code.types';
+import { ArrowLeft, Save } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function EditQRCodePage() {
   const router = useRouter();
@@ -254,7 +254,7 @@ export default function EditQRCodePage() {
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending || !generator.url}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <Save className="w-5 h-5" />
           {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}

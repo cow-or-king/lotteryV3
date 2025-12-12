@@ -5,10 +5,11 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { MAX_LOGO_FILE_SIZE, ACCEPTED_LOGO_FORMATS } from '@/lib/types/qr-code.types';
 
 /**
- * Upload a store logo to Supabase Storage
+ * Upload a store logo to Supabase Storage (Client-side)
  * @param storeId - The ID of the store
  * @param file - The file to upload
  * @returns Object containing the public URL and storage path
@@ -45,6 +46,51 @@ export async function uploadStoreLogo(
 
   // Get public URL
   const { data: urlData } = supabase.storage.from('store-logos').getPublicUrl(filePath);
+
+  return {
+    url: urlData.publicUrl,
+    path: filePath,
+  };
+}
+
+/**
+ * Upload a store logo to Supabase Storage (Server-side with admin client)
+ * @param storeId - The ID of the store
+ * @param file - The file to upload
+ * @returns Object containing the public URL and storage path
+ * @throws Error if validation fails or upload fails
+ */
+export async function uploadStoreLogoServer(
+  storeId: string,
+  file: File,
+): Promise<{ url: string; path: string }> {
+  // Validation
+  if (file.size > MAX_LOGO_FILE_SIZE) {
+    throw new Error('Le fichier ne doit pas dépasser 2MB');
+  }
+
+  if (!ACCEPTED_LOGO_FORMATS.includes(file.type)) {
+    throw new Error('Format non supporté. Utilisez PNG, JPEG, SVG ou WebP');
+  }
+
+  // Create the path
+  const fileExt = file.name.split('.').pop();
+  const fileName = `logo.${fileExt}`;
+  const filePath = `${storeId}/${fileName}`;
+
+  // Upload with admin client
+  const { error } = await supabaseAdmin.storage.from('store-logos').upload(filePath, file, {
+    upsert: true, // Replace if exists
+    contentType: file.type,
+    cacheControl: '3600', // Cache 1 hour
+  });
+
+  if (error) {
+    throw new Error(`Erreur upload: ${error.message}`);
+  }
+
+  // Get public URL
+  const { data: urlData } = supabaseAdmin.storage.from('store-logos').getPublicUrl(filePath);
 
   return {
     url: urlData.publicUrl,

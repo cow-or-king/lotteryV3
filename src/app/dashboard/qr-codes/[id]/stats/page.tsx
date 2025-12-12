@@ -5,10 +5,11 @@
 
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/trpc/client';
-import { ArrowLeft, TrendingUp, Calendar, Clock, Scan } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { formatDateTime, formatFullDate } from '@/lib/utils/date-format';
+import { ArrowLeft, Calendar, Clock, Scan, TrendingUp } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function QRCodeStatsPage() {
   const params = useParams();
@@ -59,16 +60,6 @@ export default function QRCodeStatsPage() {
     );
   }
 
-  const formatDate = (date: Date | null) => {
-    if (!date) {
-      return 'Jamais';
-    }
-    return new Intl.DateTimeFormat('fr-FR', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(date));
-  };
-
   return (
     <div>
       {/* Header */}
@@ -95,7 +86,7 @@ export default function QRCodeStatsPage() {
                 onClick={() => setPeriod(p)}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                   period === p
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                    ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white'
                     : 'bg-white/50 text-gray-700 hover:bg-white/70'
                 }`}
               >
@@ -160,16 +151,14 @@ export default function QRCodeStatsPage() {
       {/* Last Scan Info */}
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg mb-8">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Dernier scan</h2>
-        <p className="text-gray-700">{formatDate(stats.lastScan)}</p>
+        <p className="text-gray-700">{formatDateTime(stats.lastScan)}</p>
       </div>
 
       {/* Scans by Hour - Vertical Graph */}
       {selectedDay && stats.scansByHour && stats.scansByHour.length > 0 && (
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-2">Distribution horaire</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full' }).format(new Date(selectedDay))}
-          </p>
+          <p className="text-sm text-gray-600 mb-6">{formatFullDate(selectedDay)}</p>
           <div className="flex gap-1 h-80">
             {Array.from({ length: 24 }, (_, i) => {
               const hourData = stats.scansByHour.find(
@@ -220,21 +209,19 @@ export default function QRCodeStatsPage() {
                   onClick={() => setSelectedDay(day.date)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
                     selectedDay === day.date
-                      ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-500'
+                      ? 'bg-linear-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-500'
                       : 'bg-white/40 hover:bg-white/60 border-2 border-transparent'
                   }`}
                 >
                   <span
                     className={`font-medium ${selectedDay === day.date ? 'text-purple-700' : 'text-gray-800'}`}
                   >
-                    {new Intl.DateTimeFormat('fr-FR', {
-                      dateStyle: 'full',
-                    }).format(new Date(day.date))}
+                    {formatFullDate(day.date)}
                   </span>
                   <div className="flex items-center gap-4">
                     <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                        className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full"
                         style={{
                           width: `${Math.min((day.count / Math.max(...stats.scansByDay.map((d: { date: string; count: number }) => d.count))) * 100, 100)}%`,
                         }}

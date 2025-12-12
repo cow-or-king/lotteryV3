@@ -6,9 +6,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/trpc/client';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function QRCodeRedirectPage() {
   const params = useParams();
@@ -69,7 +69,7 @@ export default function QRCodeRedirectPage() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg"
+              className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg"
             >
               Retour à l&apos;accueil
             </button>

@@ -9,3 +9,4 @@ export { NewBrandWarning } from './NewBrandWarning';
 export { BrandFormFields } from './BrandFormFields';
 export { GoogleBusinessUrlField } from './GoogleBusinessUrlField';
 export { GoogleApiAccordion } from './GoogleApiAccordion';
+export { LogoUploadField } from './LogoUploadField';

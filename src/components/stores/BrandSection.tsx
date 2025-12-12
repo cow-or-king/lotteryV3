@@ -14,7 +14,11 @@ interface BrandSectionProps {
       slug: string;
       googleBusinessUrl: string;
       googlePlaceId: string | null;
-      createdAt: Date;
+      createdAt: string | Date;
+      defaultQrCodeId: string | null;
+      qrCodeCustomized: boolean;
+      qrCodeCustomizedAt: string | null;
+      logoUrl: string | null;
     }>;
   };
   openBrandMenuId: string | null;
@@ -26,6 +30,14 @@ interface BrandSectionProps {
   onStoreMenuToggle: (id: string) => void;
   onEditStore: (store: { id: string; name: string; googleBusinessUrl: string }) => void;
   onDeleteStore: (storeId: string, storeName: string) => void;
+  onCustomizeQRCode: (store: {
+    id: string;
+    name: string;
+    defaultQrCodeId: string | null;
+    qrCodeCustomized: boolean;
+    qrCodeCustomizedAt: string | null;
+    logoUrl: string | null;
+  }) => void;
 }
 
 export function BrandSection({
@@ -39,17 +51,24 @@ export function BrandSection({
   onStoreMenuToggle,
   onEditStore,
   onDeleteStore,
+  onCustomizeQRCode,
 }: BrandSectionProps) {
   return (
     <div>
       {/* Header de l'enseigne */}
       <div className="flex items-center justify-between mb-4 relative">
         <div className="flex items-center gap-3">
-          <img
-            src={brand.logoUrl}
-            alt={brand.brandName}
-            className="w-10 h-10 rounded-xl object-cover"
-          />
+          {brand.logoUrl && brand.logoUrl.trim() !== '' ? (
+            <img
+              src={brand.logoUrl}
+              alt={brand.brandName}
+              className="w-10 h-10 rounded-xl object-cover border border-purple-600/20"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+              {brand.brandName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <h2 className="text-2xl font-bold text-purple-600">{brand.brandName}</h2>
 
           {/* Menu 3 points pour l'enseigne */}
@@ -118,6 +137,16 @@ export function BrandSection({
               })
             }
             onDelete={() => onDeleteStore(store.id, store.name)}
+            onCustomizeQRCode={() =>
+              onCustomizeQRCode({
+                id: store.id,
+                name: store.name,
+                defaultQrCodeId: store.defaultQrCodeId,
+                qrCodeCustomized: store.qrCodeCustomized,
+                qrCodeCustomizedAt: store.qrCodeCustomizedAt,
+                logoUrl: store.logoUrl,
+              })
+            }
           />
         ))}
       </div>

@@ -6,24 +6,24 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/trpc/client';
-import { useToast } from '@/hooks/use-toast';
-import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
-import { useQRCodeExport } from '@/hooks/qr-codes/useQRCodeExport';
 import {
-  QRCodeStyleSelector,
   QRCodeAnimationSelector,
   QRCodeColorPicker,
-  QRCodeLogoUpload,
   QRCodeExportOptions,
+  QRCodeLogoUpload,
   QRCodeStoreSelector,
+  QRCodeStyleSelector,
   QRCodeTemplateSelector,
 } from '@/components/qr-codes';
 import QRCodePreview from '@/components/qr-codes/QRCodePreview';
-import { ArrowLeft, Save, Sparkles, Settings2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useQRCodeExport } from '@/hooks/qr-codes/useQRCodeExport';
+import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
+import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/trpc/client';
 import type { QRCodeGenerationOptions } from '@/lib/types/qr-code.types';
+import { ArrowLeft, Save, Settings2, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function NewQRCodePage() {
   const router = useRouter();
@@ -228,7 +228,7 @@ export default function NewQRCodePage() {
           <button
             onClick={handleSave}
             disabled={createMutation.isPending || !generator.url || !name.trim()}
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="flex items-center gap-2 px-5 py-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             <Save className="w-4 h-4" />
             {createMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}

@@ -40,10 +40,6 @@ export default function QRCodePreview({
   const rgb = hexToRgb(animationColor);
   const rgbaColor = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
 
-  useEffect(() => {
-    // Component is mounted
-  }, []);
-
   /**
    * Get the CSS class name based on the selected animation
    */

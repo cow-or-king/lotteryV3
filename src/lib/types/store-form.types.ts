@@ -13,6 +13,8 @@ export interface EditingStore {
 export interface StoreFormData {
   brandName: string;
   logoUrl: string;
+  logoFile?: File | null;
+  logoPreviewUrl?: string | null;
   name: string;
   googleBusinessUrl: string;
   googlePlaceId: string;

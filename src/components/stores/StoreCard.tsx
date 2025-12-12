@@ -7,6 +7,7 @@ import {
   Edit2,
   MapPin,
   MoreVertical,
+  QrCode,
   Trash2,
 } from 'lucide-react';
 
@@ -17,15 +18,27 @@ interface StoreCardProps {
     slug: string;
     googleBusinessUrl: string;
     googlePlaceId: string | null;
-    createdAt: Date;
+    createdAt: string | Date;
+    defaultQrCodeId: string | null;
+    qrCodeCustomized: boolean;
+    qrCodeCustomizedAt: string | null;
+    logoUrl: string | null;
   };
   openMenuId: string | null;
   onMenuToggle: (id: string) => void;
   onEdit: () => void;
   onDelete: () => void;
+  onCustomizeQRCode: () => void;
 }
 
-export function StoreCard({ store, openMenuId, onMenuToggle, onEdit, onDelete }: StoreCardProps) {
+export function StoreCard({
+  store,
+  openMenuId,
+  onMenuToggle,
+  onEdit,
+  onDelete,
+  onCustomizeQRCode,
+}: StoreCardProps) {
   return (
     <div className="group bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6 hover:bg-white/60 hover:border-purple-600/30 transition-all duration-300 hover:scale-[1.02] relative">
       {/* Menu 3 points */}
@@ -45,7 +58,7 @@ export function StoreCard({ store, openMenuId, onMenuToggle, onEdit, onDelete }:
         {openMenuId === store.id && (
           <div
             data-menu-dropdown
-            className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-purple-600/20 py-2 z-10"
+            className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-purple-600/20 py-2 z-10"
           >
             <button
               onClick={(e) => {
@@ -56,6 +69,16 @@ export function StoreCard({ store, openMenuId, onMenuToggle, onEdit, onDelete }:
             >
               <Edit2 className="w-4 h-4" />
               Modifier
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onCustomizeQRCode();
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 transition-colors"
+            >
+              <QrCode className="w-4 h-4" />
+              {store.qrCodeCustomized ? 'Télécharger QR Code' : 'Personnaliser QR Code'}
             </button>
             <button
               onClick={(e) => {
@@ -73,10 +96,10 @@ export function StoreCard({ store, openMenuId, onMenuToggle, onEdit, onDelete }:
 
       {/* Nom du commerce */}
       <div className="mb-4 pr-8">
-        <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-600 transition-colors mb-1">
+        <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-600 transition-colors mb-1 truncate">
           {store.name}
         </h3>
-        <p className="text-xs text-gray-500">/{store.slug}</p>
+        <p className="text-xs text-gray-500 truncate">/{store.slug}</p>
       </div>
 
       {/* Google Business URL avec badge Avis vérifié/non vérifié */}
@@ -130,15 +153,38 @@ export function StoreCard({ store, openMenuId, onMenuToggle, onEdit, onDelete }:
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="pt-4 border-t border-purple-600/20 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-xs text-gray-600 mb-1">Campagnes</p>
-          <p className="text-lg font-bold text-gray-800">0</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-600 mb-1">Participants</p>
-          <p className="text-lg font-bold text-gray-800">0</p>
+      {/* Stats + QR Code preview */}
+      <div className="pt-4 border-t border-purple-600/20">
+        <div className="flex items-center justify-between">
+          <div className="grid grid-cols-2 gap-4 flex-1">
+            <div>
+              <p className="text-xs text-gray-600 mb-1">Campagnes</p>
+              <p className="text-lg font-bold text-gray-800">0</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 mb-1">Participants</p>
+              <p className="text-lg font-bold text-gray-800">0</p>
+            </div>
+          </div>
+
+          {/* QR Code mini preview */}
+          {store.defaultQrCodeId && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onCustomizeQRCode();
+              }}
+              className="ml-4 group/qr relative"
+              title={store.qrCodeCustomized ? 'Télécharger QR Code' : 'Personnaliser QR Code'}
+            >
+              <div className="w-12 h-12 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center justify-center group-hover/qr:border-purple-400 transition-colors">
+                <QrCode className="w-6 h-6 text-purple-600" />
+              </div>
+              {store.qrCodeCustomized && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

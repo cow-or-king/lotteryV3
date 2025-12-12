@@ -6,9 +6,9 @@
 
 'use client';
 
-import { useState } from 'react';
 import { UserRole } from '@/lib/rbac/permissions';
-import { Eye, EyeOff, User, Shield, Crown } from 'lucide-react';
+import { Crown, Eye, EyeOff, Shield, User } from 'lucide-react';
+import { useState } from 'react';
 
 interface RoleImpersonatorProps {
   currentRole: UserRole;
@@ -33,7 +33,7 @@ export function RoleImpersonator({ currentRole, onRoleChange }: RoleImpersonator
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold"
+          className="flex items-center gap-2 px-4 py-3 bg-linear-to-r from-purple-600 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold"
         >
           <Eye className="w-5 h-5" />
           <span>Tester Vue</span>
@@ -52,7 +52,7 @@ export function RoleImpersonator({ currentRole, onRoleChange }: RoleImpersonator
           </div>
 
           {/* Current Role Badge */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
+          <div className="mb-4 p-3 bg-linear-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
             <p className="text-xs text-gray-600 mb-1">Vue actuelle</p>
             <div className="flex items-center gap-2">
               <Icon className="w-5 h-5 text-purple-600" />
@@ -74,7 +74,7 @@ export function RoleImpersonator({ currentRole, onRoleChange }: RoleImpersonator
                   disabled={isActive}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 cursor-not-allowed'
+                      ? 'bg-linear-to-r from-purple-100 to-blue-100 border-2 border-purple-300 cursor-not-allowed'
                       : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >

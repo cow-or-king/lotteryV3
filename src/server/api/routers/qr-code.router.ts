@@ -8,6 +8,7 @@ import { createTRPCRouter } from '../trpc';
 import { qrCodeQueriesRouter } from './qr-code/qr-code.queries';
 import { qrCodeMutationsRouter } from './qr-code/qr-code.mutations';
 import { qrCodeStorageRouter } from './qr-code/qr-code.storage';
+import { qrCodeCustomizeRouter } from './qr-code/qr-code.customize';
 
 /**
  * Router principal pour les QR codes
@@ -29,4 +30,8 @@ export const qrCodeRouter = createTRPCRouter({
   // Storage (Supabase)
   uploadLogo: qrCodeStorageRouter.uploadLogo,
   deleteLogo: qrCodeStorageRouter.deleteLogo,
+
+  // Customization (Store QR Code par défaut)
+  customize: qrCodeCustomizeRouter.customize,
+  export: qrCodeCustomizeRouter.export,
 });

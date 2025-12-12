@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { ExportFormat, ExportFormatEnum, QR_CODE_SIZES } from '@/lib/types/qr-code.types';
 import { Download } from 'lucide-react';
-import { ExportFormat, QR_CODE_SIZES } from '@/lib/types/qr-code.types';
+import { useState } from 'react';
 
 /**
  * Props for the QRCodeExportOptions component
@@ -30,7 +30,7 @@ export default function QRCodeExportOptions({
   isExporting,
   disabled,
 }: QRCodeExportOptionsProps) {
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>(ExportFormat.PNG);
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>(ExportFormatEnum.PNG);
   const [selectedSize, setSelectedSize] = useState<number>(512);
 
   /**
@@ -53,12 +53,12 @@ export default function QRCodeExportOptions({
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => setSelectedFormat(ExportFormat.PNG)}
+            onClick={() => setSelectedFormat(ExportFormatEnum.PNG)}
             disabled={disabled}
             className={`
               flex-1 px-4 py-3 rounded-xl font-medium transition-all
               ${
-                selectedFormat === ExportFormat.PNG
+                selectedFormat === ExportFormatEnum.PNG
                   ? 'bg-purple-500/20 border-2 border-purple-400/50 text-gray-900 shadow-lg'
                   : 'bg-white/20 border border-gray-300/40 text-gray-800 hover:bg-white/30 hover:border-gray-400/50'
               }
@@ -69,12 +69,12 @@ export default function QRCodeExportOptions({
           </button>
           <button
             type="button"
-            onClick={() => setSelectedFormat(ExportFormat.SVG)}
+            onClick={() => setSelectedFormat(ExportFormatEnum.SVG)}
             disabled={disabled}
             className={`
               flex-1 px-4 py-3 rounded-xl font-medium transition-all
               ${
-                selectedFormat === ExportFormat.SVG
+                selectedFormat === ExportFormatEnum.SVG
                   ? 'bg-purple-500/20 border-2 border-purple-400/50 text-gray-900 shadow-lg'
                   : 'bg-white/20 border border-gray-300/40 text-gray-800 hover:bg-white/30 hover:border-gray-400/50'
               }
@@ -92,7 +92,7 @@ export default function QRCodeExportOptions({
             "
           >
             PDF
-            <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+            <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs font-semibold bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-full">
               Coming soon
             </span>
           </button>
@@ -133,7 +133,7 @@ export default function QRCodeExportOptions({
         disabled={disabled || isExporting}
         className="
           w-full px-6 py-3 rounded-xl font-semibold
-          bg-gradient-to-r from-purple-500 to-pink-500
+          bg-linear-to-r from-purple-500 to-pink-500
           text-white shadow-lg
           hover:shadow-xl hover:scale-[1.02]
           active:scale-[0.98]

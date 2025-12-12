@@ -19,6 +19,7 @@ import {
   UpgradeModal,
 } from '@/components/stores';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { CustomizeQRCodeModal } from '@/components/qr-codes/CustomizeQRCodeModal';
 import { useBrands, useStoreLimits, useStores } from '@/hooks/stores';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -33,6 +34,16 @@ export default function StoresPage() {
   const [showGoogleUrlHelp, setShowGoogleUrlHelp] = useState(false);
   const [showPlaceIdHelp, setShowPlaceIdHelp] = useState(false);
   const [showGoogleApiHelp, setShowGoogleApiHelp] = useState(false);
+
+  // QR Code customization state
+  const [customizingStore, setCustomizingStore] = useState<{
+    id: string;
+    name: string;
+    defaultQrCodeId: string | null;
+    qrCodeCustomized: boolean;
+    qrCodeCustomizedAt: string | null;
+    logoUrl: string | null;
+  } | null>(null);
 
   return (
     <div>
@@ -92,6 +103,10 @@ export default function StoresPage() {
                 storesHook.setOpenMenuId(null);
               }}
               onDeleteStore={storesHook.handleDeleteStore}
+              onCustomizeQRCode={(store) => {
+                setCustomizingStore(store);
+                storesHook.setOpenMenuId(null);
+              }}
             />
           ))}
         </div>
@@ -114,7 +129,7 @@ export default function StoresPage() {
           storesHook.selectedBrand
             ? {
                 brandName: storesHook.selectedBrand.brandName,
-                logoUrl: storesHook.selectedBrand.logoUrl,
+                logoUrl: storesHook.selectedBrand.brandLogoUrl,
               }
             : null
         }
@@ -140,7 +155,15 @@ export default function StoresPage() {
         onShowGoogleUrlHelp={() => setShowGoogleUrlHelp(true)}
         storeBrand={
           storesHook.editingStore && storesHook.stores
-            ? storesHook.stores.find((s) => s.id === storesHook.editingStore!.id) || null
+            ? (() => {
+                const store = storesHook.stores.find((s) => s.id === storesHook.editingStore!.id);
+                return store
+                  ? {
+                      brandName: store.brandName,
+                      logoUrl: store.brandLogoUrl,
+                    }
+                  : null;
+              })()
             : null
         }
       />
@@ -174,6 +197,15 @@ export default function StoresPage() {
       {/* Confirm Dialogs */}
       <ConfirmDialog {...storesHook.ConfirmDialogProps} />
       <ConfirmDialog {...brandsHook.ConfirmDialogProps} />
+
+      {/* Customize QR Code Modal */}
+      {customizingStore && (
+        <CustomizeQRCodeModal
+          isOpen={!!customizingStore}
+          onClose={() => setCustomizingStore(null)}
+          store={customizingStore}
+        />
+      )}
     </div>
   );
 }

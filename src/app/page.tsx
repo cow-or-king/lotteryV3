@@ -4,8 +4,8 @@
  * IMPORTANT: ZERO any types
  */
 
+import { Gift, Shield, Sparkles, Star, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { Sparkles, Star, Gift, TrendingUp, Zap, Shield } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -16,7 +16,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Gift className="w-8 h-8 text-purple-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 ReviewLottery
               </span>
             </div>
@@ -52,7 +52,7 @@ export default function HomePage() {
             Boostez vos avis Google
             <br />
             avec des{' '}
-            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               loteries intelligentes
             </span>
           </h1>
@@ -163,7 +163,7 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 shadow-2xl">
+          <div className="bg-linear-to-r from-purple-600 to-blue-600 rounded-3xl p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-white mb-4">
               Prêt à transformer vos avis en opportunités ?
             </h2>

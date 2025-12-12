@@ -6,15 +6,15 @@
 
 'use client';
 
-import { api } from '@/lib/trpc/client';
 import { QRCodeListItem } from '@/components/qr-codes';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/trpc/client';
+import { downloadQRCode, generateQRCode } from '@/lib/utils/qr-code-generator';
+import { transformToQRCodeListItem } from '@/lib/utils/qr-code-transform';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
-import { generateQRCode } from '@/lib/utils/qr-code-generator';
-import { downloadQRCode } from '@/lib/utils/qr-code-generator';
-import { useConfirm } from '@/hooks/ui/useConfirm';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function QRCodesPage() {
   const router = useRouter();
@@ -110,7 +110,7 @@ export default function QRCodesPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard/qr-codes/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer un QR Code
@@ -131,22 +131,7 @@ export default function QRCodesPage() {
           {qrCodes.map((qrCode) => (
             <QRCodeListItem
               key={qrCode.id}
-              qrCode={{
-                ...qrCode,
-                errorCorrectionLevel: qrCode.errorCorrectionLevel as 'L' | 'M' | 'Q' | 'H',
-                createdAt: new Date(qrCode.createdAt),
-                updatedAt: new Date(qrCode.updatedAt),
-                scanCount: qrCode.scansCount,
-                lastScannedAt: null,
-                expiresAt: null,
-                createdBy: '',
-                stats: {
-                  totalScans: qrCode.scansCount,
-                  lastScanDate: null,
-                  daysUntilExpiry: null,
-                  isExpired: false,
-                },
-              }}
+              qrCode={transformToQRCodeListItem(qrCode)}
               onEdit={() => router.push(`/dashboard/qr-codes/${qrCode.id}/edit`)}
               onDelete={() => handleDelete(qrCode.id, qrCode.name)}
               onDownload={() => handleDownload(qrCode)}
@@ -181,7 +166,7 @@ export default function QRCodesPage() {
           </p>
           <button
             onClick={() => router.push('/dashboard/qr-codes/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Créer mon premier QR Code

@@ -46,6 +46,23 @@ export const ErrorCorrectionLevelEnum = {
 export type ErrorCorrectionLevel =
   (typeof ErrorCorrectionLevelEnum)[keyof typeof ErrorCorrectionLevelEnum];
 
+export const LogoSizeEnum = {
+  SMALL: 'SMALL', // 60px
+  MEDIUM: 'MEDIUM', // 80px (défaut)
+  LARGE: 'LARGE', // 120px
+} as const;
+
+export type LogoSize = (typeof LogoSizeEnum)[keyof typeof LogoSizeEnum];
+
+/**
+ * Conversion LogoSize enum vers pixels
+ */
+export const LOGO_SIZE_TO_PIXELS: Record<LogoSize, number> = {
+  SMALL: 60,
+  MEDIUM: 80,
+  LARGE: 120,
+};
+
 // =====================
 // QR CODE DATA
 // =====================
@@ -115,6 +132,45 @@ export interface UpdateQRCodeInput {
   errorCorrectionLevel?: ErrorCorrectionLevel;
   storeId?: string | null;
   campaignId?: string | null;
+}
+
+/**
+ * Input pour personnaliser un QR code par défaut de Store
+ */
+export interface CustomizeQRCodeInput {
+  qrCodeId: string;
+  style: QRCodeStyle;
+  foregroundColor: string;
+  backgroundColor: string;
+  logoSize: LogoSize | null;
+  errorCorrectionLevel: ErrorCorrectionLevel;
+}
+
+/**
+ * Résultat de personnalisation
+ */
+export interface CustomizeQRCodeResult {
+  success: boolean;
+  qrCodeId: string;
+  svgUrl: string;
+  pngUrl: string;
+  customizedAt: Date;
+}
+
+/**
+ * Input pour exporter un QR code
+ */
+export interface ExportQRCodeInput {
+  qrCodeId: string;
+  format: 'SVG' | 'PNG';
+}
+
+/**
+ * Résultat d'export
+ */
+export interface ExportQRCodeResult {
+  downloadUrl: string;
+  expiresAt: Date;
 }
 
 // =====================

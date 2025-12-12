@@ -12,11 +12,18 @@ export function validateStoreForm(formData: StoreFormData): StoreFormErrors {
   if (formData.brandName.length < 2) {
     errors.brandName = "Le nom de l'enseigne doit contenir au moins 2 caractères";
   }
-  if (!formData.logoUrl.trim()) {
-    errors.logoUrl = 'Le logo est obligatoire';
-  } else if (!formData.logoUrl.match(/^https?:\/\/.+/)) {
+
+  // Valider le logo: soit logoFile soit logoUrl doit être fourni
+  if (!formData.logoFile && !formData.logoUrl.trim()) {
+    errors.logoUrl = 'Le logo est obligatoire (fichier ou URL)';
+  } else if (
+    !formData.logoFile &&
+    formData.logoUrl.trim() &&
+    !formData.logoUrl.match(/^https?:\/\/.+/)
+  ) {
     errors.logoUrl = 'URL du logo invalide';
   }
+
   if (formData.name.length < 2) {
     errors.name = 'Le nom du commerce doit contenir au moins 2 caractères';
   }

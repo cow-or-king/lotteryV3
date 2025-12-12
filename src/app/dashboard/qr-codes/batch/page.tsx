@@ -6,18 +6,19 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/trpc/client';
-import { useToast } from '@/hooks/use-toast';
-import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
 import {
-  QRCodeStyleSelector,
   QRCodeAnimationSelector,
   QRCodeColorPicker,
   QRCodeLogoUpload,
   QRCodeStoreSelector,
+  QRCodeStyleSelector,
 } from '@/components/qr-codes';
-import { ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
+import { useToast } from '@/hooks/use-toast';
+import { MAX_BATCH_QR_CODES } from '@/lib/constants/qr-code.constants';
+import { api } from '@/lib/trpc/client';
+import { ArrowLeft, Plus, Save, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 type BatchQRCode = {
@@ -104,10 +105,10 @@ export default function BatchQRCodePage() {
   });
 
   const addQRCode = () => {
-    if (qrCodes.length >= 50) {
+    if (qrCodes.length >= MAX_BATCH_QR_CODES) {
       toast({
         title: 'Limite atteinte',
-        description: 'Vous ne pouvez créer que 50 QR codes à la fois maximum',
+        description: `Vous ne pouvez créer que ${MAX_BATCH_QR_CODES} QR codes à la fois maximum`,
         variant: 'error',
       });
       return;
@@ -203,7 +204,7 @@ export default function BatchQRCodePage() {
         <button
           onClick={handleSave}
           disabled={createBatchMutation.isPending || qrCodes.length === 0}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <Save className="w-5 h-5" />
           {createBatchMutation.isPending
@@ -220,11 +221,11 @@ export default function BatchQRCodePage() {
           <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-800">
-                QR Codes ({qrCodes.length}/50)
+                QR Codes ({qrCodes.length}/{MAX_BATCH_QR_CODES})
               </h2>
               <button
                 onClick={addQRCode}
-                disabled={qrCodes.length >= 50}
+                disabled={qrCodes.length >= MAX_BATCH_QR_CODES}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />

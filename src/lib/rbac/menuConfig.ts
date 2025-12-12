@@ -127,6 +127,17 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     displayOrder: 8,
     targetRole: 'ADMIN',
   },
+  {
+    id: 'admin-games',
+    label: 'Jeux',
+    path: '/dashboard/games',
+    icon: 'Dices',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 9,
+    targetRole: 'ADMIN',
+  },
 ];
 
 /**

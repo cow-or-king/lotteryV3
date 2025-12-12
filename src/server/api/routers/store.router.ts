@@ -9,6 +9,8 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@/infrastructure/database/prisma-client';
+import { uploadStoreLogoServer } from '@/lib/utils/supabase-storage';
+import { generateAndLinkDefaultQRCode } from '@/lib/utils/qr-code-server-generator';
 
 // Use Cases
 import {
@@ -130,13 +132,22 @@ export const storeRouter = createTRPCRouter({
     // Créer un map pour un accès O(1)
     const brandsMap = new Map(brands.map((b) => [b.id, b]));
 
-    // Mapper les stores avec leurs brand info
+    // Import du helper pour l'URL du logo
+    const { getStoreFinalLogoUrl } = await import('@/lib/utils/supabase-storage');
+
+    // Mapper les stores avec leurs brand info + URL finale du logo
     const storesWithBrandInfo = result.data.map((store) => {
       const brand = brandsMap.get(store.brandId);
+      const finalLogoUrl = getStoreFinalLogoUrl({
+        logoUrl: store.logoUrl,
+        logoStoragePath: store.logoStoragePath,
+      });
+
       return {
         ...store,
         brandName: brand?.name || '',
-        logoUrl: brand?.logoUrl || '',
+        brandLogoUrl: brand?.logoUrl || '', // Brand logo (pas le Store logo)
+        logoUrl: finalLogoUrl, // URL finale du logo du Store (Storage > URL externe)
       };
     });
 
@@ -191,7 +202,17 @@ export const storeRouter = createTRPCRouter({
           .string()
           .min(2, "Le nom de l'enseigne doit contenir au moins 2 caractères")
           .optional(),
-        logoUrl: z.string().url('URL du logo invalide').optional(),
+        logoUrl: z
+          .string()
+          .optional()
+          .refine(
+            (val) => !val || val === '' || /^https?:\/\/.+/.test(val),
+            'URL du logo invalide',
+          ),
+        // Logo file en base64 (optionnel)
+        logoFileData: z.string().optional(),
+        logoFileName: z.string().optional(),
+        logoFileType: z.string().optional(),
         // Infos du commerce (toujours requis)
         name: z.string().min(2, 'Le nom du commerce doit contenir au moins 2 caractères'),
         googleBusinessUrl: z.string().url('URL Google Business invalide'),
@@ -225,6 +246,44 @@ export const storeRouter = createTRPCRouter({
           message: errorMessage,
         });
       }
+
+      // Upload du logo si un fichier est fourni
+      // IMPORTANT: Le logo est pour le BRAND, pas pour le Store
+      if (input.logoFileData && input.logoFileName && input.logoFileType) {
+        try {
+          // Décoder le base64
+          const base64Data = input.logoFileData.split(',')[1] || input.logoFileData;
+          const buffer = Buffer.from(base64Data, 'base64');
+
+          // Créer un File object (Node.js compatible)
+          const file = new File([buffer], input.logoFileName, { type: input.logoFileType });
+
+          // Upload vers Supabase Storage (utilise le brandId comme dossier)
+          const { url } = await uploadStoreLogoServer(result.data.brandId, file);
+
+          // Mettre à jour le Brand avec le logoUrl
+          await prisma.brand.update({
+            where: { id: result.data.brandId },
+            data: { logoUrl: url },
+          });
+        } catch (error) {
+          // Log l'erreur mais ne pas bloquer la création du Store
+          console.error('Erreur upload logo:', error);
+        }
+      }
+
+      // Générer automatiquement un QR Code par défaut pour ce Store
+      // Note: Cette opération est asynchrone mais ne bloque pas le retour du Store créé
+      // Si la génération échoue, elle sera loggée mais n'empêchera pas la création du Store
+      generateAndLinkDefaultQRCode({
+        storeId: result.data.id,
+        storeName: result.data.name,
+        storeSlug: result.data.slug,
+        userId: ctx.user.id,
+      }).catch((error) => {
+        // Log l'erreur mais ne pas bloquer la création du Store
+        console.error('Erreur génération QR Code par défaut:', error);
+      });
 
       // Enrichir avec les infos Brand pour l'UI
       const brand = await prisma.brand.findUnique({

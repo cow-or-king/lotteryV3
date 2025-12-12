@@ -51,7 +51,7 @@ export class CreateStoreUseCase {
       brandId = brand.id;
     }
     // Cas 2: Créer un nouveau brand
-    else if (input.brandName && input.logoUrl) {
+    else if (input.brandName) {
       const countResult = await this.brandRepository.countByOwnerId(userId);
 
       if (!countResult.success) {
@@ -62,7 +62,7 @@ export class CreateStoreUseCase {
 
       const newBrandResult = await this.brandRepository.create({
         name: input.brandName,
-        logoUrl: input.logoUrl,
+        logoUrl: input.logoUrl || '', // logoUrl peut être vide si un fichier sera uploadé après
         ownerId: userId,
         isPaid: brandsCount > 0, // Le 2ème brand et suivants sont payants
       });
@@ -73,11 +73,11 @@ export class CreateStoreUseCase {
 
       brandId = newBrandResult.data.id;
     }
-    // Erreur: ni brandId ni brandName+logoUrl
+    // Erreur: ni brandId ni brandName
     else {
       return Result.fail(
         new Error(
-          'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName + logoUrl)',
+          'Vous devez soit sélectionner une enseigne existante (brandId), soit créer une nouvelle enseigne (brandName)',
         ),
       );
     }

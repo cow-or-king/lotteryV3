@@ -18,6 +18,8 @@ export function useStores() {
   const [formData, setFormData] = useState<StoreFormData>({
     brandName: '',
     logoUrl: '',
+    logoFile: null,
+    logoPreviewUrl: null,
     name: '',
     googleBusinessUrl: '',
     googlePlaceId: '',
@@ -34,9 +36,15 @@ export function useStores() {
   // Mutations
   const { createStore, deleteStore, updateStore } = useStoreMutations({
     onCreateSuccess: () => {
+      // Clean up preview URL before reset
+      if (formData.logoPreviewUrl) {
+        URL.revokeObjectURL(formData.logoPreviewUrl);
+      }
       setFormData({
         brandName: '',
         logoUrl: '',
+        logoFile: null,
+        logoPreviewUrl: null,
         name: '',
         googleBusinessUrl: '',
         googlePlaceId: '',
@@ -98,7 +106,7 @@ export function useStores() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
@@ -109,12 +117,36 @@ export function useStores() {
       return;
     }
 
+    // Convertir logoFile en base64 si présent
+    let logoFileData: string | undefined;
+    let logoFileName: string | undefined;
+    let logoFileType: string | undefined;
+
+    if (formData.logoFile) {
+      try {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(formData.logoFile!);
+        });
+        logoFileData = await base64Promise;
+        logoFileName = formData.logoFile.name;
+        logoFileType = formData.logoFile.type;
+      } catch (error) {
+        console.error('Erreur conversion base64:', error);
+      }
+    }
+
     if (selectedBrandId && !isNewBrand) {
       createStore.mutate({
         brandId: selectedBrandId,
         name: formData.name,
         googleBusinessUrl: formData.googleBusinessUrl,
         googlePlaceId: formData.googlePlaceId.trim() || undefined,
+        logoFileData,
+        logoFileName,
+        logoFileType,
       });
     } else {
       createStore.mutate({
@@ -123,15 +155,24 @@ export function useStores() {
         logoUrl: formData.logoUrl,
         googleBusinessUrl: formData.googleBusinessUrl,
         googlePlaceId: formData.googlePlaceId.trim() || undefined,
+        logoFileData,
+        logoFileName,
+        logoFileType,
       });
     }
   };
 
   const resetForm = () => {
+    // Clean up preview URL before reset
+    if (formData.logoPreviewUrl) {
+      URL.revokeObjectURL(formData.logoPreviewUrl);
+    }
     setShowCreateForm(false);
     setFormData({
       brandName: '',
       logoUrl: '',
+      logoFile: null,
+      logoPreviewUrl: null,
       name: '',
       googleBusinessUrl: '',
       googlePlaceId: '',
