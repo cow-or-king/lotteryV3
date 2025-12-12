@@ -16,7 +16,7 @@ interface QRCodePreviewSectionProps {
   url: string;
   logoUrl: string | null;
   logoSize: number;
-  onExport: (format: 'png' | 'svg' | 'pdf', size: number) => void;
+  onExport: (format: 'PNG' | 'SVG' | 'PDF', size: number) => void;
   isExporting: boolean;
   name: string;
 }
@@ -31,7 +31,6 @@ export function QRCodePreviewSection({
   logoSize,
   onExport,
   isExporting,
-  name,
 }: QRCodePreviewSectionProps) {
   return (
     <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
@@ -43,7 +42,7 @@ export function QRCodePreviewSection({
             key={`${logoSize}-${logoUrl}`}
             qrCodeDataUrl={qrCodeDataUrl}
             animation={animation}
-            animationColor={animationColor}
+            animationColor={animationColor || undefined}
             isGenerating={isGenerating}
           />
         </div>

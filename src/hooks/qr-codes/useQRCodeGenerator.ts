@@ -22,7 +22,7 @@ export function useQRCodeGenerator() {
   const [animation, setAnimation] = useState<QRCodeAnimation | null>('NONE');
   const [foregroundColor, setForegroundColor] = useState<string>(DEFAULT_FOREGROUND_COLOR);
   const [backgroundColor, setBackgroundColor] = useState<string>(DEFAULT_BACKGROUND_COLOR);
-  const [animationColor, setAnimationColor] = useState<string>('#8b5cf6'); // Purple by default
+  const [animationColor, setAnimationColor] = useState<string | null>('#8b5cf6'); // Purple by default
   const [size, setSize] = useState<number>(DEFAULT_QR_CODE_SIZE);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState<number>(DEFAULT_LOGO_SIZE);

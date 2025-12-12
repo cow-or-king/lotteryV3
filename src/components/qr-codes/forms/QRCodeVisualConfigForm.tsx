@@ -66,7 +66,7 @@ export function QRCodeVisualConfigForm({
         <QRCodeColorPicker
           foregroundColor={foregroundColor}
           backgroundColor={backgroundColor}
-          animationColor={animationColor}
+          animationColor={animationColor || '#8b5cf6'}
           onForegroundChange={onForegroundColorChange}
           onBackgroundChange={onBackgroundColorChange}
           onAnimationColorChange={onAnimationColorChange}
