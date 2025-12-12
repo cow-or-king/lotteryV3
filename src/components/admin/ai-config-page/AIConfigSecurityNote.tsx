@@ -17,11 +17,11 @@ export function AIConfigSecurityNote() {
       <AlertCircle size={20} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
       <div>
         <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-          Sécurité
+          SÃ©curitÃ©
         </p>
         <p style={{ margin: 0, fontSize: '13px', color: '#6b7280', lineHeight: '1.6' }}>
-          Les clés API sont sensibles et doivent être protégées. Elles seront chiffrées avant
-          d&apos;être stockées dans la base de données. Ne partagez jamais vos clés API.
+          Les clÃ©s API sont sensibles et doivent Ãªtre protÃ©gÃ©es. Elles seront chiffrÃ©es avant
+          d&apos;Ãªtre stockÃ©es dans la base de donnÃ©es. Ne partagez jamais vos clÃ©s API.
         </p>
       </div>
     </div>
