@@ -109,14 +109,9 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 
     if (verifyResult.success) {
       try {
-        // Upsert l'utilisateur (créer ou mettre à jour) pour éviter les conflits d'email
-        user = await ctx.prisma.user.upsert({
-          where: { id: ctx.userId },
-          update: {
-            email: verifyResult.data.email || '',
-            emailVerified: verifyResult.data.emailVerified,
-          },
-          create: {
+        // Créer le nouvel utilisateur avec l'ID de Supabase
+        user = await ctx.prisma.user.create({
+          data: {
             id: ctx.userId,
             email: verifyResult.data.email || '',
             emailVerified: verifyResult.data.emailVerified,
