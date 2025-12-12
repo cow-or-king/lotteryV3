@@ -113,7 +113,7 @@ export function useQRCodeCustomization({
 
   const handleCustomize = async () => {
     if (!defaultQrCodeId) {
-      toast.error('QR Code par défaut non trouvé');
+      toast.error('QR Code par dÃ©faut non trouvÃ©');
       return;
     }
 
@@ -136,7 +136,7 @@ export function useQRCodeCustomization({
 
   const handleExport = async (format: 'SVG' | 'PNG', storeName: string) => {
     if (!defaultQrCodeId) {
-      toast.error('QR Code par défaut non trouvé');
+      toast.error('QR Code par dÃ©faut non trouvÃ©');
       return;
     }
 
