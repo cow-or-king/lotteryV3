@@ -6,7 +6,7 @@
 
 import type { Result } from '@/lib/types/result.type';
 import { ok, fail } from '@/lib/types/result.type';
-import type { WinnerRepository } from '@/core/ports/winner.repository';
+import type { IWinnerRepository } from '@/core/ports/winner.repository';
 import type { WinnerEntity } from '@/core/entities/winner.entity';
 
 export interface ClaimPrizeInput {
@@ -19,7 +19,7 @@ export interface ClaimPrizeOutput {
 }
 
 export class ClaimPrizeUseCase {
-  constructor(private readonly winnerRepository: WinnerRepository) {}
+  constructor(private readonly winnerRepository: IWinnerRepository) {}
 
   async execute(input: ClaimPrizeInput): Promise<Result<ClaimPrizeOutput>> {
     // Validation du code

@@ -29,7 +29,7 @@ vi.mock('@/infrastructure/auth/supabase-auth.service', () => ({
 }));
 
 describe('SessionService', () => {
-  let service: ReturnType<
+  let service: InstanceType<
     (typeof import('@/infrastructure/auth/session.service'))['SessionService']
   >;
   let mockSupabaseAuthService: {
@@ -42,8 +42,11 @@ describe('SessionService', () => {
     vi.clearAllMocks();
     const module = await import('@/infrastructure/auth/session.service');
     const authModule = await import('@/infrastructure/auth/supabase-auth.service');
-    mockSupabaseAuthService = authModule.supabaseAuthService as typeof mockSupabaseAuthService;
-    service = new module.SessionService(mockSupabaseAuthService);
+    mockSupabaseAuthService =
+      authModule.supabaseAuthService as unknown as typeof mockSupabaseAuthService;
+    service = new module.SessionService(
+      mockSupabaseAuthService as unknown as Parameters<typeof module.SessionService>[0],
+    );
   });
 
   describe('createSession', () => {

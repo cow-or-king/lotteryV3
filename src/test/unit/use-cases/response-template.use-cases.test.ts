@@ -269,7 +269,7 @@ describe('ResponseTemplate Use Cases', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.templates).toHaveLength(1);
-        expect(result.data.templates[0].category).toBe('positive');
+        expect(result.data.templates[0]?.category).toBe('positive');
       }
 
       expect(mockTemplateRepo.findByStoreAndCategory).toHaveBeenCalledWith(storeId, 'positive');

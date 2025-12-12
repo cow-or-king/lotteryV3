@@ -54,6 +54,7 @@ export const qrCodeQueriesRouter = createTRPCRouter({
       scansCount: qrCode.scanCount,
       createdAt: qrCode.createdAt,
       updatedAt: qrCode.updatedAt,
+      createdBy: qrCode.createdBy,
     }));
   }),
 

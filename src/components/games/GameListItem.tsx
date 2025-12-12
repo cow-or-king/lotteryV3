@@ -57,6 +57,7 @@ export default function GameListItem({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+    return undefined;
   }, [menuOpen]);
 
   return (

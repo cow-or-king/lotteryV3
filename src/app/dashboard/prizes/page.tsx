@@ -30,15 +30,17 @@ export default function PrizesPage() {
       return [];
     }
     const brandMap = new Map();
-    storesList.forEach((store: { brandId: string; brandName: string; logoUrl: string }) => {
-      if (!brandMap.has(store.brandId)) {
-        brandMap.set(store.brandId, {
-          id: store.brandId,
-          name: store.brandName,
-          logoUrl: store.logoUrl,
-        });
-      }
-    });
+    storesList.forEach(
+      (store: { brandId: string; brandName: string; brandLogoUrl: string | null }) => {
+        if (!brandMap.has(store.brandId)) {
+          brandMap.set(store.brandId, {
+            id: store.brandId,
+            name: store.brandName,
+            logoUrl: store.brandLogoUrl,
+          });
+        }
+      },
+    );
     return Array.from(brandMap.values());
   }, [storesList]);
 

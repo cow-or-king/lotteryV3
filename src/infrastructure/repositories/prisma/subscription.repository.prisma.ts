@@ -327,13 +327,19 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       }
 
       const storesUsed = await this.prisma.store.count({
-        where: { ownerId: userId },
+        where: {
+          brand: {
+            ownerId: userId,
+          },
+        },
       });
 
       const campaignsUsed = await this.prisma.campaign.count({
         where: {
           store: {
-            ownerId: userId,
+            brand: {
+              ownerId: userId,
+            },
           },
         },
       });
@@ -396,10 +402,8 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
     campaignsLimit: number;
     stripeCustomerId: string | null;
     stripeSubscriptionId: string | null;
-    trialEndsAt: Date | null;
-    currentPeriodStart: Date | null;
     currentPeriodEnd: Date | null;
-    cancelledAt: Date | null;
+    cancelAtPeriodEnd: boolean;
     createdAt: Date;
     updatedAt: Date;
   }): SubscriptionEntity {

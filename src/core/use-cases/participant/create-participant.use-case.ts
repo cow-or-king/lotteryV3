@@ -6,8 +6,10 @@
 
 import type { Result } from '@/lib/types/result.type';
 import { ok, fail } from '@/lib/types/result.type';
-import type { ParticipantRepository } from '@/core/ports/participant.repository';
+import type { IParticipantRepository } from '@/core/ports/participant.repository';
 import type { ParticipantEntity } from '@/core/entities/participant.entity';
+import { Email } from '@/core/value-objects/email.vo';
+import type { CampaignId } from '@/lib/types/branded.type';
 
 export interface CreateParticipantInput {
   email: string;
@@ -23,7 +25,7 @@ export interface CreateParticipantOutput {
 }
 
 export class CreateParticipantUseCase {
-  constructor(private readonly participantRepository: ParticipantRepository) {}
+  constructor(private readonly participantRepository: IParticipantRepository) {}
 
   async execute(input: CreateParticipantInput): Promise<Result<CreateParticipantOutput>> {
     // Validation de l'email
@@ -55,32 +57,28 @@ export class CreateParticipantUseCase {
       return fail(new Error('You have already registered for this campaign'));
     }
 
-    // Créer le participant
-    const participant: ParticipantEntity = {
-      id: '', // Will be set by repository
-      email: input.email.trim().toLowerCase(),
-      name: input.name?.trim() || null,
-      phone: input.phone?.trim() || null,
-      campaignId: input.campaignId,
-      hasPlayed: false,
-      playedAt: null,
-      ipAddress: input.ipAddress || null,
-      userAgent: input.userAgent || null,
-      hasReviewed: false,
-      reviewRating: null,
-      reviewComment: null,
-      createdAt: new Date(),
-    };
+    // Créer l'objet Email
+    const emailResult = Email.create(input.email);
+    if (!emailResult.success) {
+      return fail(emailResult.error);
+    }
 
-    // Sauvegarder
-    const saveResult = await this.participantRepository.save(participant);
+    // Créer le participant via le repository
+    const createResult = await this.participantRepository.create({
+      email: emailResult.data,
+      name: input.name?.trim(),
+      phone: input.phone?.trim(),
+      campaignId: input.campaignId as CampaignId,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+    });
 
-    if (!saveResult.success) {
-      return fail(saveResult.error);
+    if (!createResult.success) {
+      return fail(createResult.error);
     }
 
     return ok({
-      participant: saveResult.value,
+      participant: createResult.data,
     });
   }
 }

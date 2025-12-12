@@ -68,9 +68,41 @@ export const useToast = () => {
     });
   };
 
+  // Helper methods for common toast variants
+  const toastWithHelpers = Object.assign(toast, {
+    success: (title: string, description?: string) => {
+      addToast({
+        title,
+        description,
+        variant: 'success',
+      });
+    },
+    error: (title: string, description?: string) => {
+      addToast({
+        title,
+        description,
+        variant: 'destructive',
+      });
+    },
+    warning: (title: string, description?: string) => {
+      addToast({
+        title,
+        description,
+        variant: 'warning',
+      });
+    },
+    info: (title: string, description?: string) => {
+      addToast({
+        title,
+        description,
+        variant: 'default',
+      });
+    },
+  });
+
   return {
     toasts,
-    toast,
+    toast: toastWithHelpers,
     removeToast,
   };
 };

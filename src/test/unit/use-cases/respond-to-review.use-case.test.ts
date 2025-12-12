@@ -14,7 +14,6 @@ import { IResponseTemplateRepository } from '@/core/repositories/response-templa
 import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
 import { IEncryptionService } from '@/core/ports/encryption.service';
 import { IStoreRepository } from '@/core/repositories/store.repository.interface';
-import { StoreEntity } from '@/core/entities/store.entity';
 import { ReviewId, UserId, StoreId } from '@/lib/types/branded.type';
 import { Result } from '@/lib/types/result.type';
 

@@ -105,10 +105,25 @@ export interface GameBaseConfig {
 }
 
 /**
+ * Segment de la roue de la fortune
+ */
+export interface WheelSegment {
+  id: string;
+  label: string;
+  color: string;
+  probability: number;
+  prize: {
+    type: 'PRIZE' | 'DISCOUNT' | 'NOTHING';
+    value: string;
+  };
+}
+
+/**
  * Configuration spécifique à la Roue de la Fortune
  */
 export interface WheelGameConfig extends GameBaseConfig {
   // Segments
+  segments: WheelSegment[];
   segmentBorderWidth: number;
   segmentBorderColor: string;
 

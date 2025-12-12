@@ -135,8 +135,9 @@ describe('auth.router (Integration Tests)', () => {
     const routerModule = await import('@/server/api/root');
     const trpcModule = await import('@/server/api/trpc');
 
-    mockSupabaseAuthService = authModule.supabaseAuthService as typeof mockSupabaseAuthService;
-    mockSessionService = sessionModule.sessionService as typeof mockSessionService;
+    mockSupabaseAuthService =
+      authModule.supabaseAuthService as unknown as typeof mockSupabaseAuthService;
+    mockSessionService = sessionModule.sessionService as unknown as typeof mockSessionService;
 
     // Créer un contexte de test
     const ctx = trpcModule.createInnerTRPCContext({

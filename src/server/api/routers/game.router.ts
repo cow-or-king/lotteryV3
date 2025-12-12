@@ -11,7 +11,16 @@ import type { GameType, GameStatus } from '@prisma/client';
 // Validation schemas
 const createGameSchema = z.object({
   name: z.string().min(1, 'Le nom est requis'),
-  type: z.enum(['WHEEL', 'SCRATCH', 'SLOT_MACHINE', 'MEMORY', 'SHAKE', 'DICE', 'MYSTERY_BOX']),
+  type: z.enum([
+    'WHEEL',
+    'SCRATCH',
+    'SLOT_MACHINE',
+    'MEMORY',
+    'SHAKE',
+    'WHEEL_MINI',
+    'DICE',
+    'MYSTERY_BOX',
+  ]),
   config: z.record(z.unknown()), // JSON config flexible selon le type de jeu
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),

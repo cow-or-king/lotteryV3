@@ -1,15 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Download,
-  Loader2,
-  Palette,
-  QrCode as QrCodeIcon,
-  X,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Download, Loader2, Palette, X } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { api } from '@/lib/trpc/client';
 import type { QRCodeStyle, LogoSize, ErrorCorrectionLevel } from '@/lib/types/qr-code.types';
 import QRCodeStyling from 'qr-code-styling';

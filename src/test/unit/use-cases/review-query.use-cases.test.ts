@@ -19,7 +19,6 @@ import {
 import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { ReviewId, StoreId } from '@/lib/types/branded.type';
-import { Result } from '@/lib/types/result.type';
 
 describe('Review Query Use Cases', () => {
   let mockReviewRepo: IReviewRepository;
@@ -188,8 +187,8 @@ describe('Review Query Use Cases', () => {
       if (result.success) {
         expect(result.data.reviews).toHaveLength(2);
         expect(result.data.total).toBe(2);
-        expect(result.data.reviews[0].rating).toBe(5);
-        expect(result.data.reviews[1].rating).toBe(4);
+        expect(result.data.reviews[0]?.rating).toBe(5);
+        expect(result.data.reviews[1]?.rating).toBe(4);
       }
 
       expect(mockReviewRepo.findByStore).toHaveBeenCalledWith(
@@ -245,7 +244,7 @@ describe('Review Query Use Cases', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.reviews).toHaveLength(1);
-        expect(result.data.reviews[0].rating).toBe(5);
+        expect(result.data.reviews[0]?.rating).toBe(5);
       }
 
       expect(mockReviewRepo.findByStore).toHaveBeenCalledWith(

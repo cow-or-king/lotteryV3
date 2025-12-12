@@ -89,6 +89,9 @@ export class PrismaPrizeSetRepository implements PrizeSetRepository {
         probability: input.probability,
         quantity: input.quantity,
       },
+      include: {
+        prizeTemplate: true,
+      },
     });
   }
 
@@ -125,6 +128,9 @@ export class PrismaPrizeSetRepository implements PrizeSetRepository {
         ...(input.probability !== undefined && { probability: input.probability }),
         ...(input.quantity !== undefined && { quantity: input.quantity }),
       },
+      include: {
+        prizeTemplate: true,
+      },
     });
   }
 
@@ -132,6 +138,9 @@ export class PrismaPrizeSetRepository implements PrizeSetRepository {
     return await prisma.prizeSetItem.findMany({
       where: { prizeSetId },
       orderBy: { createdAt: 'asc' },
+      include: {
+        prizeTemplate: true,
+      },
     });
   }
 }

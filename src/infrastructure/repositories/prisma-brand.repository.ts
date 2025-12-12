@@ -65,10 +65,14 @@ export class PrismaBrandRepository implements BrandRepository {
         where: { id },
         data: {
           ...(input.name && { name: input.name }),
-          ...(input.logoUrl && { logoUrl: input.logoUrl }),
-          ...(input.primaryColor !== undefined && { primaryColor: input.primaryColor }),
-          ...(input.secondaryColor !== undefined && { secondaryColor: input.secondaryColor }),
-          ...(input.font !== undefined && { font: input.font }),
+          ...(input.logoUrl !== undefined && { logoUrl: input.logoUrl }),
+          ...(input.primaryColor !== undefined && {
+            primaryColor: input.primaryColor ?? '#5B21B6',
+          }),
+          ...(input.secondaryColor !== undefined && {
+            secondaryColor: input.secondaryColor ?? '#FACC15',
+          }),
+          ...(input.font !== undefined && { font: input.font ?? 'inter' }),
         },
       });
       return ok(brand);

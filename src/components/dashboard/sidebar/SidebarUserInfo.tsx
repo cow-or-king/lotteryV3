@@ -13,7 +13,8 @@ import { useRoleImpersonation } from '@/lib/rbac/RoleImpersonationProvider';
 import { isSuperAdmin } from '@/lib/rbac/permissions';
 import { UserRole } from '@/lib/rbac/permissions';
 
-interface User {
+interface SidebarUser {
+  id?: string | null;
   name?: string | null;
   email?: string | null;
   role?: string | null;
@@ -24,7 +25,7 @@ interface User {
 }
 
 interface SidebarUserInfoProps {
-  user: User | undefined | null;
+  user: SidebarUser | undefined | null;
   userLoading: boolean;
   isExpanded: boolean;
   onToggle: () => void;
@@ -39,7 +40,8 @@ export function SidebarUserInfo({ user, userLoading, isExpanded, onToggle }: Sid
     window.location.reload();
   };
 
-  const showRoleIndicator = user && isSuperAdmin(user);
+  const showRoleIndicator =
+    user && user.id && user.role && isSuperAdmin({ id: user.id, role: user.role as UserRole });
   return (
     <button
       onClick={onToggle}

@@ -15,8 +15,6 @@ export interface StoreEntity {
   isActive: boolean;
   isPaid: boolean;
   brandId: string;
-  logoUrl: string | null;
-  logoStoragePath: string | null;
   defaultQrCodeId: string | null;
   qrCodeCustomized: boolean;
   qrCodeCustomizedAt: Date | null;

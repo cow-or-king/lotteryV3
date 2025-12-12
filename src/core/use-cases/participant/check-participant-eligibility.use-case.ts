@@ -8,6 +8,8 @@ import type { Result } from '@/lib/types/result.type';
 import { ok, fail } from '@/lib/types/result.type';
 import type { IParticipantRepository } from '@/core/ports/participant.repository';
 import type { CampaignRepository } from '@/core/ports/campaign.repository';
+import { Email } from '@/core/value-objects/email.vo';
+import type { CampaignId } from '@/lib/types/branded.type';
 
 export interface CheckParticipantEligibilityInput {
   email: string;
@@ -88,17 +90,17 @@ export class CheckParticipantEligibilityUseCase {
       });
     }
 
-    // Vérifier si le participant existe
-    const participantResult = await this.participantRepository.findByEmailAndCampaign(
-      input.email.trim().toLowerCase(),
-      input.campaignId,
-    );
-
-    if (!participantResult.success) {
-      return fail(participantResult.error);
+    // Créer l'objet Email
+    const emailResult = Email.create(input.email);
+    if (!emailResult.success) {
+      return fail(emailResult.error);
     }
 
-    const participant = participantResult.data;
+    // Vérifier si le participant existe
+    const participant = await this.participantRepository.findByEmailAndCampaign(
+      emailResult.data,
+      input.campaignId as CampaignId,
+    );
 
     if (!participant) {
       // Nouveau participant - éligible

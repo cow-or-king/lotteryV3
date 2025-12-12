@@ -57,14 +57,14 @@ export default function GameConfigForm({
       return;
     }
 
-    const config: WheelGameConfig = {
+    const config: Partial<WheelGameConfig> = {
       segments,
     };
 
     onSubmit({
       name,
       type: gameType,
-      config: config as unknown as Record<string, unknown>,
+      config: config as Record<string, unknown>,
       primaryColor,
       secondaryColor,
       vibrationEnabled,

@@ -3,7 +3,7 @@
  * Tests du service de chiffrement des API keys Google
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-encryption.service';
 
 describe('ApiKeyEncryptionService', () => {
@@ -233,7 +233,10 @@ describe('ApiKeyEncryptionService', () => {
       if (encryptResult.success) {
         // Tamper with the encrypted data
         const parts = encryptResult.data.split(':');
-        parts[2] = parts[2].substring(0, parts[2].length - 2) + 'XX';
+        const part2 = parts[2];
+        if (part2) {
+          parts[2] = part2.substring(0, part2.length - 2) + 'XX';
+        }
         const tamperedData = parts.join(':');
 
         const decryptResult = encryptionService.decrypt(tamperedData);
@@ -253,7 +256,10 @@ describe('ApiKeyEncryptionService', () => {
       if (encryptResult.success) {
         // Tamper with the IV
         const parts = encryptResult.data.split(':');
-        parts[0] = parts[0].substring(0, parts[0].length - 2) + 'XX';
+        const part0 = parts[0];
+        if (part0) {
+          parts[0] = part0.substring(0, part0.length - 2) + 'XX';
+        }
         const tamperedData = parts.join(':');
 
         const decryptResult = encryptionService.decrypt(tamperedData);
@@ -274,10 +280,12 @@ describe('ApiKeyEncryptionService', () => {
         // Tamper with the auth tag - flip first byte completely
         const parts = encryptResult.data.split(':');
         const authTag = parts[1];
-        const flipped = (parseInt(authTag.substring(0, 2), 16) ^ 0xff)
-          .toString(16)
-          .padStart(2, '0');
-        parts[1] = flipped + authTag.substring(2);
+        if (authTag) {
+          const flipped = (parseInt(authTag.substring(0, 2), 16) ^ 0xff)
+            .toString(16)
+            .padStart(2, '0');
+          parts[1] = flipped + authTag.substring(2);
+        }
         const tamperedData = parts.join(':');
 
         const decryptResult = encryptionService.decrypt(tamperedData);
@@ -355,7 +363,9 @@ describe('ApiKeyEncryptionService', () => {
         const result = encryptionService.encrypt(plainText);
         if (result.success) {
           const iv = result.data.split(':')[0];
-          ivs.add(iv);
+          if (iv) {
+            ivs.add(iv);
+          }
         }
       }
 

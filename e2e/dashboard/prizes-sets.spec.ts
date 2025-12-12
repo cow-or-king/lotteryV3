@@ -118,10 +118,10 @@ test.describe('Dashboard - Prize Sets', () => {
   });
 
   test('devrait valider que la somme des probabilités est <= 1', async ({ page }) => {
-    await page.locator('[data-testid="manage-prizes-button"]').first().click();
+    await (await page.locator('[data-testid="manage-prizes-button"]').first()).click();
 
     // Essayer d'ajouter un gain avec une probabilité > 1
-    await page.check('[data-testid="prize-checkbox"]').first();
+    await (await page.locator('[data-testid="prize-checkbox"]').first()).check();
     await page.fill('input[name="quantity"]', '10');
     await page.fill('input[name="probability"]', '1.5');
 
