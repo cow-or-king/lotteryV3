@@ -8,6 +8,7 @@
 import { Result } from '@/lib/types/result.type';
 import type { StoreRepository, StoreEntity } from '@/core/ports/store.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
+import type { StoreHistoryRepository } from '@/core/ports/store-history.repository';
 
 export interface CreateStoreInput {
   // Option 1: Brand existant
@@ -19,15 +20,34 @@ export interface CreateStoreInput {
   name: string;
   googleBusinessUrl: string;
   description?: string;
+  // User info for fraud check
+  userEmail: string;
+  isFreePlan: boolean;
 }
 
 export class CreateStoreUseCase {
   constructor(
     private readonly storeRepository: StoreRepository,
     private readonly brandRepository: BrandRepository,
+    private readonly storeHistoryRepository: StoreHistoryRepository,
   ) {}
 
   async execute(input: CreateStoreInput, userId: string): Promise<Result<StoreEntity, Error>> {
+    // ANTI-FRAUDE: Vérifier si l'URL a déjà été utilisée sur un compte gratuit
+    if (input.isFreePlan) {
+      const urlUsedOnFreePlan = await this.storeHistoryRepository.checkUrlUsedOnFreePlan(
+        input.googleBusinessUrl,
+      );
+
+      if (urlUsedOnFreePlan) {
+        return Result.fail(
+          new Error(
+            'Cette adresse Google Business a déjà été utilisée sur un compte gratuit. Veuillez passer à un plan payant pour réutiliser cette adresse.',
+          ),
+        );
+      }
+    }
+
     let brandId: string;
 
     // Cas 1: Brand existant fourni

@@ -102,7 +102,23 @@ model Store {
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
   @@index([slug])
+  @@index([googleBusinessUrl])
   @@map("stores")
+}
+
+model StoreHistory {
+  id                String   @id @default(cuid())
+  googleBusinessUrl String   @map("google_business_url")
+  storeName         String   @map("store_name")
+  userId            String   @map("user_id")
+  userEmail         String   @map("user_email")
+  wasOnFreePlan     Boolean  @default(true) @map("was_on_free_plan")
+  deletedAt         DateTime @default(now()) @map("deleted_at")
+
+  @@index([googleBusinessUrl])
+  @@index([userId])
+  @@index([googleBusinessUrl, wasOnFreePlan])
+  @@map("store_history")
 }
 
 model Campaign {

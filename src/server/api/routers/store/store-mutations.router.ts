@@ -25,17 +25,29 @@ import { ApiKeyEncryptionService } from '@/infrastructure/encryption/api-key-enc
 const storeRepository = new PrismaStoreRepository();
 const brandRepository = new PrismaBrandRepository();
 
+// Anti-fraude repository
+import { PrismaStoreHistoryRepository } from '@/infrastructure/repositories/prisma-store-history.repository';
+const storeHistoryRepository = new PrismaStoreHistoryRepository();
+
 // Instancier les services
 const encryptionService = new ApiKeyEncryptionService();
 
 // Instancier les use cases
-const createStoreUseCase = new CreateStoreUseCase(storeRepository, brandRepository);
+const createStoreUseCase = new CreateStoreUseCase(
+  storeRepository,
+  brandRepository,
+  storeHistoryRepository,
+);
 const updateStoreUseCase = new UpdateStoreUseCase(
   storeRepository,
   brandRepository,
   encryptionService,
 );
-const deleteStoreUseCase = new DeleteStoreUseCase(storeRepository, brandRepository);
+const deleteStoreUseCase = new DeleteStoreUseCase(
+  storeRepository,
+  brandRepository,
+  storeHistoryRepository,
+);
 
 export const storeMutationsRouter = createTRPCRouter({
   /**

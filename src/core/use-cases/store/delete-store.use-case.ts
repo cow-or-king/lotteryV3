@@ -7,15 +7,19 @@
 import { Result } from '@/lib/types/result.type';
 import type { StoreRepository } from '@/core/ports/store.repository';
 import type { BrandRepository } from '@/core/ports/brand.repository';
+import type { StoreHistoryRepository } from '@/core/ports/store-history.repository';
 
 export interface DeleteStoreInput {
   id: string;
+  userEmail: string;
+  isFreePlan: boolean;
 }
 
 export class DeleteStoreUseCase {
   constructor(
     private readonly storeRepository: StoreRepository,
     private readonly brandRepository: BrandRepository,
+    private readonly storeHistoryRepository: StoreHistoryRepository,
   ) {}
 
   async execute(input: DeleteStoreInput, userId: string): Promise<Result<void, Error>> {
@@ -43,7 +47,16 @@ export class DeleteStoreUseCase {
       return Result.fail(new Error('Ce commerce ne vous appartient pas'));
     }
 
-    // 3. Supprimer le store
+    // 3. ANTI-FRAUDE: Archiver dans l'historique avant suppression
+    await this.storeHistoryRepository.create({
+      googleBusinessUrl: store.googleBusinessUrl,
+      storeName: store.name,
+      userId,
+      userEmail: input.userEmail,
+      wasOnFreePlan: input.isFreePlan,
+    });
+
+    // 4. Supprimer le store
     await this.storeRepository.delete(input.id);
 
     return Result.ok(undefined);
