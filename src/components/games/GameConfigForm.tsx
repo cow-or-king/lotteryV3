@@ -6,6 +6,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import type { GameType, WheelGameConfig, WheelSegment } from '@/lib/types/game.types';
 import { WheelEngine } from '@/lib/game-engines/wheel-engine';
 
@@ -54,7 +55,7 @@ export default function GameConfigForm({
     e.preventDefault();
 
     if (!isProbabilityValid) {
-      alert('La somme des probabilités doit égaler 100%');
+      toast.error('La somme des probabilités doit égaler 100%');
       return;
     }
 
@@ -91,7 +92,7 @@ export default function GameConfigForm({
 
   const removeSegment = (index: number) => {
     if (segments.length <= 2) {
-      alert('Un jeu doit avoir au moins 2 segments');
+      toast.warning('Un jeu doit avoir au moins 2 segments');
       return;
     }
     setSegments(segments.filter((_, i) => i !== index));

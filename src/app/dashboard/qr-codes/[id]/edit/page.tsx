@@ -314,7 +314,7 @@ export default function EditQRCodePage() {
             <QRCodeColorPicker
               foregroundColor={generator.foregroundColor}
               backgroundColor={generator.backgroundColor}
-              animationColor={generator.animationColor}
+              animationColor={generator.animationColor || '#8b5cf6'}
               onForegroundChange={generator.setForegroundColor}
               onBackgroundChange={generator.setBackgroundColor}
               onAnimationColorChange={generator.setAnimationColor}

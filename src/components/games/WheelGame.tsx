@@ -62,7 +62,9 @@ export default function WheelGame({
    * Lance la roue
    */
   const handleSpin = () => {
-    if (isSpinning) return;
+    if (isSpinning) {
+      return;
+    }
 
     // Notifier le début du spin
     onSpinStart?.();
@@ -74,13 +76,15 @@ export default function WheelGame({
 
     // Calculer le nombre de segments pour les ticks
     const segmentAngle = 360 / config.segments.length;
-    let currentAngle = rotation % 360;
+    const currentAngle = rotation % 360;
     lastTickAngleRef.current = Math.floor(currentAngle / segmentAngle);
 
     // Démarrer l'intervalle de tick vibration
     tickIntervalRef.current = setInterval(() => {
       const element = wheelRef.current;
-      if (!element) return;
+      if (!element) {
+        return;
+      }
 
       // Récupérer la rotation actuelle depuis le transform
       const style = window.getComputedStyle(element);

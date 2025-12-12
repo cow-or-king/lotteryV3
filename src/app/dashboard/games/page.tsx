@@ -14,6 +14,17 @@ import { api } from '@/lib/trpc/client';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+interface GameData {
+  id: string;
+  name: string;
+  type: string;
+  primaryColor: string;
+  secondaryColor: string;
+  active: boolean;
+  createdAt: Date;
+  playsCount: number;
+}
+
 export default function GamesPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -89,19 +100,22 @@ export default function GamesPage() {
       {/* Games List */}
       {!isLoading && games && games.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* @ts-expect-error - TS2589: Type recursion from tRPC inference */}
           {games.map((game) => (
             <GameListItem
               key={game.id}
-              game={{
-                id: game.id,
-                name: game.name,
-                type: game.type,
-                primaryColor: game.primaryColor,
-                secondaryColor: game.secondaryColor,
-                active: game.isActive,
-                createdAt: new Date(game.createdAt),
-                playsCount: game._count?.plays ?? 0,
-              }}
+              game={
+                {
+                  id: game.id,
+                  name: game.name,
+                  type: game.type,
+                  primaryColor: game.primaryColor,
+                  secondaryColor: game.secondaryColor,
+                  active: game.isActive,
+                  createdAt: new Date(game.createdAt),
+                  playsCount: game._count?.plays ?? 0,
+                } as GameData
+              }
               onPlay={() => router.push(`/play/${game.id}`)}
               onEdit={() => router.push(`/dashboard/games/${game.id}/edit`)}
               onDelete={() => handleDelete(game.id, game.name)}

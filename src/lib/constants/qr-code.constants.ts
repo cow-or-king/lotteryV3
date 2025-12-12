@@ -32,3 +32,43 @@ export const DEFAULT_ERROR_CORRECTION_LEVEL = 'M' as const;
  * Available error correction levels
  */
 export const ERROR_CORRECTION_LEVELS = ['L', 'M', 'Q', 'H'] as const;
+
+import type { QRCodeStyle, LogoSize, ErrorCorrectionLevel } from '@/lib/types/qr-code.types';
+
+/**
+ * Available QR code styles with their display labels and icons
+ */
+export const QR_CODE_STYLES: Array<{ value: QRCodeStyle; label: string; icon: string }> = [
+  { value: 'SQUARE', label: 'Carré', icon: '■' },
+  { value: 'DOTS', label: 'Points', icon: '⚫' },
+  { value: 'ROUNDED', label: 'Arrondi', icon: '▢' },
+  { value: 'CLASSY', label: 'Élégant', icon: '✨' },
+  { value: 'CIRCULAR', label: 'Circulaire', icon: '⭕' },
+];
+
+/**
+ * Available logo sizes with their display labels and pixel dimensions
+ */
+export const QR_CODE_LOGO_SIZES: Array<{
+  value: LogoSize;
+  label: string;
+  description: string;
+}> = [
+  { value: 'SMALL', label: 'Petit', description: '60px' },
+  { value: 'MEDIUM', label: 'Moyen', description: '80px' },
+  { value: 'LARGE', label: 'Grand', description: '120px' },
+];
+
+/**
+ * Available error correction levels with descriptions
+ */
+export const QR_CODE_ERROR_CORRECTION_LEVELS: Array<{
+  value: ErrorCorrectionLevel;
+  label: string;
+  description: string;
+}> = [
+  { value: 'L', label: 'Faible (7%)', description: 'Sans logo recommandé' },
+  { value: 'M', label: 'Moyen (15%)', description: 'Petits logos' },
+  { value: 'Q', label: 'Élevé (25%)', description: 'Logos moyens' },
+  { value: 'H', label: 'Maximum (30%)', description: 'Grands logos' },
+];

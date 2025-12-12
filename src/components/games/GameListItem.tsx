@@ -8,24 +8,26 @@
 import { MoreVertical, Play, Edit2, Trash2, BarChart3 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
+interface GameData {
+  id: string;
+  name: string;
+  type: string;
+  primaryColor: string;
+  secondaryColor: string;
+  active: boolean;
+  createdAt: Date;
+  playsCount?: number;
+}
+
 interface GameListItemProps {
-  game: {
-    id: string;
-    name: string;
-    type: string;
-    primaryColor: string;
-    secondaryColor: string;
-    active: boolean;
-    createdAt: Date;
-    playsCount?: number;
-  };
+  game: GameData;
   onPlay: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onStats: () => void;
 }
 
-const GAME_TYPE_LABELS: Record<string, string> = {
+const GAME_TYPE_LABELS = {
   WHEEL: '🎡 Roue',
   SCRATCH: '🎫 Grattage',
   SLOT_MACHINE: '🎰 Machine à sous',
@@ -33,7 +35,7 @@ const GAME_TYPE_LABELS: Record<string, string> = {
   SHAKE: '📱 Secoue',
   DICE: '🎲 Dés',
   MYSTERY_BOX: '📦 Boîte mystère',
-};
+} as const;
 
 export default function GameListItem({
   game,
@@ -118,7 +120,7 @@ export default function GameListItem({
         {/* Type du jeu */}
         <div className="absolute bottom-4 left-4">
           <span className="px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-semibold">
-            {GAME_TYPE_LABELS[game.type] || game.type}
+            {GAME_TYPE_LABELS[game.type as keyof typeof GAME_TYPE_LABELS] || game.type}
           </span>
         </div>
       </div>
