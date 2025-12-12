@@ -46,7 +46,7 @@ export function AIConfigHeader({ hasChanges, onReset }: AIConfigHeaderProps) {
             Configuration IA
           </h1>
           <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-            Gérer les services d&apos;intelligence artificielle
+            GÃ©rer les services d&apos;intelligence artificielle
           </p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function AIConfigHeader({ hasChanges, onReset }: AIConfigHeaderProps) {
           }}
         >
           <RotateCcw size={16} />
-          Réinitialiser
+          RÃ©initialiser
         </button>
       </div>
     </div>

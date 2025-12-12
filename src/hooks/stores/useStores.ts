@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from '@/lib/trpc/client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { EditingStore, StoreFormData, StoreFormErrors } from '@/lib/types/store-form.types';
 import { useStoreMutations } from './mutations/useStoreMutations';
 import { validateStoreForm } from './utils/storeValidation';
@@ -70,14 +70,21 @@ export function useStores() {
       ? stores[0]
       : null;
 
+  // Mémoriser l'objet selectedBrand pour éviter les re-renders inutiles
+  const memoizedSelectedBrand = useMemo(
+    () =>
+      selectedBrand
+        ? {
+            brandName: selectedBrand.brandName,
+            logoUrl: selectedBrand.logoUrl ?? '',
+          }
+        : null,
+    [selectedBrand?.brandName, selectedBrand?.logoUrl],
+  );
+
   // Effects
   useStoreEffects({
-    selectedBrand: selectedBrand
-      ? {
-          brandName: selectedBrand.brandName,
-          logoUrl: selectedBrand.logoUrl ?? '',
-        }
-      : null,
+    selectedBrand: memoizedSelectedBrand,
     isNewBrand,
     setFormData,
     setShowCreateForm,
