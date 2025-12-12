@@ -55,7 +55,7 @@ export async function generateDefaultQRCodeForStore(
     });
 
     // Générer le SVG avec qrcode
-    const svgData = await QRCode.toString(targetUrl, {
+    await QRCode.toString(targetUrl, {
       type: 'svg',
       errorCorrectionLevel: 'M', // 15% correction
       margin: 1,

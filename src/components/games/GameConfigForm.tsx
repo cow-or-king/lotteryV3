@@ -41,9 +41,10 @@ export default function GameConfigForm({
   const [primaryColor, setPrimaryColor] = useState(initialValues?.primaryColor || '#5B21B6');
   const [secondaryColor, setSecondaryColor] = useState(initialValues?.secondaryColor || '#EC4899');
   const [vibrationEnabled, setVibrationEnabled] = useState(initialValues?.vibrationEnabled ?? true);
-  const [segments, setSegments] = useState<WheelSegment[]>(
-    initialValues?.config.segments || WheelEngine.createDefaultConfig().segments,
-  );
+  const [segments, setSegments] = useState<WheelSegment[]>(() => {
+    const defaultConfig = WheelEngine.createDefaultConfig();
+    return initialValues?.config.segments || defaultConfig.segments || [];
+  });
 
   // Validation du total des probabilités
   const totalProbability = segments.reduce((sum, seg) => sum + seg.probability, 0);

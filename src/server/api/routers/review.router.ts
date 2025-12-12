@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@/infrastructure/database/prisma-client';
+import { BrandedTypes, type UserId } from '@/lib/types/branded.type';
 
 // Use Cases
 import { VerifyReviewParticipantUseCase } from '@/core/use-cases/review/verify-review-participant.use-case';
@@ -23,6 +24,7 @@ import { GetReviewStatsUseCase } from '@/core/use-cases/review/get-review-stats.
 import { PrismaReviewRepository } from '@/infrastructure/repositories/prisma-review.repository';
 import { PrismaResponseTemplateRepository } from '@/infrastructure/repositories/prisma-response-template.repository';
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
+import type { IStoreRepository } from '@/core/repositories/store.repository.interface';
 
 // Services
 import { GoogleMyBusinessProductionService } from '@/infrastructure/services/google-my-business-production.service';
@@ -32,7 +34,7 @@ import { AiResponseGeneratorService } from '@/infrastructure/services/ai-respons
 // Instancier les repositories
 const reviewRepository = new PrismaReviewRepository(prisma);
 const templateRepository = new PrismaResponseTemplateRepository(prisma);
-const storeRepository = new PrismaStoreRepository(prisma);
+const storeRepository = new PrismaStoreRepository();
 
 // Instancier encryption service (utilisé par le service production)
 const encryptionService = new ApiKeyEncryptionService();
@@ -45,15 +47,55 @@ const googleService = new GoogleMyBusinessProductionService(encryptionService);
 
 const aiService = new AiResponseGeneratorService(prisma, encryptionService);
 
+// Create a full store repository adapter for the use case
+// NOTE: This is a temporary adapter. The StoreEntity types from ports and entities are different.
+// A proper solution would be to align these types or create a proper adapter pattern.
+const storeRepositoryAdapter = {
+  findById: storeRepository.findById.bind(storeRepository),
+  findBySlug: storeRepository.findBySlug.bind(storeRepository),
+  slugExists: async (slug: string) => {
+    const store = await storeRepository.findBySlug(slug);
+    return store !== null;
+  },
+  findByOwner: async (ownerId: UserId) => {
+    return await storeRepository.findManyByOwnerId(ownerId as unknown as string);
+  },
+  findActiveStores: async () => {
+    throw new Error('Not implemented');
+  },
+  save: async () => {
+    throw new Error('Not implemented');
+  },
+  delete: async () => {
+    throw new Error('Not implemented');
+  },
+  countStoreCampaigns: async () => {
+    throw new Error('Not implemented');
+  },
+  isOwner: async () => {
+    throw new Error('Not implemented');
+  },
+  updatePaymentStatus: async () => {
+    throw new Error('Not implemented');
+  },
+  getStoreStats: async () => {
+    throw new Error('Not implemented');
+  },
+} as unknown as IStoreRepository;
+
 // Instancier les use cases
 const verifyParticipantUseCase = new VerifyReviewParticipantUseCase(reviewRepository);
 const respondToReviewUseCase = new RespondToReviewUseCase(
   reviewRepository,
   templateRepository,
   googleService,
+  storeRepositoryAdapter,
+);
+const generateAiResponseUseCase = new GenerateAiResponseUseCase(
+  reviewRepository,
+  aiService,
   storeRepository,
 );
-const generateAiResponseUseCase = new GenerateAiResponseUseCase(reviewRepository, aiService);
 const syncReviewsUseCase = new SyncReviewsFromGoogleUseCase(reviewRepository, googleService);
 const getReviewByIdUseCase = new GetReviewByIdUseCase(reviewRepository);
 const listReviewsByStoreUseCase = new ListReviewsByStoreUseCase(reviewRepository);
@@ -68,12 +110,16 @@ export const reviewRouter = createTRPCRouter({
       z.object({
         email: z.string().email('Email invalide'),
         storeId: z.string(),
+        campaignId: z.string(),
+        participantId: z.string(),
       }),
     )
     .query(async ({ input }) => {
       const result = await verifyParticipantUseCase.execute({
         email: input.email,
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
+        storeId: BrandedTypes.storeId(input.storeId),
+        campaignId: BrandedTypes.campaignId(input.campaignId),
+        participantId: BrandedTypes.participantId(input.participantId),
       });
 
       if (!result.success) {
@@ -99,7 +145,7 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const result = await respondToReviewUseCase.execute({
-        reviewId: input.reviewId as string & { readonly __brand: unique symbol },
+        reviewId: BrandedTypes.reviewId(input.reviewId),
         userId: ctx.userId,
         responseContent: input.responseContent,
         templateId: input.templateId,
@@ -171,8 +217,8 @@ export const reviewRouter = createTRPCRouter({
       }
 
       const result = await syncReviewsUseCase.execute({
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
-        googlePlaceId: store.googlePlaceId,
+        storeId: BrandedTypes.storeId(input.storeId),
+        googlePlaceId: store.googlePlaceId || '',
       });
 
       if (!result.success) {
@@ -196,7 +242,7 @@ export const reviewRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const result = await getReviewByIdUseCase.execute({
-        reviewId: input.reviewId as string & { readonly __brand: unique symbol },
+        reviewId: BrandedTypes.reviewId(input.reviewId),
       });
 
       if (!result.success) {
@@ -233,8 +279,15 @@ export const reviewRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const result = await listReviewsByStoreUseCase.execute({
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
-        filters: input.filters,
+        storeId: BrandedTypes.storeId(input.storeId),
+        filters: input.filters
+          ? {
+              ...input.filters,
+              campaignId: input.filters.campaignId
+                ? BrandedTypes.campaignId(input.filters.campaignId)
+                : undefined,
+            }
+          : undefined,
         limit: input.limit,
         offset: input.offset,
       });
@@ -271,8 +324,15 @@ export const reviewRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const result = await getReviewStatsUseCase.execute({
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
-        filters: input.filters,
+        storeId: BrandedTypes.storeId(input.storeId),
+        filters: input.filters
+          ? {
+              ...input.filters,
+              campaignId: input.filters.campaignId
+                ? BrandedTypes.campaignId(input.filters.campaignId)
+                : undefined,
+            }
+          : undefined,
       });
 
       if (!result.success) {
@@ -299,7 +359,7 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const result = await generateAiResponseUseCase.execute({
-        reviewId: input.reviewId as string & { readonly __brand: unique symbol },
+        reviewId: BrandedTypes.reviewId(input.reviewId),
         userId: ctx.userId,
         tone: input.tone,
         language: input.language,

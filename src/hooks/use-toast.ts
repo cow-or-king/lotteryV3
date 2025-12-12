@@ -81,7 +81,7 @@ export const useToast = () => {
       addToast({
         title,
         description,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
     warning: (title: string, description?: string) => {

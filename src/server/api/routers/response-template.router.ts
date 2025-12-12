@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@/infrastructure/database/prisma-client';
+import { BrandedTypes } from '@/lib/types/branded.type';
 
 // Use Cases
 import { CreateResponseTemplateUseCase } from '@/core/use-cases/response-template/create-response-template.use-case';
@@ -18,11 +19,9 @@ import { ListResponseTemplatesUseCase } from '@/core/use-cases/response-template
 
 // Repositories (Adapters)
 import { PrismaResponseTemplateRepository } from '@/infrastructure/repositories/prisma-response-template.repository';
-import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 
 // Instancier les repositories
 const templateRepository = new PrismaResponseTemplateRepository(prisma);
-const storeRepository = new PrismaStoreRepository(prisma);
 
 // Instancier les use cases
 const createTemplateUseCase = new CreateResponseTemplateUseCase(templateRepository);
@@ -67,7 +66,7 @@ export const responseTemplateRouter = createTRPCRouter({
       }
 
       const result = await createTemplateUseCase.execute({
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
+        storeId: BrandedTypes.storeId(input.storeId),
         name: input.name,
         content: input.content,
         category: input.category,
@@ -224,7 +223,7 @@ export const responseTemplateRouter = createTRPCRouter({
       }
 
       const result = await listTemplatesUseCase.execute({
-        storeId: input.storeId as string & { readonly __brand: unique symbol },
+        storeId: BrandedTypes.storeId(input.storeId),
         category: input.category,
         popularOnly: input.popularOnly,
       });

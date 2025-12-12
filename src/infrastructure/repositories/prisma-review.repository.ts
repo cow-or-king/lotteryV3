@@ -106,7 +106,9 @@ export class PrismaReviewRepository implements IReviewRepository {
         where: { id },
         data: {
           ...data,
-          aiSuggestion: data.aiSuggestion ? JSON.stringify(data.aiSuggestion) : undefined,
+          aiSuggestion: data.aiSuggestion
+            ? (JSON.stringify(data.aiSuggestion) as unknown as Prisma.InputJsonValue)
+            : Prisma.DbNull,
           updatedAt: new Date(),
         },
       });
@@ -128,7 +130,12 @@ export class PrismaReviewRepository implements IReviewRepository {
 
       const updated = await this.prisma.review.update({
         where: { id: review.id },
-        data: updateData,
+        data: {
+          ...updateData,
+          aiSuggestion: updateData.aiSuggestion
+            ? (updateData.aiSuggestion as unknown as Prisma.InputJsonValue)
+            : Prisma.DbNull,
+        },
       });
 
       return Result.ok(ReviewMapper.toDomain(updated));
@@ -199,15 +206,20 @@ export class PrismaReviewRepository implements IReviewRepository {
     let negativeCount = 0;
 
     reviews.forEach(({ rating }) => {
-      ratingDistribution[rating]++;
-      totalRating += rating;
+      if (rating !== null && rating !== undefined && rating >= 1 && rating <= 5) {
+        const ratingKey = rating as 1 | 2 | 3 | 4 | 5;
+        if (ratingDistribution[ratingKey] !== undefined) {
+          ratingDistribution[ratingKey]++;
+        }
+        totalRating += rating;
 
-      if (rating >= 4) {
-        positiveCount++;
-      } else if (rating === 3) {
-        neutralCount++;
-      } else {
-        negativeCount++;
+        if (rating >= 4) {
+          positiveCount++;
+        } else if (rating === 3) {
+          neutralCount++;
+        } else {
+          negativeCount++;
+        }
       }
     });
 

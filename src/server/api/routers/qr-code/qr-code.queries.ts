@@ -185,11 +185,10 @@ export const qrCodeQueriesRouter = createTRPCRouter({
       // Grouper par jour
       const scansByDay: Record<string, number> = {};
       scans.forEach((scan) => {
-        const date = scan.scannedAt.toISOString().split('T')[0];
-        if (!date) {
-          return;
+        const dateString = scan.scannedAt.toISOString().split('T')[0];
+        if (dateString) {
+          scansByDay[dateString] = (scansByDay[dateString] || 0) + 1;
         }
-        scansByDay[date] = (scansByDay[date] || 0) + 1;
       });
 
       // Grouper par heure de la journée (0-23)
@@ -209,7 +208,7 @@ export const qrCodeQueriesRouter = createTRPCRouter({
 
       // Calculer les stats rapides
       const today = now.toISOString().split('T')[0];
-      const scansToday = scansByDay[today] || 0;
+      const scansToday = today ? scansByDay[today] || 0 : 0;
 
       const weekAgo = new Date();
       weekAgo.setDate(now.getDate() - 7);

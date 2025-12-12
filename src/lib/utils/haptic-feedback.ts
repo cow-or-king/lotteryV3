@@ -97,7 +97,9 @@ class HapticFeedback {
     }
 
     const vibrationPattern = HapticPatterns[pattern];
-    navigator.vibrate(vibrationPattern);
+    // navigator.vibrate doesn't work well with readonly arrays, so we cast to any
+    // This is safe because we're just passing the value to the browser API
+    navigator.vibrate(vibrationPattern as number | number[]);
   }
 
   /**
@@ -108,7 +110,13 @@ class HapticFeedback {
       return;
     }
 
-    navigator.vibrate(pattern);
+    // Convert readonly array to mutable array for vibrate API
+    if (Array.isArray(pattern)) {
+      const mutableArray = [...pattern] as number[];
+      navigator.vibrate(mutableArray);
+    } else {
+      navigator.vibrate(pattern);
+    }
   }
 
   /**

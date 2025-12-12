@@ -89,36 +89,25 @@ export default function GamesPage() {
       {/* Games List */}
       {!isLoading && games && games.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {games.map(
-            (game: {
-              id: string;
-              name: string;
-              type: string;
-              primaryColor: string;
-              secondaryColor: string;
-              active: boolean;
-              createdAt: Date;
-              _count?: { plays: number };
-            }) => (
-              <GameListItem
-                key={game.id}
-                game={{
-                  id: game.id,
-                  name: game.name,
-                  type: game.type,
-                  primaryColor: game.primaryColor,
-                  secondaryColor: game.secondaryColor,
-                  active: game.active,
-                  createdAt: game.createdAt,
-                  playsCount: game._count?.plays || 0,
-                }}
-                onPlay={() => router.push(`/play/${game.id}`)}
-                onEdit={() => router.push(`/dashboard/games/${game.id}/edit`)}
-                onDelete={() => handleDelete(game.id, game.name)}
-                onStats={() => router.push(`/dashboard/games/${game.id}/stats`)}
-              />
-            ),
-          )}
+          {games.map((game) => (
+            <GameListItem
+              key={game.id}
+              game={{
+                id: game.id,
+                name: game.name,
+                type: game.type,
+                primaryColor: game.primaryColor,
+                secondaryColor: game.secondaryColor,
+                active: game.isActive,
+                createdAt: new Date(game.createdAt),
+                playsCount: game._count?.plays ?? 0,
+              }}
+              onPlay={() => router.push(`/play/${game.id}`)}
+              onEdit={() => router.push(`/dashboard/games/${game.id}/edit`)}
+              onDelete={() => handleDelete(game.id, game.name)}
+              onStats={() => router.push(`/dashboard/games/${game.id}/stats`)}
+            />
+          ))}
         </div>
       )}
 

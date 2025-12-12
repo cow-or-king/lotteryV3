@@ -8,6 +8,7 @@ import type { Result } from '@/lib/types/result.type';
 import { ok, fail } from '@/lib/types/result.type';
 import type { IWinnerRepository } from '@/core/ports/winner.repository';
 import type { WinnerEntity } from '@/core/entities/winner.entity';
+import { BrandedTypes } from '@/lib/types/branded.type';
 
 export interface ListWinnersInput {
   campaignId?: string;
@@ -31,7 +32,7 @@ export class ListWinnersUseCase {
     // Récupérer les gagnants selon les filtres
     if (input.campaignId) {
       winners = await this.winnerRepository.findByCampaign(
-        input.campaignId as string & { readonly __brand: unique symbol },
+        BrandedTypes.campaignId(input.campaignId),
       );
     } else {
       // If no campaign ID, we can't list all winners - this should be handled at the router level

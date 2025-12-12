@@ -162,9 +162,15 @@ export const useRespondToReview = () => {
  * Hook pour vérifier si un participant a laissé un avis
  * Utilisé pour l'éligibilité à la loterie
  */
-export const useVerifyParticipant = (email: string, storeId: string, enabled = true) => {
+export const useVerifyParticipant = (
+  email: string,
+  storeId: string,
+  campaignId: string,
+  participantId: string,
+  enabled = true,
+) => {
   const query = api.review.verifyParticipant.useQuery(
-    { email, storeId },
+    { email, storeId, campaignId, participantId },
     { enabled }, // Only run if enabled
   );
 

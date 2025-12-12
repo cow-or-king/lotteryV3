@@ -43,9 +43,15 @@ export class CreateParticipantUseCase {
       return fail(new Error('Campaign ID is required'));
     }
 
+    // Créer l'objet Email pour la recherche
+    const emailForSearch = Email.create(input.email);
+    if (!emailForSearch.success) {
+      return fail(emailForSearch.error);
+    }
+
     // Vérifier si le participant existe déjà
     const existingParticipant = await this.participantRepository.findByEmailAndCampaign(
-      input.email.trim().toLowerCase() as Email,
+      emailForSearch.data,
       input.campaignId as CampaignId,
     );
 

@@ -600,6 +600,11 @@ describe('SupabaseAuthService', () => {
       const accessToken = 'valid-token';
       const newPassword = 'NewPassword123!';
 
+      mockSupabase.auth.setSession.mockResolvedValue({
+        data: { session: {} },
+        error: null,
+      });
+
       mockSupabase.auth.updateUser.mockResolvedValue({
         data: { user: {} },
         error: null,
@@ -610,10 +615,13 @@ describe('SupabaseAuthService', () => {
 
       // ASSERT
       expect(result.success).toBe(true);
-      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith(
-        { password: newPassword },
-        { accessToken },
-      );
+      expect(mockSupabase.auth.setSession).toHaveBeenCalledWith({
+        access_token: accessToken,
+        refresh_token: '',
+      });
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({
+        password: newPassword,
+      });
     });
 
     it('should return error on failed password update', async () => {

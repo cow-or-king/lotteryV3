@@ -72,7 +72,12 @@ export function useStores() {
 
   // Effects
   useStoreEffects({
-    selectedBrand,
+    selectedBrand: selectedBrand
+      ? {
+          brandName: selectedBrand.brandName,
+          logoUrl: selectedBrand.logoUrl ?? '',
+        }
+      : null,
     isNewBrand,
     setFormData,
     setShowCreateForm,

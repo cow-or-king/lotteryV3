@@ -9,7 +9,7 @@
 import { api } from '@/lib/trpc/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type TemplateCategory = 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+export type TemplateCategory = 'positive' | 'neutral' | 'negative';
 
 /**
  * Hook pour lister les templates d'un commerce

@@ -133,16 +133,16 @@ export const dashboardRouter = createTRPCRouter({
               },
             },
           },
-          participatedAt: {
+          createdAt: {
             gte: startDate,
           },
         },
         select: {
-          participatedAt: true,
-          hasWon: true,
+          createdAt: true,
+          hasPlayed: true,
         },
         orderBy: {
-          participatedAt: 'asc',
+          createdAt: 'asc',
         },
       });
 

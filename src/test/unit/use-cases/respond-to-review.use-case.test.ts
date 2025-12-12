@@ -12,7 +12,6 @@ import { ReviewEntity } from '@/core/entities/review.entity';
 import { IReviewRepository } from '@/core/repositories/review.repository.interface';
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
-import { IEncryptionService } from '@/core/ports/encryption.service';
 import { IStoreRepository } from '@/core/repositories/store.repository.interface';
 import { ReviewId, UserId, StoreId } from '@/lib/types/branded.type';
 import { Result } from '@/lib/types/result.type';
@@ -22,7 +21,6 @@ describe('RespondToReviewUseCase', () => {
   let mockReviewRepo: IReviewRepository;
   let mockTemplateRepo: IResponseTemplateRepository;
   let mockGoogleService: IGoogleMyBusinessService;
-  let mockEncryptionService: IEncryptionService;
   let mockStoreRepo: IStoreRepository;
 
   const reviewId = 'review123' as ReviewId;
@@ -46,11 +44,6 @@ describe('RespondToReviewUseCase', () => {
       validateCredentials: vi.fn(),
     } as unknown as IGoogleMyBusinessService;
 
-    mockEncryptionService = {
-      encrypt: vi.fn(),
-      decrypt: vi.fn(),
-    } as unknown as IEncryptionService;
-
     mockStoreRepo = {
       findById: vi.fn(),
       findBySlug: vi.fn(),
@@ -69,7 +62,6 @@ describe('RespondToReviewUseCase', () => {
       mockReviewRepo,
       mockTemplateRepo,
       mockGoogleService,
-      mockEncryptionService,
       mockStoreRepo,
     );
   });
@@ -140,7 +132,7 @@ describe('RespondToReviewUseCase', () => {
       expect(mockGoogleService.publishResponse).toHaveBeenCalledWith(
         'google123',
         responseContent,
-        'encrypted-key',
+        '', // API key from process.env.GOOGLE_API_KEY || ''
       );
     });
 

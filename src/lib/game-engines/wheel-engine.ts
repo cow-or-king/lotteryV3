@@ -107,7 +107,7 @@ export class WheelEngine {
   /**
    * Crée une configuration par défaut pour la roue
    */
-  static createDefaultConfig(): WheelGameConfig {
+  static createDefaultConfig(): Partial<WheelGameConfig> {
     return {
       segments: [
         {

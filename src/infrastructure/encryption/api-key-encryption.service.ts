@@ -68,7 +68,8 @@ export class ApiKeyEncryptionService {
       // Parser le format iv:authTag:encryptedData
       const parts = encryptedText.split(':');
 
-      if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+      // Note: parts[2] (encrypted data) can be empty string for empty input
+      if (parts.length !== 3 || !parts[0] || !parts[1] || parts[2] === undefined) {
         return Result.fail(new Error('Invalid encrypted format'));
       }
 

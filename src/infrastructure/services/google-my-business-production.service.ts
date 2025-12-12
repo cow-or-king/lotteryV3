@@ -11,17 +11,26 @@ import {
   FetchReviewsOptions,
 } from '@/core/services/google-my-business.service.interface';
 import { google } from 'googleapis';
-import { ApiKeyEncryptionService } from '../security/api-key-encryption.service';
+import { ApiKeyEncryptionService } from '../encryption/api-key-encryption.service';
 
 export class GoogleMyBusinessProductionService implements IGoogleMyBusinessService {
+  private encryptedRefreshToken?: string;
+
   constructor(private readonly encryptionService: ApiKeyEncryptionService) {}
+
+  setRefreshToken(encryptedToken: string): void {
+    this.encryptedRefreshToken = encryptedToken;
+  }
 
   /**
    * Crée un client OAuth authentifié avec le refresh token
    */
   private async getAuthClient(encryptedRefreshToken: string) {
     try {
-      const refreshToken = await this.encryptionService.decrypt(encryptedRefreshToken);
+      const decryptResult = await this.encryptionService.decrypt(encryptedRefreshToken);
+      if (!decryptResult.success) {
+        throw new Error('Failed to decrypt refresh token: ' + decryptResult.error.message);
+      }
 
       const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
@@ -30,7 +39,7 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
       );
 
       oauth2Client.setCredentials({
-        refresh_token: refreshToken,
+        refresh_token: decryptResult.data,
       });
 
       return oauth2Client;
@@ -44,14 +53,14 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
    */
   async fetchReviews(
     googlePlaceId: string,
-    options?: FetchReviewsOptions,
+    _options?: FetchReviewsOptions,
   ): Promise<Result<readonly GoogleReviewData[]>> {
     try {
-      if (!options?.apiKey) {
-        return Result.fail(new Error('API Key (refresh token) is required'));
+      if (!this.encryptedRefreshToken) {
+        return Result.fail(new Error('Refresh token not set. Call setRefreshToken() first'));
       }
 
-      const auth = await this.getAuthClient(options.apiKey);
+      const auth = await this.getAuthClient(this.encryptedRefreshToken);
       const mybusinessaccountmanagement = google.mybusinessaccountmanagement({
         version: 'v1',
         auth,
@@ -70,7 +79,7 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
         return Result.fail(new Error('No My Business accounts found for this user'));
       }
 
-      const accountName = accounts[0].name;
+      const accountName = accounts[0]?.name;
       if (!accountName) {
         return Result.fail(new Error('Account name is missing'));
       }

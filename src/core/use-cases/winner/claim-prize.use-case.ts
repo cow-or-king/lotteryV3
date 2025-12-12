@@ -8,6 +8,7 @@ import type { Result } from '@/lib/types/result.type';
 import { ok, fail } from '@/lib/types/result.type';
 import type { IWinnerRepository } from '@/core/ports/winner.repository';
 import type { WinnerEntity } from '@/core/entities/winner.entity';
+import { ClaimCode } from '@/core/value-objects/claim-code.vo';
 
 export interface ClaimPrizeInput {
   claimCode: string;
@@ -27,10 +28,14 @@ export class ClaimPrizeUseCase {
       return fail(new Error('Claim code is required'));
     }
 
+    // Create ClaimCode value object
+    const claimCodeResult = ClaimCode.create(input.claimCode);
+    if (!claimCodeResult.success) {
+      return fail(new Error('Invalid claim code format'));
+    }
+
     // Récupérer le gagnant par le code
-    const winner = await this.winnerRepository.findByClaimCode(
-      input.claimCode.trim().toUpperCase() as string & { readonly __brand: unique symbol },
-    );
+    const winner = await this.winnerRepository.findByClaimCode(claimCodeResult.data);
 
     if (!winner) {
       return fail(new Error('Invalid claim code'));

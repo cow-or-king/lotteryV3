@@ -8,7 +8,7 @@ import { PrismaClient } from '@/generated/prisma';
 import { Result } from '@/lib/types/result.type';
 import { UserId, Email as EmailBrand } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
-import { UserEntity } from '@/core/entities/user.entity';
+import { UserEntity, type UserRole } from '@/core/entities/user.entity';
 import { IUserRepository } from '@/core/repositories/user.repository.interface';
 
 export class UserRepositoryPrisma implements IUserRepository {
@@ -108,7 +108,11 @@ export class UserRepositoryPrisma implements IUserRepository {
   async countUserStores(userId: UserId): Promise<number> {
     try {
       return await this.prisma.store.count({
-        where: { ownerId: userId },
+        where: {
+          brand: {
+            ownerId: userId,
+          },
+        },
       });
     } catch (error) {
       console.error('Error counting user stores:', error);
@@ -155,7 +159,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       hashedPassword: data.hashedPassword,
       name: data.name,
       avatarUrl: data.avatarUrl,
-      role: data.role || 'ADMIN',
+      role: (data.role || 'ADMIN') as UserRole,
       subscription: null, // TODO: Load subscription from DB
       stores: [], // TODO: Load stores from DB
       createdAt: data.createdAt,

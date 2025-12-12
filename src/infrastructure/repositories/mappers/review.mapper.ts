@@ -36,7 +36,13 @@ export function toDomainProps(prismaReview: PrismaReview): ReviewProps {
     participantId: prismaReview.participantId as ParticipantId | null,
     status: prismaReview.status as ReviewStatus,
     sentiment: prismaReview.sentiment as ReviewSentiment | null,
-    aiSuggestion: prismaReview.aiSuggestion ? JSON.parse(prismaReview.aiSuggestion) : null,
+    aiSuggestion: prismaReview.aiSuggestion
+      ? JSON.parse(
+          typeof prismaReview.aiSuggestion === 'string'
+            ? prismaReview.aiSuggestion
+            : JSON.stringify(prismaReview.aiSuggestion),
+        )
+      : null,
     aiSentiment: prismaReview.aiSentiment,
     createdAt: prismaReview.createdAt,
     updatedAt: prismaReview.updatedAt,

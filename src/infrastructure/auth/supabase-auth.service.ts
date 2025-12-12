@@ -178,14 +178,15 @@ export class SupabaseAuthService implements IAuthProvider {
    */
   async updatePassword(accessToken: string, newPassword: string): Promise<Result<void>> {
     try {
-      const { error } = await this.supabase.auth.updateUser(
-        {
-          password: newPassword,
-        },
-        {
-          accessToken,
-        },
-      );
+      // Set the session first before updating the user
+      await this.supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: '', // Not needed for update
+      });
+
+      const { error } = await this.supabase.auth.updateUser({
+        password: newPassword,
+      });
 
       if (error) {
         return {

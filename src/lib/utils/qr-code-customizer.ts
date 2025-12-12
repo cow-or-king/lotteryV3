@@ -76,6 +76,8 @@ export async function customizeStoreQRCode(
             brand: {
               select: {
                 ownerId: true,
+                logoUrl: true,
+                logoStoragePath: true,
               },
             },
           },
@@ -124,8 +126,8 @@ export async function customizeStoreQRCode(
     let logoUrl: string | null = null;
     let logoSizePixels: number | null = null;
 
-    if (logoSize && qrCode.storeDefault.logoUrl) {
-      logoUrl = qrCode.storeDefault.logoUrl;
+    if (logoSize && qrCode.storeDefault?.brand.logoUrl) {
+      logoUrl = qrCode.storeDefault.brand.logoUrl;
       // Import dynamique pour éviter les erreurs TypeScript
       const { LOGO_SIZE_TO_PIXELS } = await import('@/lib/types/qr-code.types');
       logoSizePixels = LOGO_SIZE_TO_PIXELS[logoSize];
@@ -201,7 +203,7 @@ export async function customizeStoreQRCode(
           logoSize: logoSizePixels,
           errorCorrectionLevel,
           logoUrl, // Ajouter le logo du Store si défini
-          logoStoragePath: qrCode.storeDefault.logoStoragePath, // Référencer le storage path
+          logoStoragePath: qrCode.storeDefault?.brand.logoStoragePath, // Référencer le storage path
         },
       }),
       // Update Store (verrouillage)

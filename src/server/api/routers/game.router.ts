@@ -20,17 +20,17 @@ const createGameSchema = z.object({
     'DICE',
     'MYSTERY_BOX',
   ]),
-  config: z.record(z.unknown()), // JSON config flexible selon le type de jeu
+  config: z.record(z.string(), z.unknown()), // JSON config flexible selon le type de jeu
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   vibrationEnabled: z.boolean().default(true),
-  active: z.boolean().default(true),
+  isActive: z.boolean().default(true),
 });
 
 const updateGameSchema = z.object({
   id: z.string().cuid(),
   name: z.string().min(1).optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/)
@@ -40,14 +40,14 @@ const updateGameSchema = z.object({
     .regex(/^#[0-9A-Fa-f]{6}$/)
     .optional(),
   vibrationEnabled: z.boolean().optional(),
-  active: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 const recordGamePlaySchema = z.object({
   gameId: z.string().cuid(),
-  result: z.record(z.unknown()), // Résultat flexible selon le type de jeu
-  prizeWon: z.boolean(),
-  prizeValue: z.string().optional(),
+  result: z.record(z.string(), z.unknown()), // Résultat flexible selon le type de jeu
+  prizeWon: z.string().optional(),
+  prizeValue: z.number().optional(),
 });
 
 export const gameRouter = createTRPCRouter({
@@ -60,8 +60,8 @@ export const gameRouter = createTRPCRouter({
     const game = await ctx.prisma.game.create({
       data: {
         ...input,
-        userId,
-      },
+        createdBy: userId,
+      } as Parameters<typeof ctx.prisma.game.create>[0]['data'],
     });
 
     return game;
@@ -75,7 +75,7 @@ export const gameRouter = createTRPCRouter({
 
     const games = await ctx.prisma.game.findMany({
       where: {
-        userId,
+        createdBy: userId,
       },
       include: {
         _count: {
@@ -107,7 +107,7 @@ export const gameRouter = createTRPCRouter({
       const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
-          userId,
+          createdBy: userId,
         },
         include: {
           _count: {
@@ -139,7 +139,7 @@ export const gameRouter = createTRPCRouter({
     const game = await ctx.prisma.game.findFirst({
       where: {
         id,
-        userId,
+        createdBy: userId,
       },
     });
 
@@ -152,7 +152,7 @@ export const gameRouter = createTRPCRouter({
 
     const updatedGame = await ctx.prisma.game.update({
       where: { id },
-      data,
+      data: data as Parameters<typeof ctx.prisma.game.update>[0]['data'],
     });
 
     return updatedGame;
@@ -174,7 +174,7 @@ export const gameRouter = createTRPCRouter({
       const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
-          userId,
+          createdBy: userId,
         },
       });
 
@@ -202,7 +202,7 @@ export const gameRouter = createTRPCRouter({
     const game = await ctx.prisma.game.findFirst({
       where: {
         id: input.gameId,
-        userId,
+        createdBy: userId,
       },
     });
 
@@ -216,7 +216,7 @@ export const gameRouter = createTRPCRouter({
     const gamePlay = await ctx.prisma.gamePlay.create({
       data: {
         gameId: input.gameId,
-        result: input.result,
+        result: input.result as Parameters<typeof ctx.prisma.gamePlay.create>[0]['data']['result'],
         prizeWon: input.prizeWon,
         prizeValue: input.prizeValue,
       },
@@ -241,7 +241,7 @@ export const gameRouter = createTRPCRouter({
       const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
-          userId,
+          createdBy: userId,
         },
       });
 
@@ -260,7 +260,7 @@ export const gameRouter = createTRPCRouter({
       const totalWins = await ctx.prisma.gamePlay.count({
         where: {
           gameId: input.id,
-          prizeWon: true,
+          prizeWon: { not: null },
         },
       });
 
@@ -310,7 +310,7 @@ export const gameRouter = createTRPCRouter({
       const game = await ctx.prisma.game.findFirst({
         where: {
           id: input.id,
-          active: true,
+          isActive: true,
         },
         select: {
           id: true,

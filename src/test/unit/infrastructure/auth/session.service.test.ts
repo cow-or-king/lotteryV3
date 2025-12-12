@@ -33,6 +33,11 @@ describe('SessionService', () => {
     (typeof import('@/infrastructure/auth/session.service'))['SessionService']
   >;
   let mockSupabaseAuthService: {
+    signUp: Mock;
+    signIn: Mock;
+    sendMagicLink: Mock;
+    resetPassword: Mock;
+    updatePassword: Mock;
     verifyToken: Mock;
     refreshTokens: Mock;
     signOut: Mock;
@@ -41,12 +46,17 @@ describe('SessionService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     const module = await import('@/infrastructure/auth/session.service');
-    const authModule = await import('@/infrastructure/auth/supabase-auth.service');
-    mockSupabaseAuthService =
-      authModule.supabaseAuthService as unknown as typeof mockSupabaseAuthService;
-    service = new module.SessionService(
-      mockSupabaseAuthService as unknown as Parameters<typeof module.SessionService>[0],
-    );
+    mockSupabaseAuthService = {
+      signUp: vi.fn(),
+      signIn: vi.fn(),
+      sendMagicLink: vi.fn(),
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn(),
+      verifyToken: vi.fn(),
+      refreshTokens: vi.fn(),
+      signOut: vi.fn(),
+    };
+    service = new module.SessionService(mockSupabaseAuthService);
   });
 
   describe('createSession', () => {
@@ -182,7 +192,9 @@ describe('SessionService', () => {
 
       // ASSERT
       expect(result.success).toBe(true);
-      expect(result.data).toBeNull();
+      if (result.success) {
+        expect(result.data).toBeNull();
+      }
     });
 
     it('should return null when access token is missing', async () => {
@@ -199,7 +211,9 @@ describe('SessionService', () => {
 
       // ASSERT
       expect(result.success).toBe(true);
-      expect(result.data).toBeNull();
+      if (result.success) {
+        expect(result.data).toBeNull();
+      }
     });
 
     it('should refresh session when token verification fails', async () => {
@@ -285,7 +299,9 @@ describe('SessionService', () => {
 
       // ASSERT
       expect(result.success).toBe(true);
-      expect(result.data).toBeNull();
+      if (result.success) {
+        expect(result.data).toBeNull();
+      }
     });
 
     it('should handle errors when getting session', async () => {

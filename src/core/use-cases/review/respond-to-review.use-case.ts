@@ -9,7 +9,6 @@ import { IReviewRepository } from '@/core/repositories/review.repository.interfa
 import { IResponseTemplateRepository } from '@/core/repositories/response-template.repository.interface';
 import { IStoreRepository } from '@/core/repositories/store.repository.interface';
 import { IGoogleMyBusinessService } from '@/core/services/google-my-business.service.interface';
-import type { IEncryptionService } from '@/core/ports/encryption.service';
 import { ReviewId, UserId } from '@/lib/types/branded.type';
 
 // DTO pour l'input
@@ -102,10 +101,16 @@ export class RespondToReviewUseCase {
       return Result.fail(new Error('Store not found'));
     }
 
-    // Publier sur Google (nécessite le nom complet de la review)
+    // Note: For now, we'll use an empty API key placeholder.
+    // The actual Google API key will be retrieved from the environment or encrypted storage.
+    // TODO: Add proper API key management to StoreEntity or settings
+    const apiKey = process.env.GOOGLE_API_KEY || '';
+
+    // Publier sur Google (nécessite le nom complet de la review et l'API key)
     const publishResult = await this.googleService.publishResponse(
       updatedReview.googleReviewId,
       input.responseContent,
+      apiKey,
     );
 
     if (!publishResult.success) {

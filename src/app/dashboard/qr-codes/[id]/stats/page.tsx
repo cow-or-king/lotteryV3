@@ -151,7 +151,7 @@ export default function QRCodeStatsPage() {
       {/* Last Scan Info */}
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-lg mb-8">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Dernier scan</h2>
-        <p className="text-gray-700">{formatDateTime(stats.lastScan)}</p>
+        <p className="text-gray-700">{formatDateTime(stats.lastScan ?? null)}</p>
       </div>
 
       {/* Scans by Hour - Vertical Graph */}

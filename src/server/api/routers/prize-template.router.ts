@@ -39,10 +39,7 @@ const deletePrizeTemplateUseCase = new DeletePrizeTemplateUseCase(
   prizeTemplateRepository,
   brandRepository,
 );
-const listPrizeTemplatesUseCase = new ListPrizeTemplatesUseCase(
-  prizeTemplateRepository,
-  brandRepository,
-);
+const listPrizeTemplatesUseCase = new ListPrizeTemplatesUseCase(prizeTemplateRepository);
 const getPrizeTemplateByIdUseCase = new GetPrizeTemplateByIdUseCase(
   prizeTemplateRepository,
   brandRepository,

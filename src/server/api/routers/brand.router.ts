@@ -14,13 +14,15 @@ import { UpdateBrandUseCase, DeleteBrandUseCase } from '@/core/use-cases/brand';
 
 // Repositories (Adapters)
 import { PrismaBrandRepository } from '@/infrastructure/repositories/prisma-brand.repository';
+import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 
 // Instancier les repositories
 const brandRepository = new PrismaBrandRepository();
+const storeRepository = new PrismaStoreRepository();
 
 // Instancier les use cases
 const updateBrandUseCase = new UpdateBrandUseCase(brandRepository);
-const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository);
+const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository, storeRepository);
 
 export const brandRouter = createTRPCRouter({
   /**
