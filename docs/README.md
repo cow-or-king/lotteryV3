@@ -1,11 +1,17 @@
 # 📚 Documentation ReviewLottery V3
 
+> **⭐ FICHIER DE RÉFÉRENCE CENTRAL: [`CONVENTIONS.md`](./CONVENTIONS.md)**
+>
+> **Avant tout développement, lire obligatoirement `docs/CONVENTIONS.md`**
+> Ce fichier contient TOUTES les règles, standards et bonnes pratiques du projet.
+
 Documentation complète du projet ReviewLottery V3 - Application SaaS de gestion d'avis clients avec système de loterie.
 
 ---
 
 ## 🚀 Démarrage Rapide
 
+- **[CONVENTIONS.md](./CONVENTIONS.md)** ⭐ Standards & conventions (LIRE EN PREMIER)
 - **[QUICK-START.md](./QUICK-START.md)** - Démarrage en 5 minutes
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Guide de contribution
 

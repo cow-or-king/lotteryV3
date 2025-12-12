@@ -1,0 +1,37 @@
+# Configuration Claude Code pour ReviewLottery v3
+
+## Fichier de Référence Central
+CONVENTIONS_FILE="docs/CONVENTIONS.md"
+
+## Instructions pour Claude
+Avant chaque développement, TOUJOURS :
+1. Lire docs/CONVENTIONS.md
+2. Respecter l'architecture hexagonale
+3. ZERO any types (TypeScript strict)
+4. Utiliser Result Pattern
+5. Double validation (client + serveur)
+6. Vérifier couleurs de texte dans inputs (text-gray-900)
+7. Tests obligatoires pour business logic
+
+## Workflow Obligatoire
+- Créer des todos pour tâches complexes (TodoWrite)
+- Suivre le template docs/reviews/REVIEW_TEMPLATE.md pour reviews
+- Sauvegarder reviews dans docs/reviews/REVIEW_*.md
+- Pas de fichiers .md à la racine (sauf README.md)
+
+## Commandes Rapides
+- Cache: rm -rf .next && npm run dev
+- Prisma: npx prisma generate
+- Tests: npm test
+- Lint: npm run lint
+
+## Anti-Patterns Interdits
+- any types
+- throw dans use cases
+- N+1 queries
+- Fichiers temporaires non supprimés
+- Documentation obsolète
+- Duplication de logique
+
+## En cas de doute
+Consulter docs/CONVENTIONS.md - Section correspondante
