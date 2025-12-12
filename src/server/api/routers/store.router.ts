@@ -212,7 +212,14 @@ export const storeRouter = createTRPCRouter({
         // Logo file en base64 (optionnel)
         logoFileData: z.string().optional(),
         logoFileName: z.string().optional(),
-        logoFileType: z.string().optional(),
+        logoFileType: z
+          .string()
+          .optional()
+          .refine(
+            (type) =>
+              !type || ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(type),
+            'Format non supporté. Utilisez PNG, JPEG, WEBP ou SVG.',
+          ),
         // Infos du commerce (toujours requis)
         name: z.string().min(2, 'Le nom du commerce doit contenir au moins 2 caractères'),
         googleBusinessUrl: z.string().url('URL Google Business invalide'),
@@ -251,9 +258,21 @@ export const storeRouter = createTRPCRouter({
       // IMPORTANT: Le logo est pour le BRAND, pas pour le Store
       if (input.logoFileData && input.logoFileName && input.logoFileType) {
         try {
+          // Validation du format côté serveur (double check)
+          const ACCEPTED_FORMATS = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+          if (!ACCEPTED_FORMATS.includes(input.logoFileType)) {
+            throw new Error('Format non supporté. Utilisez PNG, JPEG, WEBP ou SVG.');
+          }
+
           // Décoder le base64
           const base64Data = input.logoFileData.split(',')[1] || input.logoFileData;
           const buffer = Buffer.from(base64Data, 'base64');
+
+          // Validation de la taille (2MB max)
+          const MAX_SIZE = 2 * 1024 * 1024;
+          if (buffer.length > MAX_SIZE) {
+            throw new Error('Fichier trop volumineux (max 2MB)');
+          }
 
           // Créer un File object (Node.js compatible)
           const file = new File([buffer], input.logoFileName, { type: input.logoFileType });

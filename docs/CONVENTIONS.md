@@ -1072,6 +1072,377 @@ git log --oneline -5
 
 ---
 
+## 📐 Organisation & Qualité du Code
+
+### 1. Taille Maximale des Fichiers
+
+**RÈGLE STRICTE:** Un fichier ne doit **JAMAIS dépasser 300 lignes**
+
+```typescript
+// ❌ MAUVAIS - Fichier trop long (> 300 lignes)
+// components/StoreManagement.tsx (450 lignes)
+export function StoreManagement() {
+  // Trop de logique dans un seul composant
+  // Formulaire + Liste + Modal + Validation + API calls
+}
+
+// ✅ BON - Décomposer en sous-composants
+// components/stores/StoreList.tsx (120 lignes)
+// components/stores/StoreForm.tsx (150 lignes)
+// components/stores/StoreModal.tsx (80 lignes)
+// hooks/stores/useStores.ts (200 lignes)
+```
+
+**Seuils par type de fichier:**
+
+- **Composants React:** Max 200 lignes
+  - Si > 200 lignes → Extraire sous-composants
+  - Si > 100 lignes → Vérifier si la logique peut aller dans un hook
+
+- **Hooks Custom:** Max 250 lignes
+  - Si > 250 lignes → Séparer en plusieurs hooks spécialisés
+  - Exemple: `useStores.ts` → `useStoresList.ts` + `useStoreForm.ts` + `useStoreDelete.ts`
+
+- **Use Cases:** Max 150 lignes
+  - Si > 150 lignes → Décomposer en sous-use-cases
+  - Un Use Case = Une responsabilité unique
+
+- **Routers (tRPC):** Max 300 lignes
+  - Si > 300 lignes → Séparer en plusieurs routers
+  - Exemple: `store.router.ts` → `store-list.router.ts` + `store-crud.router.ts`
+
+- **Pages (Next.js):** Max 150 lignes
+  - La page ne doit contenir QUE la structure et l'appel aux composants
+  - Toute logique métier → hooks
+  - Tout UI complexe → composants
+
+**Actions si limite dépassée:**
+
+```bash
+# 1. Identifier les fichiers trop longs
+find src -name "*.ts" -o -name "*.tsx" | xargs wc -l | sort -rn | head -20
+
+# 2. Refactoriser immédiatement
+# Exemple: Fichier de 400 lignes
+# → Créer 2-3 fichiers de 150-200 lignes chacun
+```
+
+### 2. Composants Réutilisables
+
+**RÈGLE:** Dès qu'un pattern UI apparaît **2 fois**, créer un composant réutilisable
+
+```tsx
+// ❌ MAUVAIS - Duplication de code
+// pages/dashboard/stores.tsx
+<div className="bg-white/50 backdrop-blur-xl rounded-2xl p-6">
+  <h3>{store.name}</h3>
+  <p>{store.description}</p>
+</div>
+
+// pages/dashboard/campaigns.tsx
+<div className="bg-white/50 backdrop-blur-xl rounded-2xl p-6">
+  <h3>{campaign.name}</h3>
+  <p>{campaign.description}</p>
+</div>
+
+// ✅ BON - Composant réutilisable
+// components/ui/Card.tsx
+interface CardProps {
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}
+
+export function Card({ title, description, children }: CardProps) {
+  return (
+    <div className="bg-white/50 backdrop-blur-xl rounded-2xl p-6">
+      <h3 className="text-xl font-bold">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+      {children}
+    </div>
+  );
+}
+
+// Usage
+<Card title={store.name} description={store.description} />
+<Card title={campaign.name} description={campaign.description} />
+```
+
+**Composants à extraire systématiquement:**
+
+- **Buttons avec variants** → `components/ui/Button.tsx`
+- **Inputs/Forms** → `components/ui/Input.tsx`, `FormField.tsx`
+- **Cards/Containers** → `components/ui/Card.tsx`
+- **Modals/Dialogs** → `components/ui/Modal.tsx`, `ConfirmDialog.tsx`
+- **Lists avec loading/empty states** → `components/ui/List.tsx`
+- **Badges/Tags** → `components/ui/Badge.tsx`
+- **Skeletons/Loaders** → `components/ui/Skeleton.tsx`
+
+**Structure des composants UI:**
+
+```
+components/
+├── ui/                      # Composants UI génériques
+│   ├── Button.tsx
+│   ├── Input.tsx
+│   ├── Card.tsx
+│   ├── Modal.tsx
+│   └── Badge.tsx
+│
+├── stores/                  # Composants métier Stores
+│   ├── StoreCard.tsx       # Utilise ui/Card
+│   ├── StoreForm.tsx       # Utilise ui/Input, ui/Button
+│   └── StoreList.tsx       # Utilise ui/List
+│
+└── shared/                  # Composants partagés métier
+    ├── EmptyState.tsx
+    └── ErrorBoundary.tsx
+```
+
+### 3. Custom Hooks - Extraction de Logique
+
+**RÈGLE:** Dès qu'un composant dépasse **100 lignes** OU contient de la **logique complexe**, extraire dans un hook
+
+```tsx
+// ❌ MAUVAIS - Trop de logique dans le composant
+export function StoreList() {
+  const [stores, setStores] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedStore, setSelectedStore] = useState(null);
+
+  const fetchStores = async () => {
+    setLoading(true);
+    try {
+      const data = await api.store.list.query();
+      setStores(data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    // ...logique de suppression
+  };
+
+  // 50+ lignes de logique...
+
+  return <div>{/* JSX */}</div>;
+}
+
+// ✅ BON - Logique extraite dans un hook
+// hooks/stores/useStoresList.ts
+export function useStoresList() {
+  const query = api.store.list.useQuery();
+  const deleteMutation = api.store.delete.useMutation();
+
+  const handleDelete = async (id: string) => {
+    await deleteMutation.mutateAsync({ id });
+    query.refetch();
+  };
+
+  return {
+    stores: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error,
+    handleDelete,
+    refetch: query.refetch,
+  };
+}
+
+// components/stores/StoreList.tsx (maintenant < 50 lignes)
+export function StoreList() {
+  const { stores, loading, error, handleDelete } = useStoresList();
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorMessage error={error} />;
+
+  return (
+    <div>
+      {stores.map((store) => (
+        <StoreCard key={store.id} store={store} onDelete={() => handleDelete(store.id)} />
+      ))}
+    </div>
+  );
+}
+```
+
+**Types de hooks à créer:**
+
+1. **Data Fetching Hooks** (`use[Entity]List`, `use[Entity]`)
+
+   ```typescript
+   // hooks/stores/useStore.ts
+   export function useStore(id: string) {
+     const query = api.store.byId.useQuery({ id });
+     return {
+       store: query.data,
+       loading: query.isLoading,
+       error: query.error,
+     };
+   }
+   ```
+
+2. **Form Hooks** (`use[Entity]Form`)
+
+   ```typescript
+   // hooks/stores/useStoreForm.ts
+   export function useStoreForm(initialData?: Store) {
+     const [formData, setFormData] = useState(initialData);
+     const [errors, setErrors] = useState({});
+
+     const validate = () => {
+       /* ... */
+     };
+     const handleSubmit = async () => {
+       /* ... */
+     };
+
+     return { formData, errors, validate, handleSubmit };
+   }
+   ```
+
+3. **Action Hooks** (`use[Entity][Action]`)
+
+   ```typescript
+   // hooks/stores/useStoreDelete.ts
+   export function useStoreDelete() {
+     const mutation = api.store.delete.useMutation();
+     const { toast } = useToast();
+
+     const deleteStore = async (id: string, name: string) => {
+       const confirmed = await confirm({
+         title: 'Supprimer le commerce',
+         description: `Êtes-vous sûr de vouloir supprimer "${name}" ?`,
+       });
+
+       if (confirmed) {
+         await mutation.mutateAsync({ id });
+         toast.success('Commerce supprimé');
+       }
+     };
+
+     return { deleteStore, isDeleting: mutation.isPending };
+   }
+   ```
+
+4. **Business Logic Hooks** (`use[Feature]Logic`)
+
+   ```typescript
+   // hooks/lottery/useLotteryLogic.ts
+   export function useLotteryLogic(campaignId: string) {
+     // Logique complexe métier
+     const calculateWinner = () => {
+       /* ... */
+     };
+     const validateEligibility = () => {
+       /* ... */
+     };
+
+     return { calculateWinner, validateEligibility };
+   }
+   ```
+
+### 4. Refactoring Continu
+
+**RÈGLE:** À chaque feature, vérifier et refactoriser si nécessaire
+
+**Checklist avant chaque commit:**
+
+```bash
+# 1. Vérifier la taille des fichiers
+find src -name "*.ts" -o -name "*.tsx" | xargs wc -l | awk '$1 > 300 {print}'
+
+# 2. Chercher le code dupliqué
+# Utiliser un outil comme jscpd ou chercher manuellement
+
+# 3. Vérifier la complexité
+npm run lint  # ESLint détecte la complexité cyclomatique
+
+# 4. Chercher les opportunités de hooks
+grep -r "useState" src/app | wc -l  # Si > 3 useState dans un composant → hook
+```
+
+**Signaux qu'un refactoring est nécessaire:**
+
+- ✋ **Fichier > 200 lignes** → Décomposer
+- ✋ **Composant avec > 5 useState** → Extraire hook
+- ✋ **Code copié-collé** → Composant/hook réutilisable
+- ✋ **Fonction > 50 lignes** → Décomposer en sous-fonctions
+- ✋ **Imbrication > 4 niveaux** → Extraire en fonctions
+- ✋ **Tests difficiles à écrire** → Mauvaise séparation des responsabilités
+
+**Exemple de refactoring:**
+
+```typescript
+// ❌ AVANT: Composant de 300 lignes avec toute la logique
+// components/StoreManagement.tsx (300 lignes)
+
+// ✅ APRÈS: Décomposition en modules
+// hooks/stores/useStoresList.ts (80 lignes)
+// hooks/stores/useStoreForm.ts (120 lignes)
+// hooks/stores/useStoreDelete.ts (60 lignes)
+// components/stores/StoreList.tsx (50 lignes)
+// components/stores/StoreForm.tsx (80 lignes)
+// components/stores/StoreCard.tsx (40 lignes)
+```
+
+### 5. Single Responsibility Principle
+
+**RÈGLE:** Un fichier = Une responsabilité
+
+```typescript
+// ❌ MAUVAIS - Trop de responsabilités
+// hooks/stores/useStores.ts
+export function useStores() {
+  // Fetching
+  const fetchStores = () => {
+    /* ... */
+  };
+
+  // Create
+  const createStore = () => {
+    /* ... */
+  };
+
+  // Update
+  const updateStore = () => {
+    /* ... */
+  };
+
+  // Delete
+  const deleteStore = () => {
+    /* ... */
+  };
+
+  // Form management
+  const [formData, setFormData] = useState();
+  const validateForm = () => {
+    /* ... */
+  };
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 400 lignes de code...
+}
+
+// ✅ BON - Une responsabilité par hook
+// hooks/stores/useStoresList.ts - Lecture seule
+// hooks/stores/useStoreCreate.ts - Création
+// hooks/stores/useStoreUpdate.ts - Mise à jour
+// hooks/stores/useStoreDelete.ts - Suppression
+// hooks/stores/useStoreForm.ts - Gestion formulaire
+```
+
+---
+
 ## 🔐 Sécurité & APIs Externes
 
 ### 1. Variables d'Environnement

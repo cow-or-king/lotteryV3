@@ -11,6 +11,10 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { generateShortCode } from '@/lib/utils/short-code';
 import { logger } from '@/lib/utils/logger';
 
+// Constants pour validation
+const ACCEPTED_LOGO_FORMATS = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+const MAX_LOGO_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export const qrCodeStorageRouter = createTRPCRouter({
   /**
    * Upload un logo vers Supabase Storage
@@ -20,10 +24,23 @@ export const qrCodeStorageRouter = createTRPCRouter({
       z.object({
         fileName: z.string(),
         fileData: z.string(), // Base64
-        contentType: z.string(),
+        contentType: z
+          .string()
+          .refine(
+            (type) => ACCEPTED_LOGO_FORMATS.includes(type),
+            'Format non supporté. Utilisez PNG, JPEG, WEBP ou SVG.',
+          ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Validation du contentType (double check)
+      if (!ACCEPTED_LOGO_FORMATS.includes(input.contentType)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Format non supporté. Utilisez PNG, JPEG, WEBP ou SVG.',
+        });
+      }
+
       // Convert base64 to buffer
       const base64Data = input.fileData.split(',')[1];
       if (!base64Data) {
@@ -34,6 +51,14 @@ export const qrCodeStorageRouter = createTRPCRouter({
       }
 
       const buffer = Buffer.from(base64Data, 'base64');
+
+      // Validation de la taille
+      if (buffer.length > MAX_LOGO_FILE_SIZE) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Fichier trop volumineux (max 2MB)',
+        });
+      }
 
       // Generate unique filename
       const timestamp = Date.now();
