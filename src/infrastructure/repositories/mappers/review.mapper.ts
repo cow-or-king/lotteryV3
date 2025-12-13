@@ -4,7 +4,7 @@
  * IMPORTANT: Couche infrastructure, dépendance à Prisma OK
  */
 
-import { Review as PrismaReview } from '@prisma/client';
+import { Review as PrismaReview } from '@/generated/prisma';
 import { ReviewEntity, ReviewProps, CreateReviewProps } from '@/core/entities/review.entity';
 import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/lib/types/branded.type';
 import { ReviewStatus, ReviewSentiment } from '@/core/entities/review.entity';

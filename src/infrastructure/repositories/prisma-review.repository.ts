@@ -4,7 +4,7 @@
  * IMPORTANT: Couche infrastructure, dépendance à Prisma OK
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from '@/generated/prisma';
 import { Result } from '@/lib/types/result.type';
 import { ReviewEntity } from '@/core/entities/review.entity';
 import {

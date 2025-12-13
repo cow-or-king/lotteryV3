@@ -156,7 +156,7 @@ export function StoreCard({
       {/* Stats + QR Code preview */}
       <div className="pt-4 border-t border-purple-600/20">
         <div className="flex items-center justify-between">
-          <div className="grid grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 flex-1">
             <div>
               <p className="text-xs text-gray-600 mb-1">Campagnes</p>
               <p className="text-lg font-bold text-gray-800">0</p>

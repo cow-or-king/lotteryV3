@@ -29,154 +29,41 @@ export function DashboardTopBar({
   userLoading,
 }: DashboardTopBarProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        marginBottom: '30px',
-        position: 'relative',
-      }}
-    >
+    <div className="flex items-center gap-3 mb-8 relative">
       {/* User Info Card with integrated toggle button */}
-      <div
-        style={{
-          flex: 1,
-          background: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(147, 51, 234, 0.2)',
-          borderRadius: '12px',
-          padding: 'clamp(12px, 2vw, 16px)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          position: 'relative',
-        }}
-      >
+      <div className="flex-1 bg-white/40 backdrop-blur-xl border border-purple-600/20 rounded-xl p-3 sm:p-4 flex items-center gap-3 relative">
         {/* Toggle Button */}
         <button
           onClick={toggleSidebar}
-          style={{
-            width: '40px',
-            height: '40px',
-            background: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(147, 51, 234, 0.2)',
-            borderRadius: '10px',
-            color: '#4b5563',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px',
-            transition: 'all 0.3s',
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(147, 51, 234, 0.15)';
-            e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.3)';
-            e.currentTarget.style.color = '#9333ea';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.6)';
-            e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.2)';
-            e.currentTarget.style.color = '#4b5563';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="w-10 h-10 bg-white/60 backdrop-blur-md border border-purple-600/20 rounded-lg text-gray-600 cursor-pointer flex items-center justify-center text-lg transition-all shrink-0 hover:bg-purple-600/15 hover:border-purple-600/30 hover:text-purple-600 hover:scale-105"
         >
           {isSidebarOpen ? '✕' : '☰'}
         </button>
 
         {/* User Avatar */}
-        <div
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px',
-            flexShrink: 0,
-          }}
-        >
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-lg shrink-0">
           👤
         </div>
 
         {/* Colonne gauche: Nom et Email */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2px',
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: 'clamp(13px, 2.5vw, 15px)',
-              fontWeight: '600',
-              color: '#1f2937',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <p className="m-0 text-xs sm:text-sm md:text-base font-semibold text-gray-800 overflow-hidden text-ellipsis whitespace-nowrap">
             {userLoading ? '...' : user?.name || user?.email?.split('@')[0] || 'Utilisateur'}
           </p>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 'clamp(10px, 1.8vw, 11px)',
-              color: '#6b7280',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <p className="m-0 text-[10px] sm:text-xs text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap">
             {userLoading ? '...' : user?.email || ''}
           </p>
         </div>
 
         {/* Colonne droite: Plan et Limites */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            alignItems: 'flex-end',
-            flexShrink: 0,
-          }}
-        >
+        <div className="flex flex-col gap-1.5 items-end shrink-0">
           {/* Plan Badge */}
-          <div
-            style={{
-              padding: '4px 12px',
-              background: 'rgba(147, 51, 234, 0.15)',
-              border: '1px solid rgba(147, 51, 234, 0.3)',
-              borderRadius: '8px',
-              fontSize: 'clamp(10px, 2vw, 12px)',
-              color: '#7c3aed',
-              fontWeight: '600',
-              textAlign: 'center',
-            }}
-          >
+          <div className="py-1 px-3 bg-purple-600/15 border border-purple-600/30 rounded-lg text-[10px] sm:text-xs text-purple-600 font-semibold text-center">
             {userLoading ? '...' : user?.subscription?.plan || 'FREE'}
           </div>
 
           {/* Store Limit */}
-          <div
-            style={{
-              fontSize: 'clamp(9px, 1.8vw, 10px)',
-              color: '#6b7280',
-              whiteSpace: 'nowrap',
-              textAlign: 'center',
-            }}
-          >
+          <div className="text-[9px] sm:text-[10px] text-gray-600 whitespace-nowrap text-center">
             {userLoading
               ? '...'
               : `${user?.subscription?.storesLimit || 1} store${(user?.subscription?.storesLimit || 1) > 1 ? 's' : ''}`}

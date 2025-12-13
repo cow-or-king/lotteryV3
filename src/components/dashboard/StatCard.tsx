@@ -64,7 +64,7 @@ export function StatCard({
           <div className="h-10 w-32 bg-purple-100/30 rounded-xl animate-pulse"></div>
         ) : (
           <div className="flex items-baseline gap-3 mb-2">
-            <p className="text-3xl font-bold text-gray-800">{value}</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">{value}</p>
             {trend && (
               <span
                 className={cn(

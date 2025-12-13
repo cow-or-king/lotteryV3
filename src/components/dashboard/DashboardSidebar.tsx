@@ -148,31 +148,23 @@ export function DashboardSidebar({
 
   return (
     <div
+      className={`
+        fixed top-0 bottom-0 z-50 flex flex-col
+        h-screen min-h-[-webkit-fill-available]
+        bg-white/40 backdrop-blur-2xl
+        transition-all duration-300 ease-out
+        ${isCompactMode ? 'w-20 lg:w-20' : 'w-full sm:w-70 lg:w-70'}
+        ${isSidebarOpen ? 'left-0' : isCompactMode ? '-left-20 lg:-left-20' : '-left-full sm:-left-70 lg:-left-70'}
+      `}
       style={{
-        width: isCompactMode ? '80px' : '280px',
-        background: 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        height: '100vh',
-        minHeight: '-webkit-fill-available',
-        left: isSidebarOpen ? 0 : isCompactMode ? '-80px' : '-280px',
-        top: 0,
-        bottom: 0,
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        zIndex: 50,
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       <SidebarLogo isCompactMode={isCompactMode} />
 
       {/* Navigation */}
-      <nav
-        style={{ flex: 1, padding: isCompactMode ? '20px 8px' : '20px 12px', overflowY: 'auto' }}
-      >
+      <nav className={`flex-1 overflow-y-auto ${isCompactMode ? 'py-5 px-2' : 'py-5 px-3'}`}>
         {visibleMenus.map((item) => (
           <SidebarNavItem
             key={item.id}
@@ -194,12 +186,10 @@ export function DashboardSidebar({
 
       {/* User section */}
       <div
-        style={{
-          padding: isCompactMode ? '12px 8px' : '20px',
-          borderTop: '1px solid rgba(147, 51, 234, 0.15)',
-          background: 'rgba(255, 255, 255, 0.2)',
-          marginBottom: '28px',
-        }}
+        className={`
+          border-t border-purple-600/15 bg-white/20 mb-7
+          ${isCompactMode ? 'p-3 px-2' : 'p-5'}
+        `}
       >
         {!isCompactMode ? (
           <>

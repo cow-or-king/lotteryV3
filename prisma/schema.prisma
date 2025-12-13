@@ -25,6 +25,7 @@ model User {
   qrCodes          QRCode[]
   reviewsResponded Review[]
   subscription     Subscription?
+  wheelDesigns     WheelDesign[]
 
   @@index([email])
   @@map("users")
@@ -460,6 +461,41 @@ model QRCodeScan {
   @@index([qrCodeId, scannedAt(sort: Desc)])
   @@index([scannedAt])
   @@map("qr_code_scans")
+}
+
+model WheelDesign {
+  id                   String   @id @default(cuid())
+  name                 String
+  colorMode            String   @map("color_mode")
+  primaryColor         String?  @map("primary_color")
+  secondaryColor       String?  @map("secondary_color")
+  segments             Json
+  numberOfSegments     Int      @map("number_of_segments")
+  centerLogoUrl        String?  @map("center_logo_url")
+  centerLogoSize       Int      @default(80) @map("center_logo_size")
+  backgroundColor      String   @default("#FFFFFF") @map("background_color")
+  segmentBorderWidth   Int      @default(2) @map("segment_border_width")
+  segmentBorderColor   String   @default("#FFFFFF") @map("segment_border_color")
+  showSegmentText      Boolean  @default(true) @map("show_segment_text")
+  textSize             Int      @default(16) @map("text_size")
+  textFont             String   @default("Arial") @map("text_font")
+  textRotation         Int      @default(0) @map("text_rotation")
+  centerCircleColor    String   @default("#FFFFFF") @map("center_circle_color")
+  centerCircleSize     Int      @default(100) @map("center_circle_size")
+  pointerColor         String   @default("#FBBF24") @map("pointer_color")
+  pointerStyle         String   @default("arrow") @map("pointer_style")
+  animationSpeed       String   @default("normal") @map("animation_speed")
+  spinDuration         Int      @default(4000) @map("spin_duration")
+  enableSound          Boolean  @default(true) @map("enable_sound")
+  isDefault            Boolean  @default(false) @map("is_default")
+  userId               String   @map("user_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("wheel_designs")
 }
 
 model Game {

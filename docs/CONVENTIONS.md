@@ -348,7 +348,141 @@ for (const store of stores) {
 
 **RÈGLE:** Toujours utiliser `text-gray-900` ou `text-gray-800` pour les inputs
 
-### 4. Gradients - Utiliser bg-linear-to-\*
+### 4. Responsive Design - Mobile First
+
+**RÈGLE ABSOLUE:** Toujours développer en **MOBILE FIRST** pour éviter les surprises
+
+```tsx
+// ✅ BON - Mobile first avec breakpoints progressifs
+<div className="
+  w-full              // Mobile: pleine largeur
+  px-4                // Mobile: padding horizontal
+  md:w-1/2            // Tablette: 50% largeur
+  md:px-6             // Tablette: padding augmenté
+  lg:w-1/3            // Desktop: 33% largeur
+  lg:px-8             // Desktop: padding augmenté
+">
+
+// ✅ BON - Grid responsive
+<div className="
+  grid
+  grid-cols-1         // Mobile: 1 colonne
+  md:grid-cols-2      // Tablette: 2 colonnes
+  lg:grid-cols-3      // Desktop: 3 colonnes
+  xl:grid-cols-4      // Large: 4 colonnes
+  gap-4
+">
+
+// ✅ BON - Texte responsive
+<h1 className="
+  text-2xl            // Mobile: petit titre
+  md:text-3xl         // Tablette: moyen
+  lg:text-4xl         // Desktop: grand
+  font-bold
+">
+
+// ❌ MAUVAIS - Desktop first (à éviter)
+<div className="w-1/3 md:w-full">  // ❌ Inverse la logique mobile-first
+```
+
+**Breakpoints Tailwind CSS:**
+
+- **Mobile:** `< 640px` (par défaut, pas de préfixe)
+- **Tablette:** `md:` (≥ 768px)
+- **Desktop:** `lg:` (≥ 1024px)
+- **Large:** `xl:` (≥ 1280px)
+- **Extra Large:** `2xl:` (≥ 1536px)
+
+**Checklist Responsive Obligatoire:**
+
+- ✅ **Tester sur mobile** (iPhone 12/13/14, Android)
+  - Viewport: 375px × 667px (iPhone SE)
+  - Viewport: 390px × 844px (iPhone 12/13)
+  - Viewport: 393px × 851px (iPhone 14 Pro)
+
+- ✅ **Tester sur tablette** (iPad)
+  - Viewport: 768px × 1024px (iPad)
+  - Viewport: 820px × 1180px (iPad Air)
+
+- ✅ **Tester sur desktop**
+  - Viewport: 1280px × 720px (Laptop)
+  - Viewport: 1920px × 1080px (Desktop)
+
+- ✅ **Navigation responsive**
+  - Menu burger sur mobile (< 768px)
+  - Menu horizontal sur desktop (≥ 768px)
+  - Bouton toggle visible et accessible
+
+- ✅ **Touch targets sur mobile**
+  - Boutons ≥ 44px × 44px (recommandation Apple)
+  - Espacement suffisant entre éléments cliquables
+  - Zone de touch augmentée avec padding
+
+- ✅ **Typographie lisible**
+  - Taille minimale: 16px sur mobile (évite le zoom iOS)
+  - Line-height: 1.5 minimum pour lisibilité
+  - Contraste WCAG AA minimum (4.5:1)
+
+- ✅ **Images responsive**
+  - Utiliser `next/image` avec `fill` ou `responsive`
+  - Définir `sizes` pour optimiser le chargement
+  - Lazy loading activé par défaut
+
+**Exemples de patterns responsive:**
+
+```tsx
+// ✅ Container responsive
+<div className="
+  max-w-7xl           // Largeur max sur grands écrans
+  mx-auto             // Centré
+  px-4                // Mobile: 16px padding
+  sm:px-6             // Small: 24px padding
+  lg:px-8             // Desktop: 32px padding
+">
+
+// ✅ Card grid responsive
+<div className="
+  grid
+  grid-cols-1         // Mobile: 1 colonne
+  sm:grid-cols-2      // Small: 2 colonnes
+  lg:grid-cols-3      // Desktop: 3 colonnes
+  xl:grid-cols-4      // Large: 4 colonnes
+  gap-4               // Mobile: 16px gap
+  md:gap-6            // Tablette: 24px gap
+">
+
+// ✅ Flexbox responsive
+<div className="
+  flex
+  flex-col            // Mobile: colonne
+  md:flex-row         // Tablette+: ligne
+  gap-4
+  md:gap-6
+">
+
+// ✅ Hide/Show sur mobile
+<div className="
+  hidden              // Caché par défaut (mobile)
+  md:block            // Visible sur tablette+
+">
+
+<div className="
+  block               // Visible par défaut (mobile)
+  md:hidden           // Caché sur tablette+
+">
+
+// ✅ Sidebar responsive
+<aside className="
+  w-full              // Mobile: pleine largeur
+  lg:w-64             // Desktop: sidebar fixe
+  lg:sticky
+  lg:top-0
+">
+```
+
+**RÈGLE:** Toujours tester en mode responsive dans le navigateur (DevTools) AVANT de considérer une page terminée
+
+### 5. Gradients - Utiliser bg-linear-to-\*
 
 ```tsx
 // ✅ BON - Utiliser bg-linear-to-*
@@ -730,7 +864,8 @@ Le workflow automatique se déclenche pour:
   3. Tests (coverage > 80%, pas de flaky)
   4. Performance (N+1 queries, index)
   5. Sécurité (validation, permissions, secrets)
-  6. UI/UX (design system, responsive, a11y)
+  6. UI/UX (design system, glassmorphism, a11y)
+  7. **Responsive Design (MOBILE FIRST obligatoire)**
 - Décision : APPROVED / NEEDS CHANGES / REJECTED
 
 #### Phase 4: Corrections ou Commit
@@ -782,6 +917,16 @@ git commit -m "📝 docs: Review [FEATURE_NAME]"
 
 - [x] ✅ Result Pattern utilisé
 - [x] ✅ Validation Zod complète
+
+## 📱 Responsive Design
+
+- [x] ✅ Mobile first respecté (classes sans préfixe = mobile)
+- [x] ✅ Breakpoints progressifs (md:, lg:, xl:)
+- [x] ✅ Testé sur mobile (375px, 390px, 393px)
+- [x] ✅ Testé sur tablette (768px, 820px)
+- [x] ✅ Testé sur desktop (1280px, 1920px)
+- [x] ✅ Touch targets ≥ 44px sur mobile
+- [x] ✅ Typographie lisible (min 16px sur mobile)
 
 ## 🧪 Tests
 
@@ -1694,6 +1839,103 @@ if (!isUserId(input.userId)) {
 }
 const userId = input.userId; // Type inféré automatiquement
 ```
+
+### 9. Prisma Migration - Erreur connexion DATABASE_URL
+
+**Bug rencontré:** 2025-12-12
+**Symptôme:** `Error: P1001: Can't reach database server` lors de `npx prisma migrate dev` ou tentative de connexion
+**Cause:** Le fichier `.env.local` surcharge le `.env` avec une ancienne URL de base de données obsolète
+**Solution:**
+
+```bash
+# 1. Vérifier la présence de .env.local
+ls -la | grep "\.env"
+
+# 2. Si .env.local existe et contient des URLs obsolètes, le SUPPRIMER
+rm .env.local
+
+# 3. Nettoyer les caches
+rm -rf .next node_modules/.cache node_modules/.prisma
+
+# 4. Régénérer le client Prisma
+npx prisma generate
+
+# 5. Relancer le serveur
+npm run dev
+```
+
+**Explication:**
+Dans Next.js, l'ordre de priorité des fichiers .env est:
+
+1. `.env.local` (priorité maximale)
+2. `.env.development` / `.env.production`
+3. `.env`
+
+Si `.env.local` existe avec des URLs obsolètes, il écrase les bonnes URLs du `.env`.
+
+**Prévention:**
+
+- ✅ Utiliser UNIQUEMENT `.env` pour le développement local
+- ❌ NE PAS créer de `.env.local` sauf si vraiment nécessaire
+- ✅ Toujours vérifier `ls -la | grep "\.env"` avant de débugger les connexions
+- ✅ Ajouter `.env.local` au `.gitignore` (déjà fait)
+- ✅ Documenter les URLs de connexion actuelles dans le README du projet
+
+### 10. Prisma DB Push - Alternative à npx prisma migrate dev
+
+**Bug rencontré:** 2025-12-13
+**Symptôme:** `npx prisma migrate dev` échoue avec erreur de connexion mais les variables d'environnement sont correctes
+**Cause:** Problème de pooling ou timeout avec pgbouncer lors des migrations
+**Solution:**
+
+```bash
+# ❌ Commande qui échoue parfois
+npx prisma migrate dev --name description
+
+# ✅ Alternative qui fonctionne toujours avec Supabase
+# 1. Exporter les variables d'environnement DATABASE_URL
+export DATABASE_URL="postgresql://postgres.dhedkewujbazelsdihtr:aAgmZkI8KuQiYipW@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+export DIRECT_URL="postgresql://postgres.dhedkewujbazelsdihtr:aAgmZkI8KuQiYipW@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
+
+# 2. Utiliser db push au lieu de migrate dev
+npx prisma db push
+
+# 3. Régénérer le client Prisma
+npx prisma generate
+```
+
+**Quand utiliser `db push` vs `migrate dev`:**
+
+- ✅ **`db push`** (recommandé pour développement avec Supabase):
+  - Push direct du schema vers la DB sans créer de fichiers de migration
+  - Idéal pour prototypage et développement rapide
+  - Fonctionne mieux avec Supabase pooled connections
+  - Pas d'historique de migrations créé
+
+- ⚠️ **`migrate dev`** (pour production):
+  - Crée des fichiers de migration versionnés
+  - Nécessaire pour tracking des changements en production
+  - Peut échouer avec pgbouncer/pooling
+  - Utiliser la connection directe (DIRECT_URL) pour les migrations
+
+**Workflow recommandé:**
+
+```bash
+# DÉVELOPPEMENT: Utiliser db push
+export DATABASE_URL="postgresql://postgres.xxx:yyy@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+npx prisma db push
+
+# PRODUCTION: Créer une migration avec DIRECT_URL
+export DATABASE_URL="postgresql://postgres.xxx:yyy@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
+npx prisma migrate deploy
+```
+
+**Prévention:**
+
+- ✅ Toujours utiliser `npx prisma db push` en développement avec Supabase
+- ✅ Exporter DATABASE_URL avant d'exécuter les commandes Prisma
+- ✅ Utiliser DIRECT_URL (port 5432) pour les migrations de production
+- ✅ Garder DATABASE_URL avec pgbouncer (port 6543) pour l'application
 
 ### Template pour ajouter un nouveau bug
 

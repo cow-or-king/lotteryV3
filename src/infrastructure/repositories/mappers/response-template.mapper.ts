@@ -4,7 +4,7 @@
  * IMPORTANT: Couche infrastructure, dépendance à Prisma OK
  */
 
-import { ResponseTemplate as PrismaResponseTemplate } from '@prisma/client';
+import { ResponseTemplate as PrismaResponseTemplate } from '@/generated/prisma';
 import {
   ResponseTemplateEntity,
   ResponseTemplateProps,

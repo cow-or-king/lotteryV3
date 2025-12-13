@@ -2,7 +2,7 @@
  * Script pour vérifier et corriger le schéma de la table stores
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 
 const prisma = new PrismaClient();
 

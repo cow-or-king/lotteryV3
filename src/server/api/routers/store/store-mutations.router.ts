@@ -84,7 +84,27 @@ export const storeMutationsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const result = await createStoreUseCase.execute(input, ctx.user.id);
+      // Récupérer user et subscription pour l'anti-fraude
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        include: { subscription: true },
+      });
+
+      if (!user || !user.subscription) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: "Impossible de récupérer l'utilisateur ou son abonnement",
+        });
+      }
+
+      const result = await createStoreUseCase.execute(
+        {
+          ...input,
+          userEmail: user.email,
+          isFreePlan: user.subscription.plan === 'FREE',
+        },
+        ctx.user.id,
+      );
 
       if (!result.success) {
         const errorMessage = result.error.message;
@@ -194,7 +214,27 @@ export const storeMutationsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const result = await deleteStoreUseCase.execute({ id: input.id }, ctx.user.id);
+      // Récupérer user et subscription pour l'anti-fraude
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        include: { subscription: true },
+      });
+
+      if (!user || !user.subscription) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: "Impossible de récupérer l'utilisateur ou son abonnement",
+        });
+      }
+
+      const result = await deleteStoreUseCase.execute(
+        {
+          id: input.id,
+          userEmail: user.email,
+          isFreePlan: user.subscription.plan === 'FREE',
+        },
+        ctx.user.id,
+      );
 
       if (!result.success) {
         throw new TRPCError({

@@ -81,7 +81,7 @@ export function PrizeSetModal({
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-4 sm:p-6 md:p-8 max-w-full sm:max-w-2xl w-full shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             {isEditing ? 'Modifier le lot' : 'Nouveau lot'}

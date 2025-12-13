@@ -59,12 +59,21 @@ export function useSidebar() {
   // Gérer le mode responsive
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      const isMobile = window.innerWidth < 1024;
+
+      if (isMobile) {
         setIsCompactMode(true);
-        if (!userClosedSidebar) {
+        // ✅ FIX: Respecter toujours la préférence utilisateur
+        // Si user a fermé, garder fermée même au resize (scroll iOS)
+        if (userClosedSidebar) {
+          setIsSidebarOpen(false);
+        }
+        // Ne rouvrir que si en haut de page ET que user n'a jamais fermé
+        else if (window.scrollY === 0) {
           setIsSidebarOpen(true);
         }
       } else {
+        // Desktop: toujours ouverte, reset préférence user
         setIsCompactMode(false);
         setIsSidebarOpen(true);
         setUserClosedSidebar(false);

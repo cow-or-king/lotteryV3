@@ -116,7 +116,7 @@ export function ResponseModal({
       <div className="absolute inset-0 flex items-end justify-center p-4 overflow-y-auto">
         <div
           ref={modalRef}
-          className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4"
+          className="relative bg-white rounded-3xl shadow-2xl w-full max-w-full sm:max-w-3xl my-4"
           onClick={(e) => e.stopPropagation()}
           style={{ maxHeight: MODAL_MAX_HEIGHT }}
           role="dialog"

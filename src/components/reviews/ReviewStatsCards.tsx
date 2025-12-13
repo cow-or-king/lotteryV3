@@ -26,7 +26,7 @@ export function ReviewStatsCards({ stats, loading }: ReviewStatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       {/* Total avis */}
-      <div className="p-6 px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
+      <div className="p-4 sm:p-6 px-6 sm:px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-gray-600">Total avis</p>
           <Star className="w-5 h-5 text-purple-600" />
@@ -37,7 +37,7 @@ export function ReviewStatsCards({ stats, loading }: ReviewStatsCardsProps) {
       </div>
 
       {/* Note moyenne */}
-      <div className="p-6 px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
+      <div className="p-4 sm:p-6 px-6 sm:px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-gray-600">Note moyenne</p>
           <TrendingUp className="w-5 h-5 text-yellow-600" />
@@ -49,7 +49,7 @@ export function ReviewStatsCards({ stats, loading }: ReviewStatsCardsProps) {
       </div>
 
       {/* Avis positifs */}
-      <div className="p-6 px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
+      <div className="p-4 sm:p-6 px-6 sm:px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-gray-600">Avis positifs (4-5★)</p>
           <span className="text-green-600 text-2xl">😊</span>
@@ -63,7 +63,7 @@ export function ReviewStatsCards({ stats, loading }: ReviewStatsCardsProps) {
       </div>
 
       {/* Taux de réponse */}
-      <div className="p-6 px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
+      <div className="p-4 sm:p-6 px-6 sm:px-10 bg-white/50 backdrop-blur-xl border flex flex-col justify-between border-purple-600/20 rounded-2xl">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-gray-600">Taux de réponse</p>
           <span className="text-blue-600 text-2xl">💬</span>

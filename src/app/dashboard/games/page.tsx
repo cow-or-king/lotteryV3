@@ -1,165 +1,322 @@
 /**
- * Games Dashboard Page
- * Page de gestion des jeux
+ * Games Library Page
+ * Bibliothèque de jeux interactifs avec templates
  * IMPORTANT: Route protégée par le middleware
  */
 
 'use client';
 
-import GameListItem from '@/components/games/GameListItem';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { useConfirm } from '@/hooks/ui/useConfirm';
-import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/trpc/client';
-import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { GameTypeEnum } from '@/lib/types/game.types';
+import { TemplateSelectionModal } from '@/components/games/TemplateSelectionModal';
+import { Sparkles, Dices, Grid3x3, Box, Shuffle, Target, Trophy, Zap } from 'lucide-react';
+import { api } from '@/lib/trpc/client';
 
-interface GameData {
-  id: string;
+interface GameTemplate {
+  type: keyof typeof GameTypeEnum;
   name: string;
-  type: string;
-  primaryColor: string;
-  secondaryColor: string;
-  active: boolean;
-  createdAt: Date;
-  playsCount: number;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  gradient: string;
+  features: string[];
+  popular?: boolean;
+  comingSoon?: boolean;
 }
 
-export default function GamesPage() {
+const gameTemplates: GameTemplate[] = [
+  {
+    type: 'WHEEL',
+    name: 'Roue de la Fortune',
+    description: 'Roue interactive avec segments personnalisables et animations fluides',
+    icon: Target,
+    color: 'from-purple-500 to-pink-500',
+    gradient: 'bg-gradient-to-br from-purple-500/10 to-pink-500/10',
+    features: ['Segments personnalisables', 'Animations fluides', 'Son & vibrations'],
+    popular: true,
+  },
+  {
+    type: 'SCRATCH',
+    name: 'Carte à Gratter',
+    description: 'Grattez pour découvrir votre gain avec effet réaliste',
+    icon: Sparkles,
+    color: 'from-blue-500 to-cyan-500',
+    gradient: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
+    features: [
+      'Effet de grattage réaliste',
+      'Zone de grattage personnalisable',
+      'Révélation progressive',
+    ],
+  },
+  {
+    type: 'SLOT_MACHINE',
+    name: 'Machine à Sous',
+    description: 'Alignez les symboles pour gagner des récompenses',
+    icon: Grid3x3,
+    color: 'from-orange-500 to-red-500',
+    gradient: 'bg-gradient-to-br from-orange-500/10 to-red-500/10',
+    features: ['Rouleaux animés', 'Symboles personnalisés', 'Combinaisons gagnantes'],
+    popular: true,
+  },
+  {
+    type: 'MYSTERY_BOX',
+    name: 'Boîte Mystère',
+    description: 'Choisissez une boîte parmi plusieurs pour découvrir votre surprise',
+    icon: Box,
+    color: 'from-green-500 to-emerald-500',
+    gradient: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10',
+    features: ['Choix multiple', "Animation d'ouverture", 'Suspense garanti'],
+  },
+  {
+    type: 'DICE',
+    name: 'Lancer de Dés',
+    description: 'Lancez les dés et tentez votre chance',
+    icon: Dices,
+    color: 'from-yellow-500 to-amber-500',
+    gradient: 'bg-gradient-to-br from-yellow-500/10 to-amber-500/10',
+    features: ['Physique réaliste', 'Multiple dés', 'Règles personnalisables'],
+  },
+  {
+    type: 'SHAKE',
+    name: 'Secouer pour Gagner',
+    description: 'Secouez votre téléphone pour révéler votre gain',
+    icon: Zap,
+    color: 'from-indigo-500 to-purple-500',
+    gradient: 'bg-gradient-to-br from-indigo-500/10 to-purple-500/10',
+    features: ['Détection de mouvement', 'Feedback haptique', 'Mobile-first'],
+    comingSoon: true,
+  },
+  {
+    type: 'MEMORY',
+    name: 'Jeu de Mémoire',
+    description: 'Trouvez les paires pour gagner des récompenses',
+    icon: Shuffle,
+    color: 'from-rose-500 to-pink-500',
+    gradient: 'bg-gradient-to-br from-rose-500/10 to-pink-500/10',
+    features: ['Cartes personnalisables', 'Niveaux de difficulté', 'Chronomètre'],
+    comingSoon: true,
+  },
+  {
+    type: 'WHEEL_MINI',
+    name: 'Roue Rapide',
+    description: 'Version simplifiée et ultra-rapide de la roue',
+    icon: Trophy,
+    color: 'from-teal-500 to-cyan-500',
+    gradient: 'bg-gradient-to-br from-teal-500/10 to-cyan-500/10',
+    features: ['Rotation rapide', 'Interface minimaliste', 'Parfait pour mobile'],
+    comingSoon: true,
+  },
+];
+
+export default function GamesLibraryPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const utils = api.useUtils();
+  const [selectedGame, setSelectedGame] = useState<GameTemplate | null>(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
-  // Hook de confirmation
-  const { ConfirmDialogProps, confirm } = useConfirm();
+  // Récupérer les designs personnalisés depuis la DB
+  const { data: customDesigns = [] } = api.wheelDesign.list.useQuery();
 
-  // Fetch games avec refetch automatique
-  const { data: games, isLoading } = api.game.list.useQuery(undefined, {
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  });
+  const handleSelectGame = (template: GameTemplate) => {
+    if (template.comingSoon) return;
 
-  // Delete mutation
-  const deleteMutation = api.game.delete.useMutation({
-    onSuccess: async () => {
-      toast({
-        title: 'Jeu supprimé',
-        description: 'Le jeu a été supprimé avec succès',
-      });
-      await utils.game.list.invalidate();
-    },
-    onError: (error: { message: string }) => {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'error',
-      });
-    },
-  });
-
-  const handleDelete = async (id: string, name: string) => {
-    const confirmed = await confirm({
-      title: 'Supprimer le jeu',
-      message: `Êtes-vous sûr de vouloir supprimer le jeu "${name}" ? Cette action est irréversible.`,
-      confirmText: 'Supprimer',
-      cancelText: 'Annuler',
-      variant: 'danger',
-    });
-
-    if (confirmed) {
-      deleteMutation.mutate({ id });
+    // Redirection directe vers le configurateur selon le type de jeu
+    if (template.type === 'WHEEL') {
+      router.push('/dashboard/games/configure/wheel');
+    } else {
+      // Pour les autres jeux, on garde la modal pour le moment
+      setSelectedGame(template);
+      setShowTemplateModal(true);
     }
   };
 
+  const handleSelectTemplate = (templateKey: string) => {
+    if (!selectedGame) return;
+    router.push(`/dashboard/games/new?type=${selectedGame.type}&template=${templateKey}`);
+  };
+
   return (
-    <div>
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Mes Jeux</h1>
-          <p className="text-gray-700">Créez et gérez vos jeux interactifs</p>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-gray-800 mb-3">Bibliothèque de Jeux</h1>
+        <p className="text-lg text-gray-600">
+          Choisissez un jeu et personnalisez-le selon vos besoins
+        </p>
+      </div>
+
+      {/* Mes Designs Personnalisés */}
+      {customDesigns.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Mes Designs Personnalisés</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {customDesigns.map((design) => (
+              <button
+                key={design.id}
+                onClick={() => router.push(`/dashboard/games/configure/wheel?id=${design.id}`)}
+                className="relative group p-6 rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 hover:border-purple-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
+              >
+                {/* Badge personnalisé */}
+                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  Mon design
+                </div>
+
+                {/* Icône */}
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+
+                {/* Contenu */}
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{design.name}</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  {design.numberOfSegments} segments •{' '}
+                  {design.colorMode === 'BI_COLOR' ? 'Bi-color' : 'Multicolor'}
+                </p>
+
+                {/* CTA */}
+                <div className="mt-6 pt-4 border-t border-purple-200">
+                  <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Modifier →
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/dashboard/games/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            Créer un jeu
-          </button>
+      )}
+
+      {/* Game Templates Grid */}
+      <div className={customDesigns.length > 0 ? 'mb-12' : ''}>
+        {customDesigns.length > 0 && (
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Templates Disponibles</h2>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {gameTemplates.map((template) => {
+            const Icon = template.icon;
+            return (
+              <button
+                key={template.type}
+                onClick={() => handleSelectGame(template)}
+                disabled={template.comingSoon}
+                className={`
+                relative group
+                p-6 rounded-2xl border-2 border-gray-200
+                transition-all duration-300
+                ${template.gradient}
+                ${
+                  template.comingSoon
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'hover:border-gray-300 hover:shadow-xl hover:scale-105 cursor-pointer'
+                }
+              `}
+              >
+                {/* Popular Badge */}
+                {template.popular && !template.comingSoon && (
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    Populaire
+                  </div>
+                )}
+
+                {/* Coming Soon Badge */}
+                {template.comingSoon && (
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    Bientôt
+                  </div>
+                )}
+
+                {/* Icon */}
+                <div
+                  className={`
+                w-16 h-16 rounded-xl bg-gradient-to-br ${template.color}
+                flex items-center justify-center mb-4
+                group-hover:scale-110 transition-transform duration-300
+              `}
+                >
+                  <Icon className="w-8 h-8 text-white" />
+                </div>
+
+                {/* Content */}
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{template.name}</h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{template.description}</p>
+
+                {/* Features */}
+                <ul className="space-y-2">
+                  {template.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${template.color}`}
+                      />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA */}
+                {!template.comingSoon && (
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <span
+                      className={`text-sm font-semibold bg-gradient-to-r ${template.color} bg-clip-text text-transparent`}
+                    >
+                      Personnaliser →
+                    </span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      {/* Games List */}
-      {!isLoading && games && games.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* @ts-expect-error - TS2589: Type recursion from tRPC inference */}
-          {games.map((game) => (
-            <GameListItem
-              key={game.id}
-              game={
-                {
-                  id: game.id,
-                  name: game.name,
-                  type: game.type,
-                  primaryColor: game.primaryColor,
-                  secondaryColor: game.secondaryColor,
-                  active: game.isActive,
-                  createdAt: new Date(game.createdAt),
-                  playsCount: game._count?.plays ?? 0,
-                } as GameData
-              }
-              onPlay={() => router.push(`/play/${game.id}`)}
-              onEdit={() => router.push(`/dashboard/games/${game.id}/edit`)}
-              onDelete={() => handleDelete(game.id, game.name)}
-              onStats={() => router.push(`/dashboard/games/${game.id}/stats`)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && games && games.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mb-6">
-            <svg
-              className="w-12 h-12 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+      {/* Info Section */}
+      <div className="mt-16 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Comment ça marche ?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+              1
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-1">Choisissez un jeu</h3>
+              <p className="text-sm text-gray-600">
+                Sélectionnez le type de jeu qui correspond le mieux à votre campagne
+              </p>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Aucun jeu</h2>
-          <p className="text-gray-600 text-center mb-8 max-w-md">
-            Vous n'avez pas encore créé de jeu. Commencez par créer votre premier jeu interactif
-            avec des animations et du feedback haptique.
-          </p>
-          <button
-            onClick={() => router.push('/dashboard/games/new')}
-            className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            Créer mon premier jeu
-          </button>
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+              2
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-1">Personnalisez</h3>
+              <p className="text-sm text-gray-600">
+                Ajustez les couleurs, textes, gains et paramètres selon vos besoins
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+              3
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-1">Publiez</h3>
+              <p className="text-sm text-gray-600">
+                Activez votre jeu et partagez-le avec vos clients via QR code ou lien
+              </p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog {...ConfirmDialogProps} />
+      {/* Template Selection Modal */}
+      {selectedGame && (
+        <TemplateSelectionModal
+          isOpen={showTemplateModal}
+          onClose={() => setShowTemplateModal(false)}
+          gameType={selectedGame.type}
+          gameName={selectedGame.name}
+          onSelectTemplate={handleSelectTemplate}
+        />
+      )}
     </div>
   );
 }

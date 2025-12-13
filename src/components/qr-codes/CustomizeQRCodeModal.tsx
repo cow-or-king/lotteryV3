@@ -66,7 +66,7 @@ export function CustomizeQRCodeModal({ isOpen, onClose, store }: CustomizeQRCode
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-8 max-w-2xl w-full shadow-2xl my-8">
+      <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-4 sm:p-6 md:p-8 max-w-full sm:max-w-2xl w-full shadow-2xl my-4 sm:my-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Palette className="w-8 h-8 text-purple-600" />

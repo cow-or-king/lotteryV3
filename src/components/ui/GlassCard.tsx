@@ -40,7 +40,7 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
           'rounded-3xl shadow-2xl border',
           blurs[blur],
           variants[variant],
-          !noPadding && 'p-8',
+          !noPadding && 'p-4 sm:p-6 md:p-8',
           className,
         )}
         {...props}
