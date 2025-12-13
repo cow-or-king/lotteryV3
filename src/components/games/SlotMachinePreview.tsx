@@ -29,14 +29,18 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
     const initialReels: string[][] = [];
     const initialFinal: string[] = [];
 
+    // Create many more symbols for smooth spinning animation (20 symbols per reel)
+    const symbolsToGenerate = 20;
+
     for (let i = 0; i < design.reelsCount; i++) {
       const reelSymbols: string[] = [];
-      for (let j = 0; j < design.symbolsPerReel; j++) {
+      for (let j = 0; j < symbolsToGenerate; j++) {
         const randomSymbol = design.symbols[Math.floor(Math.random() * design.symbols.length)];
         reelSymbols.push(randomSymbol?.icon || '🍒');
       }
       initialReels.push(reelSymbols);
-      initialFinal.push(reelSymbols[Math.floor(design.symbolsPerReel / 2)] || '🍒');
+      // Show the middle symbol
+      initialFinal.push(reelSymbols[Math.floor(symbolsToGenerate / 2)] || '🍒');
     }
 
     setReelSymbols(initialReels);
@@ -58,18 +62,20 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
 
     // Animate reels stopping one by one
     const animateReels = async () => {
+      // Wait for spin animation duration
+      await new Promise((resolve) => setTimeout(resolve, design.spinDuration));
+
+      // Stop each reel with a delay
       for (let i = 0; i < design.reelsCount; i++) {
         await new Promise((resolve) => setTimeout(resolve, design.reelDelay));
 
-        // Update reel to show final symbol
+        // Update reel to show final symbol in middle position
         setReelSymbols((prev) => {
           const newReels = [...prev];
           if (newReels[i]) {
-            const middleIndex = Math.floor(design.symbolsPerReel / 2);
-            newReels[i] =
-              newReels[i]?.map((_, idx) =>
-                idx === middleIndex ? newFinalSymbols[i] || '🍒' : newReels[i]?.[idx] || '🍒',
-              ) || [];
+            // Place the final symbol in the middle of visible area
+            newReels[i] = [...(newReels[i] || [])];
+            newReels[i]![7] = newFinalSymbols[i] || '🍒'; // Position 7 is middle of 15 symbols
           }
           return newReels;
         });
@@ -141,30 +147,27 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
                 height: '300px',
               }}
             >
-              {/* Reel symbols */}
+              {/* Reel symbols - show only visible portion (3 symbols) */}
               <div
-                className={`flex flex-col items-center justify-center h-full transition-transform ${
+                className={`flex flex-col items-center transition-transform ${
                   isSpinning ? `${getEasingClass()} animate-slot-spin` : ''
                 }`}
+                style={{
+                  transform: isSpinning ? 'translateY(-200%)' : 'translateY(0)',
+                }}
               >
-                {reel.map((symbol, symbolIndex) => {
-                  const middleIndex = Math.floor(design.symbolsPerReel / 2);
-                  const isMiddle = symbolIndex === middleIndex;
-
-                  return (
-                    <div
-                      key={symbolIndex}
-                      className={`flex items-center justify-center ${
-                        isMiddle ? 'text-6xl' : 'text-4xl opacity-30'
-                      }`}
-                      style={{
-                        height: `${100 / design.symbolsPerReel}%`,
-                      }}
-                    >
-                      {symbol}
-                    </div>
-                  );
-                })}
+                {reel.slice(0, 15).map((symbol, symbolIndex) => (
+                  <div
+                    key={symbolIndex}
+                    className="flex items-center justify-center text-6xl"
+                    style={{
+                      height: '100px',
+                      minHeight: '100px',
+                    }}
+                  >
+                    {symbol}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
