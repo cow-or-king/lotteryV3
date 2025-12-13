@@ -258,28 +258,8 @@ export default function QRCodeLogoUpload({
             step="10"
             value={logoSize}
             onChange={(e) => onLogoSizeChange(Number(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            className="slider"
           />
-          <style jsx>{`
-            .slider::-webkit-slider-thumb {
-              appearance: none;
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              cursor: pointer;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            }
-            .slider::-moz-range-thumb {
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              cursor: pointer;
-              border: none;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            }
-          `}</style>
         </div>
       )}
     </div>

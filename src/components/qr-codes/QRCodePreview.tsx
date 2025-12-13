@@ -67,124 +67,21 @@ export default function QRCodePreview({
   };
 
   return (
-    <div className="relative w-full h-full min-h-[400px] flex items-center justify-center">
-      {/* Animation styles */}
-      <style jsx>{`
-        .qr-ripple {
-          transition: all 0.3s ease;
-        }
-        .qr-ripple:hover {
-          animation: ripple 0.6s ease-out;
-        }
-        @keyframes ripple {
-          0% {
-            box-shadow:
-              0 0 0 0 rgba(${rgbaColor}, 0.7),
-              0 0 0 0 rgba(${rgbaColor}, 0.7);
-          }
-          50% {
-            box-shadow:
-              0 0 0 10px rgba(${rgbaColor}, 0.3),
-              0 0 0 20px rgba(${rgbaColor}, 0.1);
-          }
-          100% {
-            box-shadow:
-              0 0 0 20px rgba(${rgbaColor}, 0),
-              0 0 0 40px rgba(${rgbaColor}, 0);
-          }
-        }
-
-        .qr-pulse {
-          transition: all 0.3s ease;
-        }
-        .qr-pulse:hover {
-          animation: pulse 1s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%,
-          100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-        }
-
-        .qr-glow {
-          transition: all 0.3s ease;
-        }
-        .qr-glow:hover {
-          animation: glow 1.5s ease-in-out infinite;
-        }
-        @keyframes glow {
-          0%,
-          100% {
-            box-shadow:
-              0 0 20px rgba(${rgbaColor}, 0.5),
-              0 0 30px rgba(${rgbaColor}, 0.3);
-          }
-          50% {
-            box-shadow:
-              0 0 40px rgba(${rgbaColor}, 0.8),
-              0 0 60px rgba(${rgbaColor}, 0.5);
-          }
-        }
-
-        .qr-rotate3d {
-          transition: all 0.5s ease;
-          transform-style: preserve-3d;
-        }
-        .qr-rotate3d:hover {
-          transform: rotateY(15deg) rotateX(15deg);
-        }
-
-        .qr-wave {
-          transition: all 0.3s ease;
-        }
-        .qr-wave:hover {
-          animation: wave 2s ease-in-out infinite;
-        }
-        @keyframes wave {
-          0%,
-          100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-5px) rotate(1deg);
-          }
-          75% {
-            transform: translateY(5px) rotate(-1deg);
-          }
-        }
-
-        .qr-circular-ripple {
-          transition: all 0.3s ease;
-          position: relative;
-        }
-        .qr-circular-ripple:hover::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          animation: circular-ripple 1s ease-out;
-        }
-        @keyframes circular-ripple {
-          0% {
-            box-shadow: 0 0 0 0 rgba(${rgbaColor}, 0.7);
-          }
-          50% {
-            box-shadow: 0 0 0 30px rgba(${rgbaColor}, 0.3);
-          }
-          100% {
-            box-shadow: 0 0 0 60px rgba(${rgbaColor}, 0);
-          }
-        }
-      `}</style>
-
+    <div
+      className="relative w-full h-full min-h-[400px] flex items-center justify-center"
+      style={
+        {
+          '--ripple-color': `rgba(${rgbaColor}, 0.7)`,
+          '--ripple-color-mid': `rgba(${rgbaColor}, 0.3)`,
+          '--ripple-color-light': `rgba(${rgbaColor}, 0.1)`,
+          '--ripple-color-none': `rgba(${rgbaColor}, 0)`,
+          '--glow-color-base': `rgba(${rgbaColor}, 0.5)`,
+          '--glow-color-light': `rgba(${rgbaColor}, 0.3)`,
+          '--glow-color-strong': `rgba(${rgbaColor}, 0.8)`,
+          '--glow-color-mid': `rgba(${rgbaColor}, 0.5)`,
+        } as React.CSSProperties
+      }
+    >
       {/* Glassmorphism container */}
       <div className="relative w-full max-w-md mx-auto p-8 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
         <div className="flex flex-col items-center justify-center space-y-4">
