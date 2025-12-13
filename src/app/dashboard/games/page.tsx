@@ -105,7 +105,6 @@ const gameTemplates: GameTemplate[] = [
     color: 'from-teal-500 to-cyan-500',
     gradient: 'bg-linear-to-br from-teal-500/10 to-cyan-500/10',
     features: ['Rotation rapide', 'Interface minimaliste', 'Parfait pour mobile'],
-    comingSoon: true,
   },
 ];
 
@@ -123,12 +122,23 @@ export default function GamesLibraryPage() {
     }
 
     // Redirection directe vers le configurateur selon le type de jeu
-    if (template.type === 'WHEEL') {
-      router.push('/dashboard/games/configure/wheel');
-    } else {
-      // Pour les autres jeux, on garde la modal pour le moment
-      setSelectedGame(template);
-      setShowTemplateModal(true);
+    switch (template.type) {
+      case 'WHEEL':
+        router.push('/dashboard/games/configure/wheel');
+        break;
+      case 'SCRATCH':
+        router.push('/dashboard/games/configure/scratch');
+        break;
+      case 'SLOT_MACHINE':
+        router.push('/dashboard/games/configure/slot');
+        break;
+      case 'WHEEL_MINI':
+        router.push('/dashboard/games/configure/wheel-mini');
+        break;
+      default:
+        // Pour les autres jeux, on garde la modal pour le moment
+        setSelectedGame(template);
+        setShowTemplateModal(true);
     }
   };
 
