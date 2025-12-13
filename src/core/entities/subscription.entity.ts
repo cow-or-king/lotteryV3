@@ -10,6 +10,8 @@
 
 import { Result } from '@/lib/types/result.type';
 import { SubscriptionId, UserId } from '@/lib/types/branded.type';
+import { SubscriptionLimits } from '../value-objects/subscription-limits.value-object';
+import { SubscriptionBilling } from '../value-objects/subscription-billing.value-object';
 
 // Domain Errors
 export class InvalidSubscriptionError extends Error {
@@ -42,6 +44,17 @@ export interface SubscriptionProps {
   readonly userId: UserId;
   readonly plan: SubscriptionPlan;
   readonly status: SubscriptionStatus;
+  readonly limits: SubscriptionLimits;
+  readonly billing: SubscriptionBilling;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface SubscriptionPersistence {
+  readonly id: string;
+  readonly userId: string;
+  readonly plan: string;
+  readonly status: string;
   readonly storesLimit: number;
   readonly campaignsLimit: number;
   readonly stripeCustomerId: string | null;
@@ -52,11 +65,11 @@ export interface SubscriptionProps {
   readonly updatedAt: Date;
 }
 
-export interface SubscriptionPersistence {
-  readonly id: string;
-  readonly userId: string;
-  readonly plan: string;
-  readonly status: string;
+export interface SubscriptionPropsFromPersistence {
+  readonly id: SubscriptionId;
+  readonly userId: UserId;
+  readonly plan: SubscriptionPlan;
+  readonly status: SubscriptionStatus;
   readonly storesLimit: number;
   readonly campaignsLimit: number;
   readonly stripeCustomerId: string | null;
@@ -89,12 +102,8 @@ export class SubscriptionEntity {
       userId,
       plan: 'FREE',
       status: 'ACTIVE',
-      storesLimit: 1,
-      campaignsLimit: 1,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      currentPeriodEnd: null,
-      cancelAtPeriodEnd: false,
+      limits: SubscriptionLimits.forPlan('FREE'),
+      billing: SubscriptionBilling.createFree(),
       createdAt: now,
       updatedAt: now,
     });
@@ -119,12 +128,12 @@ export class SubscriptionEntity {
       userId,
       plan: 'STARTER',
       status: 'ACTIVE',
-      storesLimit: 3,
-      campaignsLimit: 10,
-      stripeCustomerId,
-      stripeSubscriptionId,
-      currentPeriodEnd,
-      cancelAtPeriodEnd: false,
+      limits: SubscriptionLimits.forPlan('STARTER'),
+      billing: SubscriptionBilling.createPaid(
+        stripeCustomerId,
+        stripeSubscriptionId,
+        currentPeriodEnd,
+      ),
       createdAt: now,
       updatedAt: now,
     });
@@ -149,12 +158,12 @@ export class SubscriptionEntity {
       userId,
       plan: 'PROFESSIONAL',
       status: 'ACTIVE',
-      storesLimit: 10,
-      campaignsLimit: -1, // Unlimited
-      stripeCustomerId,
-      stripeSubscriptionId,
-      currentPeriodEnd,
-      cancelAtPeriodEnd: false,
+      limits: SubscriptionLimits.forPlan('PROFESSIONAL'),
+      billing: SubscriptionBilling.createPaid(
+        stripeCustomerId,
+        stripeSubscriptionId,
+        currentPeriodEnd,
+      ),
       createdAt: now,
       updatedAt: now,
     });
@@ -179,12 +188,12 @@ export class SubscriptionEntity {
       userId,
       plan: 'ENTERPRISE',
       status: 'ACTIVE',
-      storesLimit: -1, // Unlimited
-      campaignsLimit: -1, // Unlimited
-      stripeCustomerId,
-      stripeSubscriptionId,
-      currentPeriodEnd,
-      cancelAtPeriodEnd: false,
+      limits: SubscriptionLimits.forPlan('ENTERPRISE'),
+      billing: SubscriptionBilling.createPaid(
+        stripeCustomerId,
+        stripeSubscriptionId,
+        currentPeriodEnd,
+      ),
       createdAt: now,
       updatedAt: now,
     });
@@ -196,8 +205,22 @@ export class SubscriptionEntity {
    * Reconstructs entity from database
    * Used by subscription.repository.prisma.ts
    */
-  static fromPersistence(props: SubscriptionProps): SubscriptionEntity {
-    return new SubscriptionEntity(props);
+  static fromPersistence(props: SubscriptionPropsFromPersistence): SubscriptionEntity {
+    return new SubscriptionEntity({
+      id: props.id,
+      userId: props.userId,
+      plan: props.plan,
+      status: props.status,
+      limits: SubscriptionLimits.create(props.storesLimit, props.campaignsLimit),
+      billing: SubscriptionBilling.create({
+        stripeCustomerId: props.stripeCustomerId,
+        stripeSubscriptionId: props.stripeSubscriptionId,
+        currentPeriodEnd: props.currentPeriodEnd,
+        cancelAtPeriodEnd: props.cancelAtPeriodEnd,
+      }),
+      createdAt: props.createdAt,
+      updatedAt: props.updatedAt,
+    });
   }
 
   // Getters
@@ -219,27 +242,35 @@ export class SubscriptionEntity {
   }
 
   get storesLimit(): number {
-    return this.props.storesLimit;
+    return this.props.limits.storesLimit;
   }
 
   get campaignsLimit(): number {
-    return this.props.campaignsLimit;
+    return this.props.limits.campaignsLimit;
+  }
+
+  get limits(): SubscriptionLimits {
+    return this.props.limits;
+  }
+
+  get billing(): SubscriptionBilling {
+    return this.props.billing;
   }
 
   get stripeCustomerId(): string | null {
-    return this.props.stripeCustomerId;
+    return this.props.billing.stripeCustomerId;
   }
 
   get stripeSubscriptionId(): string | null {
-    return this.props.stripeSubscriptionId;
+    return this.props.billing.stripeSubscriptionId;
   }
 
   get currentPeriodEnd(): Date | null {
-    return this.props.currentPeriodEnd;
+    return this.props.billing.currentPeriodEnd;
   }
 
   get cancelAtPeriodEnd(): boolean {
-    return this.props.cancelAtPeriodEnd;
+    return this.props.billing.cancelAtPeriodEnd;
   }
 
   get createdAt(): Date {
@@ -256,7 +287,7 @@ export class SubscriptionEntity {
    * Checks if user can create a new store based on current count
    */
   canCreateStore(currentStoresCount: number): boolean {
-    return this.props.storesLimit === -1 || currentStoresCount < this.props.storesLimit;
+    return this.props.limits.canCreateStore(currentStoresCount);
   }
 
   /**
@@ -264,8 +295,7 @@ export class SubscriptionEntity {
    */
   canCreateCampaign(currentCampaignsCount: number): boolean {
     return (
-      this.props.status === 'ACTIVE' &&
-      (this.props.campaignsLimit === -1 || currentCampaignsCount < this.props.campaignsLimit)
+      this.props.status === 'ACTIVE' && this.props.limits.canCreateCampaign(currentCampaignsCount)
     );
   }
 
@@ -280,7 +310,7 @@ export class SubscriptionEntity {
    * Checks if subscription has expired
    */
   isExpired(): boolean {
-    return this.props.currentPeriodEnd !== null && this.props.currentPeriodEnd < new Date();
+    return this.props.billing.isExpired();
   }
 
   /**
@@ -296,13 +326,10 @@ export class SubscriptionEntity {
       );
     }
 
-    const limits = this.getPlanLimits(newPlan);
-
     const upgraded = new SubscriptionEntity({
       ...this.props,
       plan: newPlan,
-      storesLimit: limits.storesLimit,
-      campaignsLimit: limits.campaignsLimit,
+      limits: SubscriptionLimits.forPlan(newPlan),
       updatedAt: new Date(),
     });
 
@@ -319,13 +346,10 @@ export class SubscriptionEntity {
       );
     }
 
-    const limits = this.getPlanLimits(newPlan);
-
     const downgraded = new SubscriptionEntity({
       ...this.props,
       plan: newPlan,
-      storesLimit: limits.storesLimit,
-      campaignsLimit: limits.campaignsLimit,
+      limits: SubscriptionLimits.forPlan(newPlan),
       updatedAt: new Date(),
     });
 
@@ -337,7 +361,7 @@ export class SubscriptionEntity {
    * Status remains ACTIVE until period end
    */
   cancel(): Result<SubscriptionEntity> {
-    if (this.props.cancelAtPeriodEnd) {
+    if (this.props.billing.cancelAtPeriodEnd) {
       return Result.fail(new InvalidSubscriptionError('Subscription is already set to cancel'));
     }
 
@@ -347,7 +371,7 @@ export class SubscriptionEntity {
 
     const cancelled = new SubscriptionEntity({
       ...this.props,
-      cancelAtPeriodEnd: true,
+      billing: this.props.billing.withCancelAtPeriodEnd(),
       updatedAt: new Date(),
     });
 
@@ -358,7 +382,7 @@ export class SubscriptionEntity {
    * Reactivates a cancelled subscription before period end
    */
   reactivate(): Result<SubscriptionEntity> {
-    if (!this.props.cancelAtPeriodEnd) {
+    if (!this.props.billing.cancelAtPeriodEnd) {
       return Result.fail(new InvalidSubscriptionError('Subscription is not cancelled'));
     }
 
@@ -372,7 +396,7 @@ export class SubscriptionEntity {
 
     const reactivated = new SubscriptionEntity({
       ...this.props,
-      cancelAtPeriodEnd: false,
+      billing: this.props.billing.withoutCancelAtPeriodEnd(),
       updatedAt: new Date(),
     });
 
@@ -425,20 +449,6 @@ export class SubscriptionEntity {
     return planHierarchy[to] < planHierarchy[from];
   }
 
-  private getPlanLimits(plan: SubscriptionPlan): {
-    storesLimit: number;
-    campaignsLimit: number;
-  } {
-    const limits: Record<SubscriptionPlan, { storesLimit: number; campaignsLimit: number }> = {
-      FREE: { storesLimit: 1, campaignsLimit: 1 },
-      STARTER: { storesLimit: 3, campaignsLimit: 10 },
-      PROFESSIONAL: { storesLimit: 10, campaignsLimit: -1 },
-      ENTERPRISE: { storesLimit: -1, campaignsLimit: -1 },
-    };
-
-    return limits[plan];
-  }
-
   // Serialization
 
   /**
@@ -446,17 +456,18 @@ export class SubscriptionEntity {
    * Used by subscription.repository.prisma.ts
    */
   toPersistence(): SubscriptionPersistence {
+    const billingProps = this.props.billing.toPersistence();
     return {
       id: this.props.id as string,
       userId: this.props.userId as string,
       plan: this.props.plan,
       status: this.props.status,
-      storesLimit: this.props.storesLimit,
-      campaignsLimit: this.props.campaignsLimit,
-      stripeCustomerId: this.props.stripeCustomerId,
-      stripeSubscriptionId: this.props.stripeSubscriptionId,
-      currentPeriodEnd: this.props.currentPeriodEnd,
-      cancelAtPeriodEnd: this.props.cancelAtPeriodEnd,
+      storesLimit: this.props.limits.storesLimit,
+      campaignsLimit: this.props.limits.campaignsLimit,
+      stripeCustomerId: billingProps.stripeCustomerId,
+      stripeSubscriptionId: billingProps.stripeSubscriptionId,
+      currentPeriodEnd: billingProps.currentPeriodEnd,
+      cancelAtPeriodEnd: billingProps.cancelAtPeriodEnd,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };

@@ -6,15 +6,8 @@
 
 'use client';
 
-import {
-  QRCodeAnimationSelector,
-  QRCodeColorPicker,
-  QRCodeExportOptions,
-  QRCodeLogoUpload,
-  QRCodeStoreSelector,
-  QRCodeStyleSelector,
-} from '@/components/qr-codes';
-import QRCodePreview from '@/components/qr-codes/QRCodePreview';
+import { QRCodeEditForm } from '@/components/qr-codes/QRCodeEditForm';
+import { QRCodePreviewPanel } from '@/components/qr-codes/QRCodePreviewPanel';
 import { useQRCodeExport } from '@/hooks/qr-codes/useQRCodeExport';
 import { useQRCodeGenerator } from '@/hooks/qr-codes/useQRCodeGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -264,108 +257,48 @@ export default function EditQRCodePage() {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Configuration */}
-        <div className="space-y-6">
-          {/* Name Input */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Nom du QR Code</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setNameError('');
-              }}
-              placeholder="Ex: QR Code Restaurant"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
-            />
-            {nameError && <p className="text-red-500 text-sm mt-2">{nameError}</p>}
-          </div>
-
-          {/* URL Input */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              URL de destination
-            </label>
-            <input
-              type="url"
-              value={generator.url}
-              onChange={(e) => generator.setUrl(e.target.value)}
-              placeholder="https://example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
-            />
-            {generator.error && <p className="text-red-500 text-sm mt-2">{generator.error}</p>}
-          </div>
-
-          {/* Style Selector */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <QRCodeStyleSelector value={generator.style} onChange={generator.setStyle} />
-          </div>
-
-          {/* Animation Selector */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <QRCodeAnimationSelector
-              value={generator.animation}
-              onChange={generator.setAnimation}
-            />
-          </div>
-
-          {/* Color Pickers */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <QRCodeColorPicker
-              foregroundColor={generator.foregroundColor}
-              backgroundColor={generator.backgroundColor}
-              animationColor={generator.animationColor || '#8b5cf6'}
-              onForegroundChange={generator.setForegroundColor}
-              onBackgroundChange={generator.setBackgroundColor}
-              onAnimationColorChange={generator.setAnimationColor}
-            />
-          </div>
-
-          {/* Logo Upload */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <QRCodeLogoUpload
-              logoUrl={generator.logoUrl}
-              onLogoChange={handleLogoUpload}
-              logoSize={generator.logoSize || 80}
-              onLogoSizeChange={generator.setLogoSize}
-            />
-            {isUploadingLogo && (
-              <div className="mt-2 text-sm text-purple-600 font-medium">Upload en cours...</div>
-            )}
-          </div>
-
-          {/* Store Selector */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <QRCodeStoreSelector value={storeId} onChange={setStoreId} />
-          </div>
-        </div>
+        <QRCodeEditForm
+          name={name}
+          nameError={nameError}
+          url={generator.url}
+          urlError={generator.error || ''}
+          style={generator.style}
+          animation={generator.animation}
+          foregroundColor={generator.foregroundColor}
+          backgroundColor={generator.backgroundColor}
+          animationColor={generator.animationColor || '#8b5cf6'}
+          logoUrl={generator.logoUrl}
+          logoSize={generator.logoSize || 80}
+          storeId={storeId}
+          isUploadingLogo={isUploadingLogo}
+          onNameChange={(value) => {
+            setName(value);
+            setNameError('');
+          }}
+          onUrlChange={generator.setUrl}
+          onStyleChange={generator.setStyle}
+          onAnimationChange={generator.setAnimation}
+          onForegroundColorChange={generator.setForegroundColor}
+          onBackgroundColorChange={generator.setBackgroundColor}
+          onAnimationColorChange={generator.setAnimationColor}
+          onLogoChange={handleLogoUpload}
+          onLogoSizeChange={generator.setLogoSize}
+          onStoreIdChange={setStoreId}
+        />
 
         {/* Right Column: Preview & Export */}
-        <div className="space-y-6">
-          {/* Preview */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Aperçu</h2>
-            <QRCodePreview
-              key={`${generator.logoSize}-${generator.logoUrl}`}
-              qrCodeDataUrl={generator.qrCodeResult?.dataUrl || null}
-              animation={generator.animation}
-              isGenerating={generator.isGenerating}
-            />
-          </div>
-
-          {/* Export Options */}
-          {generator.qrCodeResult && (
-            <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg">
-              <QRCodeExportOptions
-                onExport={(format, size) =>
-                  exporter.exportAs(format, size, `${name || 'qr-code'}.${format}`)
-                }
-                isExporting={exporter.isExporting}
-                disabled={false}
-              />
-            </div>
-          )}
-        </div>
+        <QRCodePreviewPanel
+          qrCodeDataUrl={generator.qrCodeResult?.dataUrl || null}
+          animation={generator.animation}
+          isGenerating={generator.isGenerating}
+          logoUrl={generator.logoUrl}
+          logoSize={generator.logoSize || 80}
+          onExport={(format, size) =>
+            exporter.exportAs(format, size || 2048, `${name || 'qr-code'}.${format.toLowerCase()}`)
+          }
+          isExporting={exporter.isExporting}
+          hasQRCode={!!generator.qrCodeResult}
+        />
       </div>
     </div>
   );

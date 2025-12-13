@@ -5,11 +5,12 @@
  * IMPORTANT: ZERO any types
  */
 
-import * as QRCode from 'qrcode';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import type { QRCodeStyle, ErrorCorrectionLevel, LogoSize } from '@/lib/types/qr-code.types';
+import { generateQRCodeSVG, generateQRCodePNG } from './qr-code-style-builder';
+import { getQRCodeMargin } from './qr-code-shape-builder';
 
 /**
  * Interface pour les paramètres de personnalisation
@@ -33,14 +34,6 @@ interface CustomizeQRCodeResult {
   pngUrl?: string;
   customizedAt?: Date;
   error?: string;
-}
-
-/**
- * Conversion style enum vers QRCode options
- */
-function getQRCodeMargin(style: QRCodeStyle): number {
-  // CLASSY style a besoin de plus de margin pour les dégradés
-  return style === 'CLASSY' ? 2 : 1;
 }
 
 /**
@@ -140,6 +133,7 @@ export async function customizeStoreQRCode(
       backgroundColor,
       errorCorrectionLevel,
       margin: getQRCodeMargin(style),
+      width: 2048,
     });
 
     // 7. Générer PNG HD (2048x2048 pour haute résolution)
@@ -148,8 +142,8 @@ export async function customizeStoreQRCode(
       foregroundColor,
       backgroundColor,
       errorCorrectionLevel,
-      size: 2048,
       margin: getQRCodeMargin(style),
+      width: 2048,
     });
 
     // 8. Upload vers Supabase Storage
@@ -238,59 +232,6 @@ export async function customizeStoreQRCode(
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-}
-
-/**
- * Génère un QR Code SVG (vectoriel)
- */
-async function generateQRCodeSVG(options: {
-  url: string;
-  foregroundColor: string;
-  backgroundColor: string;
-  errorCorrectionLevel: ErrorCorrectionLevel;
-  margin: number;
-}): Promise<string> {
-  const { url, foregroundColor, backgroundColor, errorCorrectionLevel, margin } = options;
-
-  const svg = await QRCode.toString(url, {
-    type: 'svg',
-    errorCorrectionLevel: errorCorrectionLevel as 'L' | 'M' | 'Q' | 'H',
-    margin,
-    width: 2048, // Haute résolution pour impression
-    color: {
-      dark: foregroundColor,
-      light: backgroundColor,
-    },
-  });
-
-  return svg;
-}
-
-/**
- * Génère un QR Code PNG (raster HD)
- */
-async function generateQRCodePNG(options: {
-  url: string;
-  foregroundColor: string;
-  backgroundColor: string;
-  errorCorrectionLevel: ErrorCorrectionLevel;
-  size: number;
-  margin: number;
-}): Promise<Buffer> {
-  const { url, foregroundColor, backgroundColor, errorCorrectionLevel, size, margin } = options;
-
-  const buffer = await QRCode.toBuffer(url, {
-    type: 'png',
-    errorCorrectionLevel: errorCorrectionLevel as 'L' | 'M' | 'Q' | 'H',
-    margin,
-    width: size,
-    color: {
-      dark: foregroundColor,
-      light: backgroundColor,
-    },
-  });
-
-  return buffer;
 }
 
 /**
