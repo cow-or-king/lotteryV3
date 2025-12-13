@@ -91,12 +91,60 @@
     }
   }
 
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shine {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+      box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+  }
+
+  @keyframes slot-spin {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-100%);
+    }
+  }
+
+  @keyframes ease-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
   --animate-blob: blob 7s infinite;
   --animate-ripple: ripple 0.6s ease-out;
   --animate-qr-pulse: qr-pulse 1s ease-in-out infinite;
   --animate-qr-glow: qr-glow 1.5s ease-in-out infinite;
   --animate-wave: wave 2s ease-in-out infinite;
   --animate-circular-ripple: circular-ripple 1s ease-out;
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-shine: shine 0.8s ease-out;
+  --animate-slot-spin: slot-spin 1s linear infinite;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -168,6 +216,19 @@ textarea::placeholder {
 
 .animation-delay-6000 {
   animation-delay: 6s;
+}
+
+/* Game animations */
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-shine {
+  animation: shine 0.8s ease-out;
+}
+
+.animate-slot-spin {
+  animation: slot-spin 1s linear infinite;
 }
 
 /* QR Code Animation Classes */
