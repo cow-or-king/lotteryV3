@@ -29,18 +29,25 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
     const initialReels: string[][] = [];
     const initialFinal: string[] = [];
 
-    // Create many more symbols for smooth spinning animation (20 symbols per reel)
-    const symbolsToGenerate = 20;
+    // Create MANY more symbols for smooth continuous spinning (50 symbols per reel)
+    const symbolsToGenerate = 50;
 
     for (let i = 0; i < design.reelsCount; i++) {
       const reelSymbols: string[] = [];
+      // Add random offset to desynchronize reels
+      const offset = Math.floor(Math.random() * 10);
+
       for (let j = 0; j < symbolsToGenerate; j++) {
-        const randomSymbol = design.symbols[Math.floor(Math.random() * design.symbols.length)];
+        const randomSymbol = design.symbols[(j + offset) % design.symbols.length];
         reelSymbols.push(randomSymbol?.icon || '🍒');
       }
-      initialReels.push(reelSymbols);
+
+      // Shuffle to make it more random
+      const shuffled = [...reelSymbols].sort(() => Math.random() - 0.5);
+      initialReels.push(shuffled);
+
       // Show the middle symbol
-      initialFinal.push(reelSymbols[Math.floor(symbolsToGenerate / 2)] || '🍒');
+      initialFinal.push(shuffled[Math.floor(symbolsToGenerate / 2)] || '🍒');
     }
 
     setReelSymbols(initialReels);
@@ -52,6 +59,28 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
 
     setIsSpinning(true);
     setShowWin(false);
+
+    // Regenerate ALL reels with new random symbols to desynchronize
+    const symbolsToGenerate = 50;
+    const newReels: string[][] = [];
+
+    for (let i = 0; i < design.reelsCount; i++) {
+      const reelSymbols: string[] = [];
+      // Different random offset for each reel
+      const offset = Math.floor(Math.random() * design.symbols.length);
+
+      for (let j = 0; j < symbolsToGenerate; j++) {
+        const randomIndex = (j + offset) % design.symbols.length;
+        const randomSymbol = design.symbols[randomIndex];
+        reelSymbols.push(randomSymbol?.icon || '🍒');
+      }
+
+      // Shuffle to randomize
+      const shuffled = [...reelSymbols].sort(() => Math.random() - 0.5);
+      newReels.push(shuffled);
+    }
+
+    setReelSymbols(newReels);
 
     // Generate random final symbols for each reel
     const newFinalSymbols: string[] = [];
@@ -75,7 +104,7 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
           if (newReels[i]) {
             // Place the final symbol in the middle of visible area
             newReels[i] = [...(newReels[i] || [])];
-            newReels[i]![7] = newFinalSymbols[i] || '🍒'; // Position 7 is middle of 15 symbols
+            newReels[i]![15] = newFinalSymbols[i] || '🍒'; // Position 15 is middle of 30 symbols
           }
           return newReels;
         });
@@ -147,16 +176,16 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
                 height: '300px',
               }}
             >
-              {/* Reel symbols - show only visible portion (3 symbols) */}
+              {/* Reel symbols - show 30 symbols for smoother animation */}
               <div
                 className={`flex flex-col items-center transition-transform ${
                   isSpinning ? `${getEasingClass()} animate-slot-spin` : ''
                 }`}
                 style={{
-                  transform: isSpinning ? 'translateY(-200%)' : 'translateY(0)',
+                  transform: isSpinning ? 'translateY(-300%)' : 'translateY(0)',
                 }}
               >
-                {reel.slice(0, 15).map((symbol, symbolIndex) => (
+                {reel.slice(0, 30).map((symbol, symbolIndex) => (
                   <div
                     key={symbolIndex}
                     className="flex items-center justify-center text-6xl"
