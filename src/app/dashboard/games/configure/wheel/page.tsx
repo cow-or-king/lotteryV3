@@ -9,11 +9,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { WheelPreview } from '@/components/games/WheelPreview';
-import { ColorModeSelector } from '@/components/games/wheel/ColorModeSelector';
-import { SegmentControls } from '@/components/games/wheel/SegmentControls';
+import { WheelColorSettings } from '@/components/games/wheel/WheelColorSettings';
+import { WheelLogoSettings } from '@/components/games/wheel/WheelLogoSettings';
+import { WheelTextSettings } from '@/components/games/wheel/WheelTextSettings';
 import { AdvancedSettings } from '@/components/games/wheel/AdvancedSettings';
 import { useWheelDesignForm } from '@/hooks/games/useWheelDesignForm';
-import { ColorModeEnum } from '@/lib/types/game-design.types';
 import { Palette, Image as ImageIcon, Type, Settings, Save, ArrowLeft } from 'lucide-react';
 
 type TabType = 'colors' | 'logo' | 'text' | 'advanced';
@@ -97,7 +97,7 @@ export default function WheelConfiguratorPage() {
             <button
               onClick={handleSaveDesign}
               disabled={isSaving}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <Save className="w-4 h-4 sm:w-5 sm:h-5" />
               {isSaving ? 'Enregistrement...' : designId ? 'Mettre à jour' : 'Enregistrer'}
@@ -158,198 +158,34 @@ export default function WheelConfiguratorPage() {
           {/* Tab Content - Scrollable */}
           <div className="space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-[600px] pr-2">
             {activeTab === 'colors' && (
-              <>
-                {/* Nombre de segments */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Nombre de segments
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[4, 6, 8, 10, 12].map((count) => (
-                      <button
-                        key={count}
-                        onClick={() => handleNumberOfSegmentsChange(count)}
-                        className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all text-sm sm:text-base ${
-                          design.numberOfSegments === count
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {count}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Mode couleur */}
-                <ColorModeSelector
-                  colorMode={design.colorMode}
-                  onColorModeChange={handleColorModeChange}
-                />
-
-                {/* Contrôles de couleur */}
-                <SegmentControls
-                  numberOfSegments={design.numberOfSegments}
-                  colorMode={design.colorMode}
-                  primaryColor={design.primaryColor}
-                  secondaryColor={design.secondaryColor}
-                  onNumberOfSegmentsChange={handleNumberOfSegmentsChange}
-                  onPrimaryColorChange={handlePrimaryColorChange}
-                  onSecondaryColorChange={handleSecondaryColorChange}
-                />
-
-                {/* Multi-color segments */}
-                {design.colorMode === ColorModeEnum.MULTI_COLOR && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Couleurs des segments
-                    </label>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
-                      {design.segments.map((segment, index) => (
-                        <div key={segment.id} className="text-center">
-                          <input
-                            type="color"
-                            value={segment.color}
-                            onChange={(e) => handleSegmentColorChange(index, e.target.value)}
-                            className="w-full h-10 sm:h-12 rounded-lg cursor-pointer mb-1"
-                          />
-                          <div className="text-xs text-gray-600">S{index + 1}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
+              <WheelColorSettings
+                design={design}
+                onNumberOfSegmentsChange={handleNumberOfSegmentsChange}
+                onColorModeChange={handleColorModeChange}
+                onPrimaryColorChange={handlePrimaryColorChange}
+                onSecondaryColorChange={handleSecondaryColorChange}
+                onSegmentColorChange={handleSegmentColorChange}
+              />
             )}
 
             {activeTab === 'logo' && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Logo central
-                </label>
-
-                {!design.centerLogoUrl ? (
-                  <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-8 text-center hover:border-purple-400 transition-colors cursor-pointer block">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      Cliquez pour uploader un logo
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG, SVG - Max 2MB</p>
-                  </label>
-                ) : (
-                  <div className="border-2 border-gray-200 rounded-xl p-4 sm:p-6">
-                    <div className="flex items-center justify-center mb-4">
-                      <img
-                        src={design.centerLogoUrl}
-                        alt="Logo"
-                        className="max-w-full max-h-32 object-contain"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <label className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors cursor-pointer text-center text-sm sm:text-base">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                        />
-                        Changer
-                      </label>
-                      <button
-                        onClick={handleRemoveLogo}
-                        className="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 transition-colors text-sm sm:text-base"
-                      >
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Taille du logo */}
-                <div className="mt-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Taille du logo: {design.centerLogoSize}px
-                  </label>
-                  <input
-                    type="range"
-                    min="40"
-                    max="120"
-                    value={design.centerLogoSize}
-                    onChange={(e) =>
-                      setDesign({ ...design, centerLogoSize: Number(e.target.value) })
-                    }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Petit</span>
-                    <span>Grand</span>
-                  </div>
-                </div>
-              </div>
+              <WheelLogoSettings
+                design={design}
+                onLogoUpload={handleLogoUpload}
+                onRemoveLogo={handleRemoveLogo}
+                onLogoSizeChange={(size) => setDesign({ ...design, centerLogoSize: size })}
+              />
             )}
 
             {activeTab === 'text' && (
-              <>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Afficher le texte</div>
-                    <div className="text-sm text-gray-500">Texte sur les segments</div>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={design.showSegmentText}
-                      onChange={(e) => setDesign({ ...design, showSegmentText: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                  </label>
-                </div>
-
-                {design.showSegmentText && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Taille du texte: {design.textSize}px
-                      </label>
-                      <input
-                        type="range"
-                        min="12"
-                        max="24"
-                        value={design.textSize}
-                        onChange={(e) => setDesign({ ...design, textSize: Number(e.target.value) })}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Inclinaison: {design.textRotation}°
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="90"
-                        value={design.textRotation}
-                        onChange={(e) =>
-                          setDesign({ ...design, textRotation: Number(e.target.value) })
-                        }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Horizontal</span>
-                        <span>Vertical</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </>
+              <WheelTextSettings
+                design={design}
+                onShowTextChange={(show) => setDesign({ ...design, showSegmentText: show })}
+                onTextSizeChange={(size) => setDesign({ ...design, textSize: size })}
+                onTextRotationChange={(rotation) =>
+                  setDesign({ ...design, textRotation: rotation })
+                }
+              />
             )}
 
             {activeTab === 'advanced' && (

@@ -81,7 +81,7 @@ export function RoleIndicator({
   const roles: UserRole[] = ['SUPER_ADMIN', 'ADMIN', 'USER'];
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="relative">
       {/* Badge cliquable */}
       <button
         ref={buttonRef}
@@ -89,68 +89,35 @@ export function RoleIndicator({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all whitespace-nowrap hover:scale-105"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '6px 12px',
           background: current.bgColor,
           border: `1px solid ${current.borderColor}`,
-          borderRadius: '8px',
           color: current.color,
-          fontSize: '12px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          whiteSpace: 'nowrap',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
           e.currentTarget.style.boxShadow = `0 0 0 2px ${current.borderColor}`;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
           e.currentTarget.style.boxShadow = 'none';
         }}
       >
         <Icon size={14} />
         <span>{current.label}</span>
-        {isImpersonating && <span style={{ fontSize: '10px' }}>👁️</span>}
-        <span style={{ fontSize: '10px' }}>▼</span>
+        {isImpersonating && <span className="text-[10px]">👁️</span>}
+        <span className="text-[10px]">▼</span>
       </button>
 
       {/* Dropdown qui s'ouvre vers le haut */}
       {isOpen && (
         <div
           ref={dropdownRef}
-          style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 8px)',
-            left: 0,
-            background: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(147, 51, 234, 0.2)',
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-            padding: '8px',
-            minWidth: '180px',
-            zIndex: 9999,
-          }}
+          className="absolute bottom-[calc(100%+8px)] left-0 bg-white/98 backdrop-blur-xl border border-purple-600/20 rounded-xl shadow-lg shadow-black/10 p-2 min-w-[180px] z-[9999]"
         >
           {/* Header */}
-          <div
-            style={{
-              padding: '8px 12px',
-              borderBottom: '1px solid rgba(147, 51, 234, 0.1)',
-              marginBottom: '8px',
-            }}
-          >
-            <p style={{ margin: 0, fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>
-              MODE TEST
-            </p>
-            <p style={{ margin: 0, fontSize: '10px', color: '#9ca3af' }}>
-              Rôle réel: {roleConfig[realRole].label}
-            </p>
+          <div className="px-3 py-2 border-b border-purple-600/10 mb-2">
+            <p className="m-0 text-[11px] text-gray-600 font-semibold">MODE TEST</p>
+            <p className="m-0 text-[10px] text-gray-400">Rôle réel: {roleConfig[realRole].label}</p>
           </div>
 
           {/* Liste des rôles */}
@@ -166,21 +133,12 @@ export function RoleIndicator({
                   onRoleChange(role);
                   setIsOpen(false);
                 }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer transition-all mb-1"
                 style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
                   background: isActive ? config.bgColor : 'transparent',
                   border: isActive ? `1px solid ${config.borderColor}` : '1px solid transparent',
-                  borderRadius: '8px',
                   color: isActive ? config.color : '#4b5563',
-                  fontSize: '12px',
                   fontWeight: isActive ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  marginBottom: '4px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -194,24 +152,14 @@ export function RoleIndicator({
                 }}
               >
                 <RoleIcon size={14} />
-                <span style={{ flex: 1 }}>{config.label}</span>
-                {isActive && <span style={{ fontSize: '12px' }}>✓</span>}
+                <span className="flex-1">{config.label}</span>
+                {isActive && <span className="text-xs">✓</span>}
               </button>
             );
           })}
 
           {/* Warning */}
-          <div
-            style={{
-              marginTop: '8px',
-              padding: '8px',
-              background: 'rgba(251, 191, 36, 0.1)',
-              borderRadius: '6px',
-              fontSize: '10px',
-              color: '#92400e',
-              lineHeight: '1.3',
-            }}
-          >
+          <div className="mt-2 p-2 bg-amber-500/10 rounded-md text-[10px] text-amber-900 leading-snug">
             ⚠️ Simule les permissions localement. Rechargement auto.
           </div>
         </div>

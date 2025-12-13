@@ -1,7 +1,7 @@
+import { RoleImpersonationProvider } from '@/lib/rbac/RoleImpersonationProvider';
+import { TRPCProvider } from '@/lib/trpc/Provider';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { TRPCProvider } from '@/lib/trpc/Provider';
-import { RoleImpersonationProvider } from '@/lib/rbac/RoleImpersonationProvider';
 import './globals.css';
 
 const geistSans = Geist({

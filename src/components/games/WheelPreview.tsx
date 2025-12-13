@@ -59,7 +59,10 @@ export function WheelPreview({ design, size = 400, interactive = true }: WheelPr
   const segmentAngle = 360 / design.segments.length;
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative w-full mx-auto flex items-center justify-center"
+      style={{ aspectRatio: '1/1', maxWidth: size }}
+    >
       {/* Wheel Container */}
       <div
         className={`relative w-full h-full rounded-full transition-transform ${
@@ -74,10 +77,9 @@ export function WheelPreview({ design, size = 400, interactive = true }: WheelPr
       >
         {/* Segments SVG */}
         <svg
-          width={size}
-          height={size}
           viewBox={`0 0 ${size} ${size}`}
-          className="absolute inset-0"
+          className="absolute inset-0 w-full h-full"
+          preserveAspectRatio="xMidYMid meet"
         >
           {design.segments.map((segment, index) => {
             const startAngle = (index * segmentAngle - 90) * (Math.PI / 180);

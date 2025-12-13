@@ -41,7 +41,7 @@ export function DashboardTopBar({
         </button>
 
         {/* User Avatar */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-lg shrink-0">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center text-lg shrink-0">
           👤
         </div>
 

@@ -32,7 +32,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Roue interactive avec segments personnalisables et animations fluides',
     icon: Target,
     color: 'from-purple-500 to-pink-500',
-    gradient: 'bg-gradient-to-br from-purple-500/10 to-pink-500/10',
+    gradient: 'bg-linear-to-br from-purple-500/10 to-pink-500/10',
     features: ['Segments personnalisables', 'Animations fluides', 'Son & vibrations'],
     popular: true,
   },
@@ -42,7 +42,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Grattez pour découvrir votre gain avec effet réaliste',
     icon: Sparkles,
     color: 'from-blue-500 to-cyan-500',
-    gradient: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
+    gradient: 'bg-linear-to-br from-blue-500/10 to-cyan-500/10',
     features: [
       'Effet de grattage réaliste',
       'Zone de grattage personnalisable',
@@ -55,7 +55,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Alignez les symboles pour gagner des récompenses',
     icon: Grid3x3,
     color: 'from-orange-500 to-red-500',
-    gradient: 'bg-gradient-to-br from-orange-500/10 to-red-500/10',
+    gradient: 'bg-linear-to-br from-orange-500/10 to-red-500/10',
     features: ['Rouleaux animés', 'Symboles personnalisés', 'Combinaisons gagnantes'],
     popular: true,
   },
@@ -65,7 +65,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Choisissez une boîte parmi plusieurs pour découvrir votre surprise',
     icon: Box,
     color: 'from-green-500 to-emerald-500',
-    gradient: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10',
+    gradient: 'bg-linear-to-br from-green-500/10 to-emerald-500/10',
     features: ['Choix multiple', "Animation d'ouverture", 'Suspense garanti'],
   },
   {
@@ -74,7 +74,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Lancez les dés et tentez votre chance',
     icon: Dices,
     color: 'from-yellow-500 to-amber-500',
-    gradient: 'bg-gradient-to-br from-yellow-500/10 to-amber-500/10',
+    gradient: 'bg-linear-to-br from-yellow-500/10 to-amber-500/10',
     features: ['Physique réaliste', 'Multiple dés', 'Règles personnalisables'],
   },
   {
@@ -83,7 +83,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Secouez votre téléphone pour révéler votre gain',
     icon: Zap,
     color: 'from-indigo-500 to-purple-500',
-    gradient: 'bg-gradient-to-br from-indigo-500/10 to-purple-500/10',
+    gradient: 'bg-linear-to-br from-indigo-500/10 to-purple-500/10',
     features: ['Détection de mouvement', 'Feedback haptique', 'Mobile-first'],
     comingSoon: true,
   },
@@ -93,7 +93,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Trouvez les paires pour gagner des récompenses',
     icon: Shuffle,
     color: 'from-rose-500 to-pink-500',
-    gradient: 'bg-gradient-to-br from-rose-500/10 to-pink-500/10',
+    gradient: 'bg-linear-to-br from-rose-500/10 to-pink-500/10',
     features: ['Cartes personnalisables', 'Niveaux de difficulté', 'Chronomètre'],
     comingSoon: true,
   },
@@ -103,7 +103,7 @@ const gameTemplates: GameTemplate[] = [
     description: 'Version simplifiée et ultra-rapide de la roue',
     icon: Trophy,
     color: 'from-teal-500 to-cyan-500',
-    gradient: 'bg-gradient-to-br from-teal-500/10 to-cyan-500/10',
+    gradient: 'bg-linear-to-br from-teal-500/10 to-cyan-500/10',
     features: ['Rotation rapide', 'Interface minimaliste', 'Parfait pour mobile'],
     comingSoon: true,
   },
@@ -118,7 +118,9 @@ export default function GamesLibraryPage() {
   const { data: customDesigns = [] } = api.wheelDesign.list.useQuery();
 
   const handleSelectGame = (template: GameTemplate) => {
-    if (template.comingSoon) return;
+    if (template.comingSoon) {
+      return;
+    }
 
     // Redirection directe vers le configurateur selon le type de jeu
     if (template.type === 'WHEEL') {
@@ -131,7 +133,9 @@ export default function GamesLibraryPage() {
   };
 
   const handleSelectTemplate = (templateKey: string) => {
-    if (!selectedGame) return;
+    if (!selectedGame) {
+      return;
+    }
     router.push(`/dashboard/games/new?type=${selectedGame.type}&template=${templateKey}`);
   };
 
@@ -154,15 +158,15 @@ export default function GamesLibraryPage() {
               <button
                 key={design.id}
                 onClick={() => router.push(`/dashboard/games/configure/wheel?id=${design.id}`)}
-                className="relative group p-6 rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 hover:border-purple-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
+                className="relative group p-6 rounded-2xl border-2 border-purple-200 bg-linear-to-br from-purple-50 to-pink-50 hover:border-purple-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
               >
                 {/* Badge personnalisé */}
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                <div className="absolute -top-3 -right-3 bg-linear-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                   Mon design
                 </div>
 
                 {/* Icône */}
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Target className="w-8 h-8 text-white" />
                 </div>
 
@@ -175,7 +179,7 @@ export default function GamesLibraryPage() {
 
                 {/* CTA */}
                 <div className="mt-6 pt-4 border-t border-purple-200">
-                  <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <span className="text-sm font-semibold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     Modifier →
                   </span>
                 </div>
@@ -212,14 +216,14 @@ export default function GamesLibraryPage() {
               >
                 {/* Popular Badge */}
                 {template.popular && !template.comingSoon && (
-                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  <div className="absolute -top-3 -right-3 bg-linear-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                     Populaire
                   </div>
                 )}
 
                 {/* Coming Soon Badge */}
                 {template.comingSoon && (
-                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  <div className="absolute -top-3 -right-3 bg-linear-to-r from-gray-400 to-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                     Bientôt
                   </div>
                 )}
@@ -227,7 +231,7 @@ export default function GamesLibraryPage() {
                 {/* Icon */}
                 <div
                   className={`
-                w-16 h-16 rounded-xl bg-gradient-to-br ${template.color}
+                w-16 h-16 rounded-xl bg-linear-to-br ${template.color}
                 flex items-center justify-center mb-4
                 group-hover:scale-110 transition-transform duration-300
               `}
@@ -244,7 +248,7 @@ export default function GamesLibraryPage() {
                   {template.features.map((feature, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-xs text-gray-600">
                       <div
-                        className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${template.color}`}
+                        className={`w-1.5 h-1.5 rounded-full bg-linear-to-r ${template.color}`}
                       />
                       {feature}
                     </li>
@@ -255,7 +259,7 @@ export default function GamesLibraryPage() {
                 {!template.comingSoon && (
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <span
-                      className={`text-sm font-semibold bg-gradient-to-r ${template.color} bg-clip-text text-transparent`}
+                      className={`text-sm font-semibold bg-linear-to-r ${template.color} bg-clip-text text-transparent`}
                     >
                       Personnaliser →
                     </span>
@@ -268,11 +272,11 @@ export default function GamesLibraryPage() {
       </div>
 
       {/* Info Section */}
-      <div className="mt-16 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+      <div className="mt-16 bg-linear-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Comment ça marche ?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            <div className="flex-shrink-0 w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
               1
             </div>
             <div>
@@ -283,7 +287,7 @@ export default function GamesLibraryPage() {
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            <div className="flex-shrink-0 w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
               2
             </div>
             <div>
@@ -294,7 +298,7 @@ export default function GamesLibraryPage() {
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            <div className="flex-shrink-0 w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
               3
             </div>
             <div>

@@ -43,48 +43,15 @@ export default function MagicLinkPage() {
 
   if (emailSent) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '40px',
-            maxWidth: '500px',
-            width: '100%',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>📧</div>
-          <h1
-            style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', marginBottom: '16px' }}
-          >
-            Email envoyé !
-          </h1>
-          <p
-            style={{ color: '#6b7280', fontSize: '16px', marginBottom: '24px', lineHeight: '1.6' }}
-          >
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-600 to-purple-700 p-5">
+        <div className="bg-white rounded-2xl p-10 max-w-lg w-full shadow-2xl text-center">
+          <div className="text-6xl mb-5">📧</div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Email envoyé !</h1>
+          <p className="text-gray-600 text-base mb-6 leading-relaxed">
             Nous avons envoyé un lien de connexion à <strong>{email}</strong>
           </p>
-          <div
-            style={{
-              background: '#f0fdf4',
-              border: '1px solid #10b981',
-              borderRadius: '8px',
-              padding: '16px',
-              marginBottom: '24px',
-            }}
-          >
-            <p style={{ color: '#065f46', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
+          <div className="bg-green-50 border border-green-500 rounded-lg p-4 mb-6">
+            <p className="text-green-900 text-sm m-0 leading-normal">
               ✅ Cliquez sur le lien dans l'email pour vous connecter automatiquement.
               <br />
               ⏱️ Le lien expire dans 1 heure.
@@ -95,25 +62,7 @@ export default function MagicLinkPage() {
               setEmailSent(false);
               setEmail('');
             }}
-            style={{
-              background: 'transparent',
-              color: '#9333ea',
-              border: '1px solid #9333ea',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#9333ea';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = '#9333ea';
-            }}
+            className="bg-transparent text-purple-600 border border-purple-600 px-6 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all hover:bg-purple-600 hover:text-white"
           >
             Renvoyer l'email
           </button>
@@ -123,59 +72,19 @@ export default function MagicLinkPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '20px',
-      }}
-    >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '40px',
-          maxWidth: '450px',
-          width: '100%',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
-      >
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-600 to-purple-700 p-5">
+      <div className="bg-white rounded-2xl p-10 max-w-md w-full shadow-2xl">
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
-          <h1
-            style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}
-          >
-            Magic Link
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px' }}>Connectez-vous sans mot de passe</p>
+        <div className="text-center mb-8">
+          <div className="text-5xl mb-4">🔐</div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Magic Link</h1>
+          <p className="text-gray-600 text-sm">Connectez-vous sans mot de passe</p>
         </div>
 
         {/* Avantages */}
-        <div
-          style={{
-            background: '#f0fdf4',
-            border: '1px solid #10b981',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '24px',
-          }}
-        >
-          <p style={{ color: '#065f46', fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>
-            ✨ Pourquoi Magic Link ?
-          </p>
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: '20px',
-              color: '#047857',
-              fontSize: '12px',
-              lineHeight: '1.6',
-            }}
-          >
+        <div className="bg-green-50 border border-green-500 rounded-lg p-4 mb-6">
+          <p className="text-green-900 text-xs font-semibold mb-2">✨ Pourquoi Magic Link ?</p>
+          <ul className="m-0 pl-5 text-green-800 text-xs leading-relaxed">
             <li>Aucun mot de passe à retenir</li>
             <li>Connexion ultra-rapide (1 clic)</li>
             <li>Sécurité maximale</li>
@@ -184,17 +93,8 @@ export default function MagicLinkPage() {
 
         {/* Form */}
         <form onSubmit={handleMagicLink}>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              htmlFor="email"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
-                marginBottom: '8px',
-              }}
-            >
+          <div className="mb-5">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               Email
             </label>
             <input
@@ -204,101 +104,38 @@ export default function MagicLinkPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="votre@email.com"
               required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                transition: 'all 0.3s',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#9333ea';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(147, 51, 234, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm outline-none transition-all focus:border-purple-600 focus:ring-4 focus:ring-purple-100"
             />
           </div>
 
           {error && (
-            <div
-              style={{
-                background: '#fef2f2',
-                border: '1px solid #ef4444',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '20px',
-              }}
-            >
-              <p style={{ color: '#991b1b', fontSize: '13px', margin: 0 }}>⚠️ {error}</p>
+            <div className="bg-red-50 border border-red-500 rounded-lg p-3 mb-5">
+              <p className="text-red-900 text-xs m-0">⚠️ {error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
-              color: 'white',
-              border: 'none',
-              padding: '14px',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-              transition: 'all 0.3s',
-              boxShadow: '0 4px 12px rgba(147, 51, 234, 0.4)',
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(147, 51, 234, 0.5)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(147, 51, 234, 0.4)';
-            }}
+            className="w-full bg-linear-to-br from-purple-600 to-pink-600 text-white border-0 px-4 py-3.5 rounded-lg text-base font-semibold cursor-pointer transition-all shadow-lg shadow-purple-500/40 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? '📧 Envoi en cours...' : '🚀 Envoyer le Magic Link'}
           </button>
         </form>
 
         {/* Divider */}
-        <div style={{ margin: '24px 0', textAlign: 'center', position: 'relative' }}>
-          <div style={{ borderTop: '1px solid #e5e7eb' }}></div>
-          <span
-            style={{
-              position: 'absolute',
-              top: '-10px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'white',
-              padding: '0 12px',
-              fontSize: '12px',
-              color: '#6b7280',
-            }}
-          >
+        <div className="my-6 text-center relative">
+          <div className="border-t border-gray-200"></div>
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-gray-600">
             ou
           </span>
         </div>
 
         {/* Links */}
-        <div style={{ textAlign: 'center' }}>
+        <div className="text-center">
           <Link
             href="/login"
-            style={{
-              color: '#9333ea',
-              fontSize: '14px',
-              textDecoration: 'none',
-              fontWeight: '500',
-            }}
+            className="text-purple-600 text-sm no-underline font-medium hover:text-purple-700"
           >
             Se connecter avec un mot de passe
           </Link>

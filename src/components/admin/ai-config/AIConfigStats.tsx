@@ -18,71 +18,36 @@ export function AIConfigStats({ stats }: AIConfigStatsProps) {
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px',
-        marginBottom: '30px',
-      }}
-    >
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
       {/* Requêtes totales */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '12px',
-          border: '1px solid rgba(147, 51, 234, 0.2)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="p-4 bg-white/60 backdrop-blur-xl rounded-xl border border-purple-600/20">
+        <div className="flex items-center gap-3">
           <BarChart3 size={32} color="#9333ea" />
           <div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Requêtes totales</p>
-            <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>
-              {stats.totalRequests}
-            </p>
+            <p className="m-0 text-xs text-gray-600">Requêtes totales</p>
+            <p className="m-0 text-2xl font-bold text-gray-800">{stats.totalRequests}</p>
           </div>
         </div>
       </div>
 
       {/* Requêtes utilisées */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '12px',
-          border: '1px solid rgba(16, 185, 129, 0.2)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="p-4 bg-white/60 backdrop-blur-xl rounded-xl border border-green-500/20">
+        <div className="flex items-center gap-3">
           <CheckCircle2 size={32} color="#10b981" />
           <div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Utilisées</p>
-            <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>
-              {stats.usedRequests}
-            </p>
+            <p className="m-0 text-xs text-gray-600">Utilisées</p>
+            <p className="m-0 text-2xl font-bold text-gray-800">{stats.usedRequests}</p>
           </div>
         </div>
       </div>
 
       {/* Tokens */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '12px',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="p-4 bg-white/60 backdrop-blur-xl rounded-xl border border-blue-500/20">
+        <div className="flex items-center gap-3">
           <Sparkles size={32} color="#3b82f6" />
           <div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Tokens</p>
-            <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>
+            <p className="m-0 text-xs text-gray-600">Tokens</p>
+            <p className="m-0 text-2xl font-bold text-gray-800">
               {stats.totalTokens.toLocaleString()}
             </p>
           </div>
@@ -90,22 +55,12 @@ export function AIConfigStats({ stats }: AIConfigStatsProps) {
       </div>
 
       {/* Coût estimé */}
-      <div
-        style={{
-          padding: '16px',
-          background: 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '12px',
-          border: '1px solid rgba(234, 179, 8, 0.2)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '32px' }}>💰</span>
+      <div className="p-4 bg-white/60 backdrop-blur-xl rounded-xl border border-yellow-500/20">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">💰</span>
           <div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Coût estimé</p>
-            <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>
-              ${stats.totalCostUsd.toFixed(2)}
-            </p>
+            <p className="m-0 text-xs text-gray-600">Coût estimé</p>
+            <p className="m-0 text-2xl font-bold text-gray-800">${stats.totalCostUsd.toFixed(2)}</p>
           </div>
         </div>
       </div>
