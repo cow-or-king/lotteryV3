@@ -6,8 +6,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { SlotMachineDesignConfig, SlotSymbol } from '@/lib/types/game-design.types';
+import { SlotMachineDesignConfig } from '@/lib/types/game-design.types';
+import { useEffect, useState } from 'react';
 
 interface SlotMachinePreviewProps {
   design: SlotMachineDesignConfig;
@@ -55,7 +55,9 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
   };
 
   const handleSpin = () => {
-    if (!interactive || isSpinning) return;
+    if (!interactive || isSpinning) {
+      return;
+    }
 
     setIsSpinning(true);
     setShowWin(false);
@@ -130,14 +132,14 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
     }
   };
 
-  const getEasingClass = () => {
+  const getEasingValue = () => {
     switch (design.spinEasing) {
       case 'LINEAR':
-        return 'ease-linear';
+        return 'linear';
       case 'EASE_OUT':
         return 'ease-out';
       case 'BOUNCE':
-        return 'ease-bounce';
+        return 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
       default:
         return 'ease-out';
     }
@@ -176,18 +178,57 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
                 height: '300px',
               }}
             >
-              {/* Reel symbols - show 30 symbols for smoother animation */}
+              {/* Reel symbols - infinite loop effect */}
               <div
-                className={`flex flex-col items-center transition-transform ${
-                  isSpinning ? `${getEasingClass()} animate-slot-spin` : ''
-                }`}
+                className="flex flex-col items-center"
                 style={{
-                  transform: isSpinning ? 'translateY(-300%)' : 'translateY(0)',
+                  transform: isSpinning ? 'translateY(-5000px)' : 'translateY(-1400px)',
+                  transition: isSpinning
+                    ? `transform ${design.spinDuration}ms ${getEasingValue()}`
+                    : 'transform 0.5s ease-out',
                 }}
               >
-                {reel.slice(0, 30).map((symbol, symbolIndex) => (
+                {/* Duplicate symbols at start for seamless loop */}
+                {reel.slice(-5).map((symbol, symbolIndex) => (
                   <div
-                    key={symbolIndex}
+                    key={`pre-${symbolIndex}`}
+                    className="flex items-center justify-center text-6xl"
+                    style={{
+                      height: '100px',
+                      minHeight: '100px',
+                    }}
+                  >
+                    {symbol}
+                  </div>
+                ))}
+
+                {/* Main reel symbols */}
+                {reel.map((symbol, symbolIndex) => {
+                  const isCenter = !isSpinning && symbolIndex === 15;
+                  const isWinSymbol = showWin && isCenter;
+
+                  return (
+                    <div
+                      key={symbolIndex}
+                      className={`flex items-center justify-center text-6xl transition-all ${
+                        isWinSymbol
+                          ? 'border-4 border-green-500 rounded-xl bg-green-100 animate-pulse'
+                          : ''
+                      }`}
+                      style={{
+                        height: '100px',
+                        minHeight: '100px',
+                      }}
+                    >
+                      {symbol}
+                    </div>
+                  );
+                })}
+
+                {/* Duplicate symbols at end for seamless loop */}
+                {reel.slice(0, 5).map((symbol, symbolIndex) => (
+                  <div
+                    key={`post-${symbolIndex}`}
                     className="flex items-center justify-center text-6xl"
                     style={{
                       height: '100px',
@@ -207,7 +248,7 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
           <button
             onClick={handleSpin}
             disabled={isSpinning}
-            className="w-full py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 rounded-xl font-bold text-xl hover:from-yellow-500 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full py-4 bg-linear-to-r from-yellow-400 to-yellow-600 text-gray-900 rounded-xl font-bold text-xl hover:from-yellow-500 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             {isSpinning ? 'SPINNING...' : 'SPIN'}
           </button>
@@ -216,11 +257,19 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
 
       {/* Win notification */}
       {showWin && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-3xl animate-fade-in">
-          <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-8 text-center shadow-2xl transform scale-110">
-            <div className="text-7xl mb-4">🎰</div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">JACKPOT!</h3>
-            <p className="text-lg text-gray-800">Tous les symboles correspondent!</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-3xl animate-fade-in z-10">
+          <div className="bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl p-8 text-center shadow-2xl transform scale-110 border-4 border-yellow-400">
+            <div className="text-8xl mb-4 animate-bounce">🎉</div>
+            <h3 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">GAGNÉ!</h3>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {finalSymbols.map((symbol, idx) => (
+                <span key={idx} className="text-5xl">
+                  {symbol}
+                </span>
+              ))}
+            </div>
+            <p className="text-xl text-white font-semibold">3 symboles identiques!</p>
+            <div className="mt-4 text-6xl animate-pulse">✨</div>
           </div>
         </div>
       )}
