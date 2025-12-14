@@ -10,13 +10,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlotMachinePreview } from '@/components/games/SlotMachinePreview';
 import { SlotReelsSettings } from '@/components/games/slot/SlotReelsSettings';
+import { SlotWinPatternsSettings } from '@/components/games/slot/SlotWinPatternsSettings';
 import {
   getDefaultSlotMachineDesign,
   SlotMachineDesignConfig,
   SlotSpinEasing,
   SlotSymbol,
+  SlotWinPattern,
 } from '@/lib/types/game-design.types';
-import { Save, ArrowLeft, Settings } from 'lucide-react';
+import { Save, ArrowLeft, Settings, Award } from 'lucide-react';
 
 export default function SlotMachineConfiguratorPage() {
   const router = useRouter();
@@ -40,6 +42,26 @@ export default function SlotMachineConfiguratorPage() {
       newSymbols[index] = { ...symbol, ...updates };
       setDesign({ ...design, symbols: newSymbols });
     }
+  };
+
+  const handleAddPattern = (pattern: Omit<SlotWinPattern, 'id'>) => {
+    const newPattern: SlotWinPattern = {
+      ...pattern,
+      id: `pattern-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    };
+    setDesign({ ...design, winPatterns: [...design.winPatterns, newPattern] });
+  };
+
+  const handleUpdatePattern = (id: string, updates: Partial<SlotWinPattern>) => {
+    const newPatterns = design.winPatterns.map((pattern) =>
+      pattern.id === id ? { ...pattern, ...updates } : pattern,
+    );
+    setDesign({ ...design, winPatterns: newPatterns });
+  };
+
+  const handleDeletePattern = (id: string) => {
+    const newPatterns = design.winPatterns.filter((pattern) => pattern.id !== id);
+    setDesign({ ...design, winPatterns: newPatterns });
   };
 
   return (
@@ -98,38 +120,65 @@ export default function SlotMachineConfiguratorPage() {
 
       {/* Main Content - Mobile first grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Preview - Hidden on mobile, shown on tablet+ */}
-        <div className="hidden lg:flex bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 items-center justify-center">
-          <SlotMachinePreview design={design} interactive={true} />
-        </div>
-
         {/* Configuration Panel */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 relative z-10">
           <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-4 border-b border-gray-200">
             <Settings className="w-5 h-5 text-purple-600" />
             <h2 className="text-lg font-semibold text-gray-800">Configuration</h2>
           </div>
 
           {/* Settings */}
-          <div className="space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-[600px] pr-2">
-            <SlotReelsSettings
-              design={design}
-              onReelsCountChange={(count) => setDesign({ ...design, reelsCount: count })}
-              onBackgroundColorChange={(color) => setDesign({ ...design, backgroundColor: color })}
-              onReelBorderColorChange={(color) => setDesign({ ...design, reelBorderColor: color })}
-              onSpinDurationChange={(duration) => setDesign({ ...design, spinDuration: duration })}
-              onSpinEasingChange={(easing: SlotSpinEasing) =>
-                setDesign({ ...design, spinEasing: easing })
-              }
-              onReelDelayChange={(delay) => setDesign({ ...design, reelDelay: delay })}
-              onSymbolChange={handleSymbolChange}
-            />
+          <div className="space-y-6 overflow-y-auto max-h-[60vh] lg:max-h-[calc(100vh-300px)] pr-2">
+            {/* Reels Settings */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Settings className="w-4 h-4 text-gray-600" />
+                <h3 className="text-md font-semibold text-gray-700">Rouleaux & Symboles</h3>
+              </div>
+              <SlotReelsSettings
+                design={design}
+                onReelsCountChange={(count) => setDesign({ ...design, reelsCount: count })}
+                onBackgroundColorChange={(color) =>
+                  setDesign({ ...design, backgroundColor: color })
+                }
+                onReelBorderColorChange={(color) =>
+                  setDesign({ ...design, reelBorderColor: color })
+                }
+                onSpinDurationChange={(duration) =>
+                  setDesign({ ...design, spinDuration: duration })
+                }
+                onSpinEasingChange={(easing: SlotSpinEasing) =>
+                  setDesign({ ...design, spinEasing: easing })
+                }
+                onReelDelayChange={(delay) => setDesign({ ...design, reelDelay: delay })}
+                onSymbolChange={handleSymbolChange}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200" />
+
+            {/* Win Patterns Settings */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Award className="w-4 h-4 text-gray-600" />
+                <h3 className="text-md font-semibold text-gray-700">Patterns de Gain</h3>
+              </div>
+              <SlotWinPatternsSettings
+                design={design}
+                onAddPattern={handleAddPattern}
+                onUpdatePattern={handleUpdatePattern}
+                onDeletePattern={handleDeletePattern}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Mobile Preview - Shown only on mobile at bottom */}
-        <div className="lg:hidden bg-white rounded-xl p-6 border border-gray-200 flex items-center justify-center">
-          <SlotMachinePreview design={design} interactive={true} />
+        {/* Preview - Shown on desktop on right, on mobile at bottom */}
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-200 flex items-center justify-center">
+          <div className="w-full max-w-md mx-auto pointer-events-auto">
+            <SlotMachinePreview design={design} interactive={true} />
+          </div>
         </div>
       </div>
     </div>
