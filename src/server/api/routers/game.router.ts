@@ -332,4 +332,93 @@ export const gameRouter = createTRPCRouter({
 
       return game;
     }),
+
+  /**
+   * Sauvegarder un design de machine à sous
+   */
+  saveSlotMachineDesign: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, 'Le nom est requis'),
+        design: z.object({
+          reelsCount: z.number().min(3).max(5),
+          symbolsPerReel: z.number().min(1),
+          backgroundColor: z.string(),
+          reelBorderColor: z.string(),
+          symbols: z.array(
+            z.object({
+              id: z.string(),
+              icon: z.string(),
+              value: z.number(),
+              color: z.string(),
+            }),
+          ),
+          winPatterns: z.array(
+            z.object({
+              id: z.string(),
+              matchCount: z.union([z.literal(2), z.literal(3)]),
+              symbol: z.string(),
+              multiplier: z.number(),
+              probability: z.number(),
+              label: z.string(),
+            }),
+          ),
+          spinDuration: z.number(),
+          spinEasing: z.enum(['LINEAR', 'EASE_OUT', 'BOUNCE']),
+          reelDelay: z.number(),
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.userId;
+
+      const game = await ctx.prisma.game.create({
+        data: {
+          name: input.name,
+          type: 'SLOT_MACHINE',
+          config: input.design as Parameters<typeof ctx.prisma.game.create>[0]['data']['config'],
+          primaryColor: input.design.backgroundColor,
+          secondaryColor: input.design.reelBorderColor,
+          vibrationEnabled: true,
+          isActive: true,
+          createdBy: userId,
+        },
+      });
+
+      return game;
+    }),
+
+  /**
+   * Sauvegarder un design de roue rapide (wheel mini)
+   */
+  saveWheelMiniDesign: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, 'Le nom est requis'),
+        design: z.object({
+          segments: z.union([z.literal(4), z.literal(6), z.literal(8)]),
+          colors: z.array(z.string()).min(2).max(2),
+          style: z.enum(['FLAT', 'GRADIENT']),
+          spinDuration: z.number().min(1000).max(4000),
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.userId;
+
+      const game = await ctx.prisma.game.create({
+        data: {
+          name: input.name,
+          type: 'WHEEL_MINI',
+          config: input.design as Parameters<typeof ctx.prisma.game.create>[0]['data']['config'],
+          primaryColor: input.design.colors[0] || '#8B5CF6',
+          secondaryColor: input.design.colors[1] || '#EC4899',
+          vibrationEnabled: true,
+          isActive: true,
+          createdBy: userId,
+        },
+      });
+
+      return game;
+    }),
 });

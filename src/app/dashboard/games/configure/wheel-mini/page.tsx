@@ -6,30 +6,38 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { WheelMiniPreview } from '@/components/games/WheelMiniPreview';
-import {
-  getDefaultWheelMiniDesign,
-  WheelMiniDesignConfig,
-  WheelMiniStyle,
-} from '@/lib/types/game-design.types';
+import { WheelMiniStyle } from '@/lib/types/game-design.types';
 import { Save, ArrowLeft, Zap } from 'lucide-react';
+import { useWheelMiniDesignForm } from '@/hooks/games/useWheelMiniDesignForm';
 
 export default function WheelMiniConfiguratorPage() {
   const router = useRouter();
-  const [design, setDesign] = useState<WheelMiniDesignConfig>(getDefaultWheelMiniDesign());
-  const [designName, setDesignName] = useState('Ma roue rapide');
-  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveDesign = async () => {
-    setIsSaving(true);
-    // TODO: Implement save logic with tRPC
-    setTimeout(() => {
-      setIsSaving(false);
-      router.push('/dashboard/games');
-    }, 1000);
-  };
+  // Hook centralisé pour toute la logique du formulaire
+  const {
+    design,
+    setDesign,
+    designName,
+    setDesignName,
+    gameId,
+    isLoading,
+    isSaving,
+    handleSaveDesign,
+  } = useWheelMiniDesignForm();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center h-screen px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement du design...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +54,7 @@ export default function WheelMiniConfiguratorPage() {
             </button>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
-                Créer une Roue Rapide
+                {gameId ? 'Modifier la Roue Rapide' : 'Créer une Roue Rapide'}
               </h1>
               <p className="text-sm sm:text-base text-gray-600">Version simplifiée et rapide</p>
             </div>
@@ -65,7 +73,7 @@ export default function WheelMiniConfiguratorPage() {
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+              {isSaving ? 'Enregistrement...' : gameId ? 'Mettre à jour' : 'Enregistrer'}
             </button>
           </div>
         </div>

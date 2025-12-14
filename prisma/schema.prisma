@@ -584,4 +584,5 @@ enum GameType {
   SHAKE
   DICE
   MYSTERY_BOX
+  WHEEL_MINI
 }

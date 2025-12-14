@@ -6,68 +6,49 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SlotMachinePreview } from '@/components/games/SlotMachinePreview';
 import { SlotReelsSettings } from '@/components/games/slot/SlotReelsSettings';
 import { SlotWinPatternsSettings } from '@/components/games/slot/SlotWinPatternsSettings';
-import {
-  getDefaultSlotMachineDesign,
-  SlotMachineDesignConfig,
-  SlotSpinEasing,
-  SlotSymbol,
-  SlotWinPattern,
-} from '@/lib/types/game-design.types';
+import { SlotSpinEasing } from '@/lib/types/game-design.types';
 import { Save, ArrowLeft, Settings, Award } from 'lucide-react';
+import { useSlotMachineDesignForm } from '@/hooks/games/useSlotMachineDesignForm';
 
 export default function SlotMachineConfiguratorPage() {
   const router = useRouter();
-  const [design, setDesign] = useState<SlotMachineDesignConfig>(getDefaultSlotMachineDesign());
-  const [designName, setDesignName] = useState('Ma machine à sous');
-  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveDesign = async () => {
-    setIsSaving(true);
-    // TODO: Implement save logic with tRPC
-    setTimeout(() => {
-      setIsSaving(false);
-      router.push('/dashboard/games');
-    }, 1000);
-  };
+  // Hook centralisé pour toute la logique du formulaire
+  const {
+    design,
+    setDesign,
+    designName,
+    setDesignName,
+    gameId,
+    isLoading,
+    isSaving,
+    handleSaveDesign,
+    handleSymbolChange,
+    handleAddPattern,
+    handleUpdatePattern,
+    handleDeletePattern,
+  } = useSlotMachineDesignForm();
 
-  const handleSymbolChange = (index: number, updates: Partial<SlotSymbol>) => {
-    const newSymbols = [...design.symbols];
-    const symbol = newSymbols[index];
-    if (symbol) {
-      newSymbols[index] = { ...symbol, ...updates };
-      setDesign({ ...design, symbols: newSymbols });
-    }
-  };
-
-  const handleAddPattern = (pattern: Omit<SlotWinPattern, 'id'>) => {
-    const newPattern: SlotWinPattern = {
-      ...pattern,
-      id: `pattern-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-    };
-    setDesign({ ...design, winPatterns: [...design.winPatterns, newPattern] });
-  };
-
-  const handleUpdatePattern = (id: string, updates: Partial<SlotWinPattern>) => {
-    const newPatterns = design.winPatterns.map((pattern) =>
-      pattern.id === id ? { ...pattern, ...updates } : pattern,
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center h-screen px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement du design...</p>
+        </div>
+      </div>
     );
-    setDesign({ ...design, winPatterns: newPatterns });
-  };
-
-  const handleDeletePattern = (id: string) => {
-    const newPatterns = design.winPatterns.filter((pattern) => pattern.id !== id);
-    setDesign({ ...design, winPatterns: newPatterns });
-  };
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header - Mobile first */}
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-6 sm:mb-8 relative z-20">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
           <div className="flex items-center gap-3 sm:gap-4">
             <button
@@ -79,7 +60,7 @@ export default function SlotMachineConfiguratorPage() {
             </button>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
-                Créer une Machine à sous
+                {gameId ? 'Modifier la Machine à sous' : 'Créer une Machine à sous'}
               </h1>
               <p className="text-sm sm:text-base text-gray-600">
                 Configurez l&apos;apparence visuelle
@@ -97,10 +78,10 @@ export default function SlotMachineConfiguratorPage() {
             <button
               onClick={handleSaveDesign}
               disabled={isSaving}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-linear-to-r from-orange-600 to-red-600 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+              {isSaving ? 'Enregistrement...' : gameId ? 'Mettre à jour' : 'Enregistrer'}
             </button>
           </div>
         </div>

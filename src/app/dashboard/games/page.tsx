@@ -10,8 +10,21 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GameTypeEnum } from '@/lib/types/game.types';
 import { TemplateSelectionModal } from '@/components/games/TemplateSelectionModal';
-import { Sparkles, Dices, Grid3x3, Box, Shuffle, Target, Trophy, Zap } from 'lucide-react';
+import {
+  Sparkles,
+  Dices,
+  Grid3x3,
+  Box,
+  Shuffle,
+  Target,
+  Trophy,
+  Zap,
+  Trash2,
+  Edit,
+} from 'lucide-react';
 import { api } from '@/lib/trpc/client';
+import { useToast } from '@/hooks/use-toast';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 interface GameTemplate {
   type: keyof typeof GameTypeEnum;
@@ -115,6 +128,79 @@ export default function GamesLibraryPage() {
 
   // Récupérer les designs personnalisés depuis la DB
   const { data: customDesigns = [] } = api.wheelDesign.list.useQuery();
+  const { data: customGames = [] } = api.game.list.useQuery();
+
+  // Delete mutations
+  const utils = api.useUtils();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
+
+  const deleteWheelDesign = api.wheelDesign.delete.useMutation({
+    onSuccess: () => {
+      void utils.wheelDesign.list.invalidate();
+      toast({
+        title: 'Design supprimé',
+        description: 'Le design de roue a été supprimé avec succès.',
+        variant: 'success',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible de supprimer le design.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const deleteGame = api.game.delete.useMutation({
+    onSuccess: () => {
+      void utils.game.list.invalidate();
+      toast({
+        title: 'Jeu supprimé',
+        description: 'Le jeu a été supprimé avec succès.',
+        variant: 'success',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible de supprimer le jeu.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const handleDeleteWheel = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const confirmed = await confirm({
+      title: 'Supprimer le design ?',
+      message:
+        'Êtes-vous sûr de vouloir supprimer ce design de roue ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      deleteWheelDesign.mutate({ id });
+    }
+  };
+
+  const handleDeleteGame = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const confirmed = await confirm({
+      title: 'Supprimer le jeu ?',
+      message: 'Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      deleteGame.mutate({ id });
+    }
+  };
 
   const handleSelectGame = (template: GameTemplate) => {
     if (template.comingSoon) {
@@ -160,13 +246,14 @@ export default function GamesLibraryPage() {
       </div>
 
       {/* Mes Designs Personnalisés */}
-      {customDesigns.length > 0 && (
+      {(customDesigns.length > 0 || customGames.length > 0) && (
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Mes Designs Personnalisés</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Wheel Designs */}
             {customDesigns.map((design) => (
               <button
-                key={design.id}
+                key={`wheel-${design.id}`}
                 onClick={() => router.push(`/dashboard/games/configure/wheel?id=${design.id}`)}
                 className="relative group p-6 rounded-2xl border-2 border-purple-200 bg-linear-to-br from-purple-50 to-pink-50 hover:border-purple-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
               >
@@ -183,18 +270,125 @@ export default function GamesLibraryPage() {
                 {/* Contenu */}
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{design.name}</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  {design.numberOfSegments} segments •{' '}
+                  Roue • {design.numberOfSegments} segments •{' '}
                   {design.colorMode === 'BI_COLOR' ? 'Bi-color' : 'Multicolor'}
                 </p>
 
                 {/* CTA */}
-                <div className="mt-6 pt-4 border-t border-purple-200">
-                  <span className="text-sm font-semibold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Modifier →
-                  </span>
+                <div className="mt-6 pt-4 border-t border-purple-200 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/dashboard/games/configure/wheel?id=${design.id}`);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Modifier
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteWheel(e, design.id)}
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </button>
             ))}
+
+            {/* Slot Machine Games */}
+            {customGames
+              .filter((game) => game.type === 'SLOT_MACHINE')
+              .map((game) => (
+                <button
+                  key={`slot-${game.id}`}
+                  onClick={() => router.push(`/dashboard/games/configure/slot?id=${game.id}`)}
+                  className="relative group p-6 rounded-2xl border-2 border-orange-200 bg-linear-to-br from-orange-50 to-red-50 hover:border-orange-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
+                >
+                  {/* Badge personnalisé */}
+                  <div className="absolute -top-3 -right-3 bg-linear-to-r from-orange-600 to-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    Mon design
+                  </div>
+
+                  {/* Icône */}
+                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Grid3x3 className="w-8 h-8 text-white" />
+                  </div>
+
+                  {/* Contenu */}
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{game.name}</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Machine à sous • {game._count?.plays || 0} parties jouées
+                  </p>
+
+                  {/* CTA */}
+                  <div className="mt-6 pt-4 border-t border-orange-200 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/dashboard/games/configure/slot?id=${game.id}`);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Modifier
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteGame(e, game.id)}
+                      className="flex items-center justify-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </button>
+              ))}
+
+            {/* Wheel Mini Games */}
+            {customGames
+              .filter((game) => game.type === 'WHEEL_MINI')
+              .map((game) => (
+                <button
+                  key={`wheel-mini-${game.id}`}
+                  onClick={() => router.push(`/dashboard/games/configure/wheel-mini?id=${game.id}`)}
+                  className="relative group p-6 rounded-2xl border-2 border-teal-200 bg-linear-to-br from-teal-50 to-cyan-50 hover:border-teal-400 hover:shadow-xl hover:scale-105 cursor-pointer transition-all duration-300"
+                >
+                  {/* Badge personnalisé */}
+                  <div className="absolute -top-3 -right-3 bg-linear-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    Mon design
+                  </div>
+
+                  {/* Icône */}
+                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-teal-500 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Trophy className="w-8 h-8 text-white" />
+                  </div>
+
+                  {/* Contenu */}
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{game.name}</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Roue rapide • {game._count?.plays || 0} parties jouées
+                  </p>
+
+                  {/* CTA */}
+                  <div className="mt-6 pt-4 border-t border-teal-200 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/dashboard/games/configure/wheel-mini?id=${game.id}`);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-teal-100 hover:bg-teal-200 text-teal-700 rounded-lg transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Modifier
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteGame(e, game.id)}
+                      className="flex items-center justify-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </button>
+              ))}
           </div>
         </div>
       )}

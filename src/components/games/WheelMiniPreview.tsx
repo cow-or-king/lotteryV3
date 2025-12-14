@@ -63,14 +63,14 @@ export function WheelMiniPreview({
 
   return (
     <div
-      className="relative w-full mx-auto flex items-center justify-center"
+      className="relative w-full mx-auto flex items-center justify-center pointer-events-none"
       style={{ aspectRatio: '1/1', maxWidth: size }}
     >
       {/* Wheel Container */}
       <div
         className={`relative w-full h-full rounded-full transition-transform ${
           interactive && !isSpinning ? 'cursor-pointer hover:scale-105' : ''
-        } shadow-2xl`}
+        } shadow-2xl pointer-events-auto`}
         style={{
           transform: `rotate(${rotation}deg)`,
           transition: isSpinning ? 'none' : 'transform 0.3s ease',
@@ -182,7 +182,7 @@ export function WheelMiniPreview({
 
       {/* Pointeur (Arrow) */}
       <div
-        className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
+        className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none"
         style={{
           width: 0,
           height: 0,
@@ -194,14 +194,14 @@ export function WheelMiniPreview({
 
       {/* Click hint */}
       {interactive && !isSpinning && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-2 rounded-full whitespace-nowrap">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-2 rounded-full whitespace-nowrap pointer-events-none">
           Cliquez pour tourner
         </div>
       )}
 
       {/* Spinning indicator */}
       {isSpinning && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white text-xs px-3 py-2 rounded-full animate-pulse">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white text-xs px-3 py-2 rounded-full animate-pulse pointer-events-none">
           Rotation rapide...
         </div>
       )}

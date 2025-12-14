@@ -6,7 +6,6 @@
 
 'use client';
 
-import { AnimatedBackground } from '@/components/dashboard/AnimatedBackground';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardTopBar } from '@/components/dashboard/DashboardTopBar';
 import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper';
@@ -23,9 +22,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <DashboardLayoutWrapper>
       <div className="flex min-h-screen bg-white relative">
-        {/* Blobs animés */}
-        <AnimatedBackground />
-
         {/* Overlay pour mobile quand sidebar est ouverte */}
         {isSidebarOpen && !isCompactMode && (
           <div onClick={closeSidebar} className="mobile-overlay" />
