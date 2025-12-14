@@ -364,8 +364,12 @@ export interface SlotSymbol {
 }
 
 export interface SlotWinPattern {
-  pattern: string[]; // ['🍒', '🍒', '🍒']
-  multiplier: number;
+  id: string;
+  matchCount: 2 | 3; // Nombre de symboles identiques requis
+  symbol: string; // Le symbole gagnant
+  multiplier: number; // Multiplicateur de gain
+  probability: number; // Probabilité en % (0-100)
+  label: string; // Label du gain (ex: "Petit gain", "Jackpot")
 }
 
 export interface SlotMachineDesignConfig {

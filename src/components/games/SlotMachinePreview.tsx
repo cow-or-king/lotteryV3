@@ -19,6 +19,8 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
   const [reelSymbols, setReelSymbols] = useState<string[][]>([]);
   const [finalSymbols, setFinalSymbols] = useState<string[]>([]);
   const [showWin, setShowWin] = useState(false);
+  const [stoppedReels, setStoppedReels] = useState<number[]>([]);
+  const [hasTransition, setHasTransition] = useState(false);
 
   useEffect(() => {
     // Initialize reels with random symbols
@@ -61,6 +63,8 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
 
     setIsSpinning(true);
     setShowWin(false);
+    setStoppedReels([]);
+    setHasTransition(true);
 
     // Regenerate ALL reels with new random symbols to desynchronize
     const symbolsToGenerate = 50;
@@ -82,46 +86,28 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
       newReels.push(shuffled);
     }
 
-    setReelSymbols(newReels);
-
     // Generate random final symbols for each reel
     const newFinalSymbols: string[] = [];
     for (let i = 0; i < design.reelsCount; i++) {
       const randomSymbol = design.symbols[Math.floor(Math.random() * design.symbols.length)];
       newFinalSymbols.push(randomSymbol?.icon || '🍒');
+
+      // Place final symbol at position 15 immediately
+      newReels[i]![15] = randomSymbol?.icon || '🍒';
     }
 
-    // Animate reels stopping one by one
-    const animateReels = async () => {
-      // Wait for spin animation duration
-      await new Promise((resolve) => setTimeout(resolve, design.spinDuration));
+    setReelSymbols(newReels);
+    setFinalSymbols(newFinalSymbols);
 
-      // Stop each reel with a delay
-      for (let i = 0; i < design.reelsCount; i++) {
-        await new Promise((resolve) => setTimeout(resolve, design.reelDelay));
+    // Animate reels stopping
+    setTimeout(() => {
+      setIsSpinning(false);
 
-        // Update reel to show final symbol in middle position
-        setReelSymbols((prev) => {
-          const newReels = [...prev];
-          if (newReels[i]) {
-            // Place the final symbol in the middle of visible area
-            newReels[i] = [...(newReels[i] || [])];
-            newReels[i]![15] = newFinalSymbols[i] || '🍒'; // Position 15 is middle of 30 symbols
-          }
-          return newReels;
-        });
-      }
-
-      setFinalSymbols(newFinalSymbols);
-
-      // Check for win
+      // Check for win after a short delay
       setTimeout(() => {
         checkWin(newFinalSymbols);
-        setIsSpinning(false);
-      }, 500);
-    };
-
-    animateReels();
+      }, 200);
+    }, design.spinDuration);
   };
 
   const checkWin = (symbols: string[]) => {
@@ -183,9 +169,8 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
                 className="flex flex-col items-center"
                 style={{
                   transform: isSpinning ? 'translateY(-5000px)' : 'translateY(-1400px)',
-                  transition: isSpinning
-                    ? `transform ${design.spinDuration}ms ${getEasingValue()}`
-                    : 'transform 0.5s ease-out',
+                  transition: isSpinning ? `transform ${design.spinDuration}ms linear` : 'none',
+                  willChange: isSpinning ? 'transform' : 'auto',
                 }}
               >
                 {/* Duplicate symbols at start for seamless loop */}

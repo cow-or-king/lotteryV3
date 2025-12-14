@@ -489,7 +489,7 @@ for (const store of stores) {
 <div className="bg-linear-to-r from-purple-600 to-pink-500">
 
 // ❌ MAUVAIS - Ne pas utiliser bg-gradient-to-*
-<div className="bg-gradient-to-r from-purple-600 to-pink-500">
+<div className="bg-linear-to-r from-purple-600 to-pink-500">
 ```
 
 **RÈGLE:** Toujours utiliser `bg-linear-to-*` au lieu de `bg-gradient-to-*`

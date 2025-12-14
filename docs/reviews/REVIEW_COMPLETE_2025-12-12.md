@@ -263,7 +263,7 @@
 
    ```tsx
    // ❌ ACTUEL
-   <button className="bg-gradient-to-r from-purple-600 to-pink-600">
+   <button className="bg-linear-to-r from-purple-600 to-pink-600">
 
    // ✅ CORRIGER EN
    <button className="bg-linear-to-r from-purple-600 to-pink-600">
@@ -278,7 +278,7 @@
    className="bg-linear-to-r" // ❌ Gradient sans direction
 
    // ✅ Devrait être:
-   className={cn("bg-gradient-to-r", config.buttonColor)}
+   className={cn("bg-linear-to-r", config.buttonColor)}
    ```
 
 ---
