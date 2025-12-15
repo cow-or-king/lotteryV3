@@ -43,8 +43,8 @@
 #### ✅ **Configuration Supabase**
 
 ```
-Project: ynrdyircogzytfgueyva
-URL: https://ynrdyircogzytfgueyva.supabase.co
+Project: dhedkewujbazelsdihtr
+URL: https://dhedkewujbazelsdihtr.supabase.co
 Database: PostgreSQL via pooler
 Tables: Toutes créées et synchronisées
 ```

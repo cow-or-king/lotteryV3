@@ -6,15 +6,15 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { WheelPreview } from '@/components/games/WheelPreview';
+import { AdvancedSettings } from '@/components/games/wheel/AdvancedSettings';
 import { WheelColorSettings } from '@/components/games/wheel/WheelColorSettings';
 import { WheelLogoSettings } from '@/components/games/wheel/WheelLogoSettings';
 import { WheelTextSettings } from '@/components/games/wheel/WheelTextSettings';
-import { AdvancedSettings } from '@/components/games/wheel/AdvancedSettings';
 import { useWheelDesignForm } from '@/hooks/games/useWheelDesignForm';
-import { Palette, Image as ImageIcon, Type, Settings, Save, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Palette, Save, Settings, Type } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type TabType = 'colors' | 'logo' | 'text' | 'advanced';
 
@@ -120,11 +120,6 @@ export default function WheelConfiguratorPage() {
 
       {/* Main Content - Mobile first grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Preview - Hidden on mobile, shown on tablet+ */}
-        <div className="hidden lg:flex bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 items-center justify-center">
-          <WheelPreview design={design} size={450} interactive={true} />
-        </div>
-
         {/* Configuration Panel */}
         <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200">
           {/* Tabs - Responsive */}
@@ -195,6 +190,10 @@ export default function WheelConfiguratorPage() {
               />
             )}
           </div>
+        </div>
+        {/* Preview - Hidden on mobile, shown on tablet+ */}
+        <div className="hidden lg:flex bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 items-center justify-center">
+          <WheelPreview design={design} size={450} interactive={true} />
         </div>
 
         {/* Mobile Preview - Shown only on mobile at bottom */}

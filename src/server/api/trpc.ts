@@ -62,7 +62,7 @@ export const createTRPCContext = async () => {
 
 /**
  * Initialisation de tRPC avec le contexte
- * Note: Pas de transformer pour éviter les problèmes avec fetchRequestHandler
+ * Note: Utilise superjson pour gérer les dates et types complexes
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {

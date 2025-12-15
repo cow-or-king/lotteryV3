@@ -83,11 +83,20 @@ export function RoleIndicator({
   return (
     <div className="relative">
       {/* Badge cliquable */}
-      <button
+      <div
         ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }
         }}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all whitespace-nowrap hover:scale-105"
         style={{
@@ -106,7 +115,7 @@ export function RoleIndicator({
         <span>{current.label}</span>
         {isImpersonating && <span className="text-[10px]">👁️</span>}
         <span className="text-[10px]">▼</span>
-      </button>
+      </div>
 
       {/* Dropdown qui s'ouvre vers le haut */}
       {isOpen && (

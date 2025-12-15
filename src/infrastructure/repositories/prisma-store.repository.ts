@@ -93,4 +93,46 @@ export class PrismaStoreRepository implements StoreRepository {
       where: { brandId },
     });
   }
+
+  // Campaign-specific methods
+  async getById(id: string): Promise<{ id: string; defaultQrCodeId: string | null } | null> {
+    return await prisma.store.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        defaultQrCodeId: true,
+      },
+    });
+  }
+
+  async verifyOwnership(storeId: string, userId: string): Promise<boolean> {
+    const store = await prisma.store.findFirst({
+      where: {
+        id: storeId,
+        brand: {
+          ownerId: userId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return store !== null;
+  }
+
+  async listByUser(userId: string): Promise<Array<{ id: string; name: string }>> {
+    return await prisma.store.findMany({
+      where: {
+        brand: {
+          ownerId: userId,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

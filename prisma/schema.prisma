@@ -123,26 +123,31 @@ model StoreHistory {
 }
 
 model Campaign {
-  id               String        @id @default(cuid())
-  name             String
-  description      String?
-  storeId          String        @map("store_id")
-  startDate        DateTime      @map("start_date")
-  endDate          DateTime      @map("end_date")
-  isActive         Boolean       @default(false) @map("is_active")
-  wheelStyle       String        @default("classic") @map("wheel_style")
-  wheelAnimation   String        @default("spin") @map("wheel_animation")
-  type             String        @default("generic")
-  requireReview    Boolean       @default(false) @map("require_review")
-  requireInstagram Boolean       @default(false) @map("require_instagram")
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime      @updatedAt @map("updated_at")
-  store            Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  participants     Participant[]
-  prizes           Prize[]
-  reviews          Review[]
+  id                   String        @id @default(cuid())
+  name                 String
+  description          String?
+  storeId              String        @map("store_id")
+  startDate            DateTime      @map("start_date")
+  endDate              DateTime      @map("end_date")
+  isActive             Boolean       @default(false) @map("is_active")
+  wheelStyle           String        @default("classic") @map("wheel_style")
+  wheelAnimation       String        @default("spin") @map("wheel_animation")
+  type                 String        @default("generic")
+  requireReview        Boolean       @default(false) @map("require_review")
+  requireInstagram     Boolean       @default(false) @map("require_instagram")
+  gameId               String?       @map("game_id")
+  maxParticipants      Int?          @map("max_participants")
+  prizeClaimExpiryDays Int           @default(30) @map("prize_claim_expiry_days")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  store                Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  game                 Game?         @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  participants         Participant[]
+  prizes               Prize[]
+  reviews              Review[]
 
   @@index([storeId])
+  @@index([gameId])
   @@index([isActive, startDate, endDate])
   @@map("campaigns")
 }
@@ -518,6 +523,7 @@ model Game {
   createdAt        DateTime   @default(now()) @map("created_at")
   updatedAt        DateTime   @updatedAt @map("updated_at")
   createdBy        String     @map("created_by")
+  campaigns        Campaign[]
   plays            GamePlay[]
   creator          User       @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   store            Store?     @relation(fields: [storeId], references: [id])

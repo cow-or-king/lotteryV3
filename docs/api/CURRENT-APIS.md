@@ -296,7 +296,7 @@ Supabase Auth is used for user authentication with email/password. Session manag
 **Environment Variables**:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://ynrdyircogzytfgueyva.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://dhedkewujbazelsdihtr.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
@@ -359,13 +359,13 @@ PostgreSQL database hosted on Supabase, accessed via Prisma ORM.
 **Pooler** (for application):
 
 ```env
-DATABASE_URL=postgresql://postgres.ynrdyircogzytfgueyva:mgvDfDCMNGXkaKmq@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DATABASE_URL="postgresql://postgres.dhedkewujbazelsdihtr:aAgmZkI8KuQiYipW@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 ```
 
 **Direct** (for migrations only):
 
 ```env
-DIRECT_URL=postgresql://postgres:mgvDfDCMNGXkaKmq@db.ynrdyircogzytfgueyva.supabase.co:5432/postgres
+DIRECT_URL="postgresql://postgres.dhedkewujbazelsdihtr:aAgmZkI8KuQiYipW@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
 ```
 
 ### Tables

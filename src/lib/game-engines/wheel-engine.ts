@@ -48,9 +48,12 @@ export class WheelEngine {
   /**
    * Lance la roue et détermine le segment gagnant
    * Utilise une sélection pondérée par probabilité
+   * @param forcedSegmentId - Si fourni, force la roue à s'arrêter sur ce segment (pour sync serveur)
    */
-  spin(): SpinResult {
-    const winningSegment = this.selectWinningSegment();
+  spin(forcedSegmentId?: string): SpinResult {
+    const winningSegment = forcedSegmentId
+      ? this.config.segments.find((s) => s.id === forcedSegmentId) || this.selectWinningSegment()
+      : this.selectWinningSegment();
     const segmentIndex = this.config.segments.findIndex((s) => s.id === winningSegment.id);
 
     // Calculer l'angle de destination

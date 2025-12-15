@@ -20,6 +20,7 @@ interface WheelGameProps {
   logoUrl?: string | null;
   onSpinComplete?: (result: WheelSegment) => void;
   onSpinStart?: () => void;
+  forcedSegmentId?: string | null; // ID du segment sur lequel forcer l'arrêt
 }
 
 export default function WheelGame({
@@ -30,6 +31,7 @@ export default function WheelGame({
   logoUrl,
   onSpinComplete,
   onSpinStart,
+  forcedSegmentId = null,
 }: WheelGameProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -70,9 +72,11 @@ export default function WheelGame({
     onSpinStart?.();
     setIsSpinning(true);
 
-    // Obtenir le résultat du spin
-    const result: SpinResult = engine.current.spin();
+    // Obtenir le résultat du spin (avec segment forcé si fourni)
+    console.log('🎰 Forcing segment ID:', forcedSegmentId);
+    const result: SpinResult = engine.current.spin(forcedSegmentId || undefined);
     currentSpinResultRef.current = result;
+    console.log('🎰 Spin result:', result);
 
     // Calculer le nombre de segments pour les ticks
     const segmentAngle = 360 / config.segments.length;
@@ -117,6 +121,8 @@ export default function WheelGame({
 
     // Attendre la fin de l'animation
     setTimeout(() => {
+      console.log('🎡 Wheel animation complete, winning segment:', result.winningSegment);
+
       // Arrêter les ticks
       if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current);
@@ -125,7 +131,7 @@ export default function WheelGame({
 
       // Vibration finale selon le résultat
       if (vibrationEnabled && haptic.isAvailable() && haptic.getEnabled()) {
-        if (result.winningSegment.prize.type !== 'NOTHING') {
+        if (result.winningSegment.prize && result.winningSegment.prize.type !== 'NOTHING') {
           haptic.trigger('WHEEL_STOP_WIN');
         } else {
           haptic.trigger('WHEEL_STOP_LOSE');
@@ -135,7 +141,9 @@ export default function WheelGame({
       setIsSpinning(false);
 
       // Notifier le résultat
+      console.log('📢 Calling onSpinComplete callback');
       onSpinComplete?.(result.winningSegment);
+      console.log('✅ onSpinComplete callback executed');
     }, result.spinDuration + 500); // +500ms pour laisser la roue se stabiliser
   };
 

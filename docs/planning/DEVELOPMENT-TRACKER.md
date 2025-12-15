@@ -4,9 +4,9 @@
 >
 > Ce fichier doit être mis à jour à **chaque commit** pour suivre l'avancement réel du projet.
 
-**Dernière mise à jour**: 2025-12-12
-**Phase actuelle**: Phase 2 - Reviews & IA (80% complété)
-**Commit actuel**: `e6c743d` - Complete authentication system with Supabase Auth
+**Dernière mise à jour**: 2025-12-14
+**Phase actuelle**: Phase 2 - Games Library & Management (40% complété)
+**Commit actuel**: `6db16eb` - Add game deletion feature and CONVENTIONS.md compliance fixes
 
 ---
 
@@ -103,6 +103,33 @@
 - [x] Probability configuration with decimals
 - [x] Quantity management (0 = unlimited)
 - [x] Visual indicators (brand logo or "C" badge for common prizes)
+
+### 🎮 Games Library (40% 🚧)
+
+**Statut actuel** (2025-12-14):
+
+- [x] Games library page (`/dashboard/games`)
+- [x] Game templates display (Wheel, Slot Machine, Wheel Mini, etc.)
+- [x] Custom games display (wheels, slots, wheel mini)
+- [x] Delete functionality with ConfirmDialog
+- [x] Toast notifications for CRUD operations
+- [x] Wheel design CRUD (create, update, delete)
+- [x] Slot machine design hooks (`useSlotMachineDesignForm`)
+- [x] Wheel mini design hooks (`useWheelMiniDesignForm`)
+- [x] Game type enum migration (WHEEL_MINI added)
+- [ ] ❌ Slot machine configuration page completion
+- [ ] ❌ Wheel mini configuration page completion
+- [ ] ❌ Scratch card implementation
+- [ ] ❌ Other game types (Instant Win, Mystery Box, etc.)
+
+**Dernières améliorations (commit `6db16eb`)**:
+
+- ✅ Fix AnimatedBackground blocking clicks (pointer-events)
+- ✅ Removed AnimatedBackground from dashboard layout
+- ✅ Replace native `confirm()` with ConfirmDialog (CONVENTIONS.md compliance)
+- ✅ Fix toast variants: `destructive` → `error`, add `success`
+- ✅ Add delete buttons for all game types
+- ✅ Unified display of custom games (wheels, slots, wheel mini)
 
 ### 📱 QR Codes System (100% ✅)
 

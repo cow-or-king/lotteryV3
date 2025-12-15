@@ -4,8 +4,9 @@
  */
 
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
+import { prisma } from '@/infrastructure/database/prisma-client';
 
 // Validation schemas
 const createGameSchema = z.object({
@@ -421,4 +422,279 @@ export const gameRouter = createTRPCRouter({
 
       return game;
     }),
+
+  /**
+   * Jouer au jeu d'une campagne (PUBLIC - sans auth)
+   * Effectue un tirage au sort basé sur les probabilités des lots
+   */
+  play: publicProcedure
+    .input(
+      z.object({
+        campaignId: z.string().cuid(),
+        playerEmail: z.string().email(),
+        playerName: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      // Vérifier que la campagne existe et est active
+      const campaign = await prisma.campaign.findUnique({
+        where: { id: input.campaignId },
+        include: {
+          game: true, // IMPORTANT: charger le game avec sa config
+          prizes: {
+            where: {
+              remaining: {
+                gt: 0,
+              },
+            },
+          },
+        },
+      });
+
+      if (!campaign) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Campagne introuvable',
+        });
+      }
+
+      if (!campaign.isActive) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cette campagne n est pas active',
+        });
+      }
+
+      // Vérifier si l'utilisateur a déjà joué
+      const existingParticipation = await prisma.participant.findFirst({
+        where: {
+          campaignId: input.campaignId,
+          email: input.playerEmail,
+        },
+      });
+
+      if (existingParticipation) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Vous avez déjà participé à cette campagne',
+        });
+      }
+
+      // Vérifier le nombre max de participants
+      if (campaign.maxParticipants) {
+        const participantCount = await prisma.participant.count({
+          where: { campaignId: input.campaignId },
+        });
+
+        if (participantCount >= campaign.maxParticipants) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Le nombre maximum de participants a été atteint',
+          });
+        }
+      }
+
+      // Effectuer le tirage au sort
+      const wonPrize = selectPrize(campaign.prizes);
+
+      // Créer le participant
+      const participant = await prisma.participant.create({
+        data: {
+          campaignId: input.campaignId,
+          email: input.playerEmail,
+          name: input.playerName,
+          hasPlayed: true,
+          playedAt: new Date(),
+        },
+      });
+
+      // Générer le code de réclamation si un lot a été gagné
+      let claimCode: string | null = null;
+
+      if (wonPrize) {
+        claimCode = generateClaimCode();
+
+        // Calculer la date d'expiration (30 jours par défaut, ou prizeClaimExpiryDays de la campagne)
+        const expiryDays = campaign.prizeClaimExpiryDays || 30;
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + expiryDays);
+
+        // Créer une entrée Winner
+        await prisma.winner.create({
+          data: {
+            prizeId: wonPrize.id,
+            participantEmail: input.playerEmail,
+            participantName: input.playerName,
+            claimCode,
+            expiresAt,
+            status: 'PENDING',
+          },
+        });
+
+        // Décrémenter la quantité restante
+        await prisma.prize.update({
+          where: { id: wonPrize.id },
+          data: {
+            remaining: {
+              decrement: 1,
+            },
+          },
+        });
+      }
+
+      // Trouver l'ID du segment correspondant au prize gagné (pour forcer la roue à s'arrêter dessus)
+      let winningSegmentId: string | null = null;
+
+      if (wonPrize && campaign.game?.config && campaign.prizes) {
+        // Récupérer la config de la roue
+        const gameConfig = campaign.game.config as {
+          segments?: Array<{ id: string; label: string }>;
+        };
+
+        if (gameConfig.segments) {
+          // Trouver l'INDEX du prize gagné dans la liste des prizes
+          const prizeIndex = campaign.prizes.findIndex((p) => p.id === wonPrize.id);
+
+          // Utiliser cet index pour trouver le segment correspondant
+          // Les segments sont créés dans le même ordre que les prizes
+          if (prizeIndex !== -1 && prizeIndex < gameConfig.segments.length) {
+            winningSegmentId = gameConfig.segments[prizeIndex]!.id;
+          }
+        }
+      }
+
+      // Retourner le résultat
+      return {
+        hasWon: wonPrize !== null,
+        prize: wonPrize
+          ? {
+              id: wonPrize.id,
+              name: wonPrize.name,
+              description: wonPrize.description,
+              value: wonPrize.value,
+              color: wonPrize.color,
+            }
+          : null,
+        participantId: participant.id,
+        claimCode,
+        winningSegmentId,
+      };
+    }),
+
+  /**
+   * Récupérer une campagne publique (PUBLIC - sans auth)
+   */
+  getCampaignPublic: publicProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const campaign = await prisma.campaign.findUnique({
+        where: { id: input.id },
+        include: {
+          prizes: true,
+          game: true,
+          store: {
+            select: {
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              participants: true,
+              prizes: true,
+            },
+          },
+        },
+      });
+
+      if (!campaign) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Campagne introuvable',
+        });
+      }
+
+      return {
+        id: campaign.id,
+        name: campaign.name,
+        description: campaign.description,
+        isActive: campaign.isActive,
+        storeName: campaign.store.name,
+        maxParticipants: campaign.maxParticipants,
+        prizes: campaign.prizes,
+        game: campaign.game,
+        _count: campaign._count,
+      };
+    }),
 });
+
+/**
+ * Génère un code de réclamation unique au format ABC-123-XYZ
+ */
+function generateClaimCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sans I, O, 0, 1 pour éviter confusion
+  const segments = [
+    Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''),
+    Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''),
+    Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''),
+  ];
+  return segments.join('-');
+}
+
+/**
+ * Sélectionne un lot basé sur les probabilités
+ * Retourne null si aucun lot n'est gagné
+ */
+function selectPrize(
+  prizes: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    value: number | null;
+    color: string;
+    probability: number;
+    quantity: number;
+    remaining: number;
+  }>,
+): {
+  id: string;
+  name: string;
+  description: string | null;
+  value: number | null;
+  color: string;
+} | null {
+  if (prizes.length === 0) {
+    return null;
+  }
+
+  // Calculer la somme des probabilités
+  const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+
+  // Générer un nombre aléatoire
+  const random = Math.random() * 100;
+
+  // Si le nombre est supérieur à la somme des probabilités, l'utilisateur ne gagne rien
+  if (random > totalProbability) {
+    return null;
+  }
+
+  // Sélectionner le lot
+  let cumulativeProbability = 0;
+  for (const prize of prizes) {
+    cumulativeProbability += prize.probability;
+    if (random <= cumulativeProbability) {
+      return {
+        id: prize.id,
+        name: prize.name,
+        description: prize.description,
+        value: prize.value,
+        color: prize.color,
+      };
+    }
+  }
+
+  return null;
+}

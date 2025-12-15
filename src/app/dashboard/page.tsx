@@ -49,21 +49,21 @@ export default function DashboardPage() {
       >
         <StatCard
           title="Commerces"
-          value={stats?.stores.total ?? 0}
+          value={stats?.stores?.total ?? 0}
           icon={<Store className="w-6 h-6" />}
-          description={`${stats?.stores.active ?? 0} actifs`}
+          description={`${stats?.stores?.active ?? 0} actifs`}
           isLoading={statsLoading}
         />
         <StatCard
           title="Campagnes"
-          value={stats?.campaigns.total ?? 0}
+          value={stats?.campaigns?.total ?? 0}
           icon={<Target className="w-6 h-6" />}
-          description={`${stats?.campaigns.active ?? 0} actives`}
+          description={`${stats?.campaigns?.active ?? 0} actives`}
           isLoading={statsLoading}
         />
         <StatCard
           title="Participants"
-          value={stats?.participants.total ?? 0}
+          value={stats?.participants?.total ?? 0}
           icon={<Users className="w-6 h-6" />}
           description="Total des participations"
           isLoading={statsLoading}
@@ -71,8 +71,8 @@ export default function DashboardPage() {
         <StatCard
           title="Taux de conversion"
           value={
-            stats && stats.participants.total > 0
-              ? `${Math.round((stats.campaigns.active / stats.participants.total) * 100)}%`
+            stats?.participants?.total && stats.participants.total > 0
+              ? `${Math.round(((stats.campaigns?.active ?? 0) / stats.participants.total) * 100)}%`
               : '0%'
           }
           icon={<TrendingUp className="w-6 h-6" />}

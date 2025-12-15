@@ -138,6 +138,17 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     displayOrder: 9,
     targetRole: 'ADMIN',
   },
+  {
+    id: 'admin-campaigns',
+    label: 'Campagnes',
+    path: '/dashboard/campaigns',
+    icon: 'Target',
+    superAdminVisible: true, // Activé par défaut pour SUPER_ADMIN
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 10,
+    targetRole: 'ADMIN',
+  },
 ];
 
 /**
