@@ -112,6 +112,10 @@ export class PrismaCampaignRepository implements CampaignRepository {
       remaining: number;
       value: number | null;
     }>;
+    _count: {
+      participants: number;
+      prizes: number;
+    };
   } | null> {
     return await prisma.campaign.findUnique({
       where: { id },
@@ -126,6 +130,12 @@ export class PrismaCampaignRepository implements CampaignRepository {
             quantity: true,
             remaining: true,
             value: true,
+          },
+        },
+        _count: {
+          select: {
+            participants: true,
+            prizes: true,
           },
         },
       },

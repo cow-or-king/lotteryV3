@@ -37,8 +37,8 @@ export default function WinnersPage() {
   const filteredWinners = winners.filter((winner) => {
     const matchesSearch =
       searchQuery === '' ||
-      winner.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      winner.participantEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      winner.participantName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      winner.participantEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       winner.claimCode.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Si filtre PENDING, exclure les expirés
@@ -64,18 +64,6 @@ export default function WinnersPage() {
     },
     { value: 'EXPIRED', label: 'Expirés', color: 'bg-red-100 text-red-900 border-red-400' },
   ];
-
-  const statusColors = {
-    PENDING: 'bg-amber-100 text-amber-900 border-amber-400',
-    CLAIMED: 'bg-emerald-100 text-emerald-900 border-emerald-400',
-    EXPIRED: 'bg-red-100 text-red-900 border-red-400',
-  };
-
-  const statusLabels = {
-    PENDING: 'En attente',
-    CLAIMED: 'Réclamé',
-    EXPIRED: 'Expiré',
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -213,7 +201,7 @@ export default function WinnersPage() {
               {filteredWinners.map((winner) => (
                 <WinnerRow
                   key={winner.id}
-                  winner={winner}
+                  winner={winner as unknown as Parameters<typeof WinnerRow>[0]['winner']}
                   onMarkAsClaimed={handleMarkAsClaimed}
                   isMarkingAsClaimed={isMarkingAsClaimed}
                 />

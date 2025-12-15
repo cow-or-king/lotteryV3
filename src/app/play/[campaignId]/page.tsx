@@ -11,7 +11,8 @@ import { api } from '@/lib/trpc/client';
 import { Gift, Sparkles, Trophy, PartyPopper } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import WheelGame from '@/components/games/WheelGame';
-import type { WheelGameConfig, WheelSegment } from '@/lib/types/game.types';
+import type { WheelGameConfig } from '@/lib/types/game.types';
+import { toast } from 'sonner';
 
 type GameState = 'idle' | 'playing' | 'result';
 
@@ -66,7 +67,7 @@ export default function GamePlayPage() {
     // Vérifier que mockUser existe
     if (!mockUser) {
       console.error('❌ No mockUser found!');
-      alert('Erreur: utilisateur non connecté');
+      toast.error('Erreur: utilisateur non connecté');
       return;
     }
 
@@ -89,7 +90,7 @@ export default function GamePlayPage() {
       setGameState('playing');
     } catch (error) {
       console.error('❌ API error:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+      toast.error(error instanceof Error ? error.message : 'Une erreur est survenue');
     }
   };
 
@@ -168,7 +169,7 @@ export default function GamePlayPage() {
               <div className="text-center">
                 <h2 className="text-4xl font-bold text-gray-900 mb-8">Tournez la roue !</h2>
                 <WheelGame
-                  config={campaign.game.config as WheelGameConfig}
+                  config={campaign.game.config as unknown as WheelGameConfig}
                   primaryColor="#7C3AED"
                   secondaryColor="#EC4899"
                   onSpinComplete={handleSpinComplete}

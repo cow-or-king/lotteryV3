@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { WheelDesignConfig } from '@/lib/types/game-design.types';
 
 interface WheelPreviewProps {
@@ -18,7 +18,6 @@ interface WheelPreviewProps {
 export function WheelPreview({ design, size = 400, interactive = true }: WheelPreviewProps) {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleSpin = () => {
     if (!interactive || isSpinning) return;

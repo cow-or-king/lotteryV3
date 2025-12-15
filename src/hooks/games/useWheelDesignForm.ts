@@ -41,12 +41,31 @@ export function useWheelDesignForm() {
           ? JSON.parse(existingDesign.segments)
           : existingDesign.segments;
 
+      // Extract only WheelDesignConfig properties, excluding database fields
       setDesign({
-        ...existingDesign,
         segments: parsedSegments as WheelSegmentDesign[],
         primaryColor: existingDesign.primaryColor ?? undefined,
         secondaryColor: existingDesign.secondaryColor ?? undefined,
-      } as WheelDesignConfig);
+        backgroundColor: existingDesign.backgroundColor,
+        segmentBorderColor: existingDesign.segmentBorderColor,
+        segmentBorderWidth: existingDesign.segmentBorderWidth,
+        showSegmentText: existingDesign.showSegmentText,
+        textSize: existingDesign.textSize,
+        textFont: existingDesign.textFont,
+        textRotation: existingDesign.textRotation,
+        centerCircleSize: existingDesign.centerCircleSize,
+        centerCircleColor: existingDesign.centerCircleColor,
+        centerLogoUrl: existingDesign.centerLogoUrl || null,
+        centerLogoSize: existingDesign.centerLogoSize,
+        pointerColor: existingDesign.pointerColor,
+        pointerStyle: existingDesign.pointerStyle as 'arrow' | 'triangle' | 'circle',
+        animationSpeed: existingDesign.animationSpeed as 'slow' | 'normal' | 'fast',
+        spinDuration: existingDesign.spinDuration,
+        enableSound: existingDesign.enableSound,
+        colorMode: existingDesign.colorMode as ColorMode,
+        numberOfSegments: existingDesign.numberOfSegments,
+        name: existingDesign.name,
+      });
       setDesignName(existingDesign.name);
     }
   }, [existingDesign]);

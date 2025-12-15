@@ -23,10 +23,7 @@ export interface GameSuggestionResult {
 }
 
 export class GameSuggestion {
-  private constructor(
-    private readonly numberOfPrizes: number,
-    private readonly suggestion: GameSuggestionResult,
-  ) {}
+  private constructor(private readonly suggestion: GameSuggestionResult) {}
 
   public static suggest(numberOfPrizes: number): Result<GameSuggestion> {
     // Validation
@@ -40,7 +37,7 @@ export class GameSuggestion {
 
     const suggestion = this.calculateSuggestion(numberOfPrizes);
 
-    return Result.ok(new GameSuggestion(numberOfPrizes, suggestion));
+    return Result.ok(new GameSuggestion(suggestion));
   }
 
   private static calculateSuggestion(numberOfPrizes: number): GameSuggestionResult {

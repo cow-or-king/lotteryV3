@@ -27,7 +27,7 @@ export function RoleIndicator({
 }: RoleIndicatorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   // Fermer le dropdown si on clique à l'extérieur
   useEffect(() => {

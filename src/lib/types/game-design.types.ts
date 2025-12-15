@@ -240,7 +240,7 @@ export function generateRandomBiColors(): { primary: string; secondary: string }
  * Récupère le design par défaut
  */
 export function getDefaultWheelDesign(): WheelDesignConfig {
-  return DEFAULT_WHEEL_DESIGNS.multicolor;
+  return DEFAULT_WHEEL_DESIGNS.multicolor!;
 }
 
 // =====================
@@ -341,7 +341,7 @@ export const DEFAULT_SCRATCH_DESIGNS: Record<string, ScratchDesignConfig> = {
 };
 
 export function getDefaultScratchDesign(): ScratchDesignConfig {
-  return DEFAULT_SCRATCH_DESIGNS.classic;
+  return DEFAULT_SCRATCH_DESIGNS.classic!;
 }
 
 // =====================
@@ -485,16 +485,30 @@ export const DEFAULT_SLOT_MACHINE_DESIGNS: Record<string, SlotMachineDesignConfi
     spinEasing: 'BOUNCE',
     reelDelay: 300,
     winPatterns: [
-      { pattern: ['7️⃣', '7️⃣', '7️⃣', '7️⃣', '7️⃣'], multiplier: 777 },
-      { pattern: ['💰', '💰', '💰', '💰', '💰'], multiplier: 100 },
-      { pattern: ['💎', '💎', '💎', '💎', '💎'], multiplier: 75 },
+      {
+        id: '1',
+        matchCount: 3,
+        symbol: '7️⃣',
+        multiplier: 777,
+        probability: 0.1,
+        label: 'JACKPOT 777',
+      },
+      {
+        id: '2',
+        matchCount: 3,
+        symbol: '💰',
+        multiplier: 100,
+        probability: 1,
+        label: 'Super gain',
+      },
+      { id: '3', matchCount: 3, symbol: '💎', multiplier: 75, probability: 2, label: 'Gros gain' },
     ],
     isDefault: true,
   },
 };
 
 export function getDefaultSlotMachineDesign(): SlotMachineDesignConfig {
-  return DEFAULT_SLOT_MACHINE_DESIGNS.classic;
+  return DEFAULT_SLOT_MACHINE_DESIGNS.classic!;
 }
 
 // =====================
@@ -543,5 +557,5 @@ export const DEFAULT_WHEEL_MINI_DESIGNS: Record<string, WheelMiniDesignConfig> =
 };
 
 export function getDefaultWheelMiniDesign(): WheelMiniDesignConfig {
-  return DEFAULT_WHEEL_MINI_DESIGNS.fast;
+  return DEFAULT_WHEEL_MINI_DESIGNS.fast!;
 }

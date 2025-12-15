@@ -8,7 +8,6 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import Image from 'next/image';
 import { Shield } from 'lucide-react';
 
 export default function PlayLoginPage() {

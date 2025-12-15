@@ -4,7 +4,7 @@
  * IMPORTANT: ZERO any types
  */
 
-import { GameType, WheelGameConfig, PrizeType } from '@/lib/types/game.types';
+import { GameType, WheelGameConfig } from '@/lib/types/game.types';
 
 // =====================
 // WHEEL TEMPLATES

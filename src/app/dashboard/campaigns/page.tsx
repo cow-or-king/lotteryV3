@@ -12,6 +12,7 @@ import { useStores } from '@/hooks/stores';
 import { useAllCampaigns, useToggleCampaignStatus } from '@/hooks/campaigns';
 import CreateCampaignWizard from '@/components/campaigns/CreateCampaignWizard';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function CampaignsPage() {
   const { stores, isLoading: isLoadingStores } = useStores();
@@ -166,13 +167,13 @@ export default function CampaignsPage() {
                 </Link>
                 <button
                   className="flex-1 rounded-md bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
-                  onClick={() => alert('Voir les détails (à implémenter)')}
+                  onClick={() => toast.info('Voir les détails (à implémenter)')}
                 >
                   Détails
                 </button>
                 <button
                   className="flex-1 rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                  onClick={() => alert('Modifier (à implémenter)')}
+                  onClick={() => toast.info('Modifier (à implémenter)')}
                 >
                   Modifier
                 </button>

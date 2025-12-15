@@ -482,17 +482,17 @@ for (const store of stores) {
 
 **RÈGLE:** Toujours tester en mode responsive dans le navigateur (DevTools) AVANT de considérer une page terminée
 
-### 5. Gradients - Utiliser bg-linear-to-\*
+### 5. Gradients - Utiliser bg-gradient-to-\*
 
 ```tsx
-// ✅ BON - Utiliser bg-linear-to-*
-<div className="bg-linear-to-r from-purple-600 to-pink-500">
+// ✅ BON - Utiliser bg-gradient-to-*
+<div className="bg-gradient-to-r from-purple-600 to-pink-500">
 
-// ❌ MAUVAIS - Ne pas utiliser bg-gradient-to-*
+// ❌ MAUVAIS - Ne pas utiliser bg-linear-to-*
 <div className="bg-linear-to-r from-purple-600 to-pink-500">
 ```
 
-**RÈGLE:** Toujours utiliser `bg-linear-to-*` au lieu de `bg-gradient-to-*`
+**RÈGLE:** Toujours utiliser `bg-gradient-to-*` (Tailwind CSS standard) au lieu de `bg-linear-to-*`
 
 ### 5. Toast Notifications
 

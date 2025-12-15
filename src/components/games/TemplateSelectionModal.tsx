@@ -28,8 +28,8 @@ export function TemplateSelectionModal({
   onSelectTemplate,
 }: TemplateSelectionModalProps) {
   const templates = getTemplatesForGameType(gameType);
-  const templateKeys = Object.keys(templates);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>(templateKeys[0] || '');
+  const templateEntries = Object.entries(templates);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(templateEntries[0]?.[0] || '');
 
   const handleConfirm = () => {
     onSelectTemplate(selectedTemplate);
@@ -60,10 +60,11 @@ export function TemplateSelectionModal({
 
         {/* Templates Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {templateKeys.map((key) => {
-            const template = templates[key as keyof typeof templates];
+          {templateEntries.map(([key, template]) => {
             const Icon = getTemplateIcon(key);
             const isSelected = selectedTemplate === key;
+
+            if (!template || typeof template !== 'object' || !('name' in template)) return null;
 
             return (
               <button
@@ -101,27 +102,41 @@ export function TemplateSelectionModal({
                     isSelected ? 'text-purple-700' : 'text-gray-800'
                   }`}
                 >
-                  {template.name}
+                  {(template as { name: string; description: string }).name}
                 </h3>
-                <p className="text-sm text-gray-600 text-left">{template.description}</p>
+                <p className="text-sm text-gray-600 text-left">
+                  {(template as { name: string; description: string }).description}
+                </p>
 
                 {/* Preview Colors (for Wheel) */}
-                {gameType === 'WHEEL' && 'config' in template && (
-                  <div className="flex gap-2 mt-4">
-                    <div
-                      className="w-8 h-8 rounded-lg border border-gray-200"
-                      style={{ backgroundColor: template.config.primaryColor }}
-                    />
-                    <div
-                      className="w-8 h-8 rounded-lg border border-gray-200"
-                      style={{ backgroundColor: template.config.secondaryColor }}
-                    />
-                    <div
-                      className="w-8 h-8 rounded-lg border border-gray-200"
-                      style={{ backgroundColor: template.config.backgroundColor }}
-                    />
-                  </div>
-                )}
+                {gameType === 'WHEEL' &&
+                  'config' in template &&
+                  typeof template.config === 'object' &&
+                  template.config !== null && (
+                    <div className="flex gap-2 mt-4">
+                      <div
+                        className="w-8 h-8 rounded-lg border border-gray-200"
+                        style={{
+                          backgroundColor: (template.config as { primaryColor: string })
+                            .primaryColor,
+                        }}
+                      />
+                      <div
+                        className="w-8 h-8 rounded-lg border border-gray-200"
+                        style={{
+                          backgroundColor: (template.config as { secondaryColor: string })
+                            .secondaryColor,
+                        }}
+                      />
+                      <div
+                        className="w-8 h-8 rounded-lg border border-gray-200"
+                        style={{
+                          backgroundColor: (template.config as { backgroundColor: string })
+                            .backgroundColor,
+                        }}
+                      />
+                    </div>
+                  )}
               </button>
             );
           })}

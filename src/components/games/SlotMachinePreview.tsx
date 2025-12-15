@@ -27,7 +27,6 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
   const [reelSymbols, setReelSymbols] = useState<string[][]>([]);
   const [finalSymbols, setFinalSymbols] = useState<string[]>([]);
   const [winResult, setWinResult] = useState<WinResult | null>(null);
-  const [hasTransition, setHasTransition] = useState(false);
 
   useEffect(() => {
     // Initialize reels with random symbols
@@ -70,7 +69,6 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
 
     setIsSpinning(true);
     setWinResult(null);
-    setHasTransition(true);
 
     // Regenerate ALL reels with new random symbols to desynchronize
     const symbolsToGenerate = 50;
@@ -130,12 +128,13 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
     });
 
     // Find the symbol with most matches
-    let bestMatch: { symbol: string; indices: number[]; count: number } | null = null;
-    symbolCounts.forEach((indices, symbol) => {
+    type BestMatch = { symbol: string; indices: number[]; count: number };
+    let bestMatch: BestMatch | null = null;
+    for (const [symbol, indices] of symbolCounts.entries()) {
       if (!bestMatch || indices.length > bestMatch.count) {
         bestMatch = { symbol, indices, count: indices.length };
       }
-    });
+    }
 
     // Check if we have a winning pattern (2 or 3 matching symbols)
     if (bestMatch && bestMatch.count >= 2) {
@@ -163,19 +162,6 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
           multiplier: bestMatch.count === 3 ? 10 : 2,
         });
       }
-    }
-  };
-
-  const getEasingValue = () => {
-    switch (design.spinEasing) {
-      case 'LINEAR':
-        return 'linear';
-      case 'EASE_OUT':
-        return 'ease-out';
-      case 'BOUNCE':
-        return 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-      default:
-        return 'ease-out';
     }
   };
 

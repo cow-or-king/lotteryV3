@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ScratchDesignConfig } from '@/lib/types/game-design.types';
 
 interface ScratchPreviewProps {
@@ -16,10 +16,7 @@ interface ScratchPreviewProps {
 
 export function ScratchPreview({ design, interactive = true }: ScratchPreviewProps) {
   const [scratchedZones, setScratchedZones] = useState<Set<string>>(new Set());
-  const [isScratching, setIsScratching] = useState(false);
   const [showWin, setShowWin] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Reset when design changes
@@ -65,7 +62,6 @@ export function ScratchPreview({ design, interactive = true }: ScratchPreviewPro
     <div className="relative w-full mx-auto flex flex-col items-center justify-center gap-4">
       {/* Card Container */}
       <div
-        ref={containerRef}
         className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-200"
         style={{
           width: design.cardWidth,

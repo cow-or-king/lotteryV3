@@ -74,7 +74,7 @@ export function useWheelMiniDesignForm() {
       updateGame.mutate({
         id: gameId,
         name: designName,
-        config: design,
+        config: design as unknown as Record<string, unknown>,
       });
     } else {
       // Create new game

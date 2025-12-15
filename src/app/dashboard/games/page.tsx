@@ -183,7 +183,7 @@ export default function GamesLibraryPage() {
     });
 
     if (confirmed) {
-      deleteWheelDesign.mutate({ id });
+      deleteWheelDesign.mutate(id);
     }
   };
 

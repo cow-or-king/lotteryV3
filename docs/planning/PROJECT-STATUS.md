@@ -414,7 +414,7 @@ DATABASE_URL=postgresql://...
 DIRECT_URL=postgresql://...
 
 # Supabase Auth
-NEXT_PUBLIC_SUPABASE_URL=https://dhedkewujbazelsdihtr.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://***.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
 
@@ -422,8 +422,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
 ENCRYPTION_SECRET_KEY=0a4700bf8972a9933544afaf9ea3e9642ba15306e4373154d622d577fe431219
 
 # Google OAuth 2.0 - My Business API
-GOOGLE_CLIENT_ID=467670053448-jrlbk1lsuhtvloetqhkh3usco4jn8jgd.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
+GOOGLE_CLIENT_ID=***.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=***
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
 ```
 

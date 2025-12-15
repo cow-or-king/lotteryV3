@@ -60,7 +60,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
 
   // Auto-select brand if only one
   React.useEffect(() => {
-    if (brands.length === 1 && !selectedBrandId) {
+    if (brands.length === 1 && !selectedBrandId && brands[0]) {
       setSelectedBrandId(brands[0].id);
     }
   }, [brands, selectedBrandId]);
@@ -142,7 +142,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
 
           transformedPrizes.push({
             name: item.prizeTemplate.name,
-            description: item.prizeTemplate.description,
+            description: item.prizeTemplate.description || undefined,
             value: item.prizeTemplate.minPrice || undefined,
             color: item.prizeTemplate.color,
             probability: item.probability,
@@ -198,10 +198,13 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
 
   const updatePrize = (index: number, field: keyof PrizeConfig, value: string | number) => {
     const updated = [...prizes];
+    const item = updated[index];
+    if (!item) return;
+
     if (field === 'quantity') {
-      updated[index][field] = Number(value);
+      item[field] = Number(value);
     } else {
-      updated[index][field] = value as string;
+      item[field] = value as string;
     }
     setPrizes(updated);
   };

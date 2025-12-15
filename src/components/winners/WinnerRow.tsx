@@ -12,8 +12,8 @@ import { fr } from 'date-fns/locale';
 interface WinnerRowProps {
   winner: {
     id: string;
-    participantName: string;
-    participantEmail: string;
+    participantName: string | null;
+    participantEmail: string | null;
     claimCode: string;
     status: 'PENDING' | 'CLAIMED' | 'EXPIRED';
     claimedAt: Date | null;
@@ -57,8 +57,8 @@ export function WinnerRow({ winner, onMarkAsClaimed, isMarkingAsClaimed }: Winne
     <div className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50 transition-colors">
       {/* Participant */}
       <div className="col-span-2">
-        <p className="font-medium text-gray-900">{winner.participantName}</p>
-        <p className="text-sm text-gray-600 truncate">{winner.participantEmail}</p>
+        <p className="font-medium text-gray-900">{winner.participantName ?? 'N/A'}</p>
+        <p className="text-sm text-gray-600 truncate">{winner.participantEmail ?? 'N/A'}</p>
       </div>
 
       {/* Lot */}

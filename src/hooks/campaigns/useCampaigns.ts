@@ -18,7 +18,7 @@ export function useGameSuggestion() {
       toast({
         title: 'Erreur',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -43,7 +43,7 @@ export function useCreateCampaign() {
       toast({
         title: 'Succès',
         description: data.message,
-        variant: 'default',
+        variant: 'success',
       });
 
       // Invalider les queries pour rafraîchir les données
@@ -53,7 +53,7 @@ export function useCreateCampaign() {
       toast({
         title: 'Erreur',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -108,7 +108,7 @@ export function useToggleCampaignStatus() {
       toast({
         title: 'Succès',
         description: 'Statut de la campagne mis à jour',
-        variant: 'default',
+        variant: 'success',
       });
 
       // Invalider les queries pour rafraîchir les données
@@ -119,7 +119,7 @@ export function useToggleCampaignStatus() {
       toast({
         title: 'Erreur',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -143,7 +143,7 @@ export function useDeleteCampaign() {
       toast({
         title: 'Succès',
         description: 'Campagne supprimée avec succès',
-        variant: 'default',
+        variant: 'success',
       });
 
       // Invalider les queries pour rafraîchir les données
@@ -153,7 +153,7 @@ export function useDeleteCampaign() {
       toast({
         title: 'Erreur',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
