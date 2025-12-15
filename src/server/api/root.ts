@@ -19,6 +19,7 @@ import { qrCodeRouter } from './routers/qr-code.router';
 import { gameRouter } from './routers/game.router';
 import { wheelDesignRouter } from './routers/wheel-design.router';
 import { campaignRouter } from './routers/campaign.router';
+import { winnerRouter } from './routers/winner.router';
 
 /**
  * Router principal de l'API
@@ -39,6 +40,7 @@ export const appRouter = createTRPCRouter({
   game: gameRouter,
   wheelDesign: wheelDesignRouter,
   campaign: campaignRouter,
+  winner: winnerRouter,
 });
 
 /**

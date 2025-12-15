@@ -17,6 +17,7 @@ export type MenuId =
   | 'prizes'
   | 'qr-codes'
   | 'campaigns'
+  | 'winners'
   | 'lottery'
   | 'participants'
   | 'analytics'
@@ -43,6 +44,10 @@ export function useSidebar() {
       setActiveMenu('prizes');
     } else if (pathname.startsWith('/dashboard/qr-codes')) {
       setActiveMenu('qr-codes');
+    } else if (pathname.startsWith('/dashboard/campaigns')) {
+      setActiveMenu('campaigns');
+    } else if (pathname.startsWith('/dashboard/winners')) {
+      setActiveMenu('winners');
     } else if (pathname.startsWith('/campaigns')) {
       setActiveMenu('campaigns');
     } else if (pathname.startsWith('/lottery')) {

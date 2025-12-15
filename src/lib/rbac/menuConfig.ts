@@ -149,6 +149,17 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     displayOrder: 10,
     targetRole: 'ADMIN',
   },
+  {
+    id: 'admin-winners',
+    label: 'Gagnants',
+    path: '/dashboard/winners',
+    icon: 'Trophy',
+    superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
+    adminVisible: true,
+    userVisible: false,
+    displayOrder: 11,
+    targetRole: 'ADMIN',
+  },
 ];
 
 /**

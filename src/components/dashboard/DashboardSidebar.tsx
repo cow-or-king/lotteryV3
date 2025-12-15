@@ -17,6 +17,7 @@ import {
   Store,
   Target,
   TrendingUp,
+  Trophy,
   Users,
   Settings,
 } from 'lucide-react';
@@ -62,6 +63,7 @@ const ICON_MAP = {
   Gift: Gift,
   QrCode: QrCode,
   Target: Target,
+  Trophy: Trophy,
   Dices: Dices,
   Users: Users,
   TrendingUp: TrendingUp,
