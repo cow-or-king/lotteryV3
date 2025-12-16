@@ -79,7 +79,7 @@ export function useStores() {
             logoUrl: selectedBrand.logoUrl ?? '',
           }
         : null,
-    [selectedBrand?.brandName, selectedBrand?.logoUrl],
+    [selectedBrand],
   );
 
   // Effects

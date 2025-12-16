@@ -64,7 +64,9 @@ export function TemplateSelectionModal({
             const Icon = getTemplateIcon(key);
             const isSelected = selectedTemplate === key;
 
-            if (!template || typeof template !== 'object' || !('name' in template)) return null;
+            if (!template || typeof template !== 'object' || !('name' in template)) {
+              return null;
+            }
 
             return (
               <button

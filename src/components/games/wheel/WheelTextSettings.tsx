@@ -6,7 +6,7 @@
 
 'use client';
 
-import type { WheelDesignConfig } from '@/lib/types/game-design.types';
+import type { WheelDesignConfig } from '@/lib/types/game';
 
 interface WheelTextSettingsProps {
   design: WheelDesignConfig;

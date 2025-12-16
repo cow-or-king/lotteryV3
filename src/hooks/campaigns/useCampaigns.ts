@@ -9,25 +9,25 @@ import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook pour suggérer un type de jeu basé sur le nombre de lots
+ * Note: Cette fonction n'est plus utilisée car suggestGameTemplate est maintenant une query
  */
 export function useGameSuggestion() {
   const { toast } = useToast();
 
-  const mutation = api.campaign.suggestGame.useMutation({
-    onError: (error) => {
+  // suggestGameTemplate est maintenant une query, pas une mutation
+  // Cette fonction est conservée pour compatibilité mais ne devrait plus être utilisée
+  return {
+    suggestGame: async () => {
       toast({
         title: 'Erreur',
-        description: error.message,
+        description: 'Cette méthode est obsolète',
         variant: 'error',
       });
+      throw new Error('suggestGame is deprecated');
     },
-  });
-
-  return {
-    suggestGame: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    data: mutation.data,
-    error: mutation.error,
+    isLoading: false,
+    data: undefined,
+    error: null,
   };
 }
 

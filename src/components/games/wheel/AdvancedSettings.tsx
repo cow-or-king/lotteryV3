@@ -4,7 +4,7 @@
  * IMPORTANT: ZERO any types, mobile-first responsive
  */
 
-import { WheelDesignConfig } from '@/lib/types/game-design.types';
+import { WheelDesignConfig } from '@/lib/types/game';
 
 interface AdvancedSettingsProps {
   design: WheelDesignConfig;

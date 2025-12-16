@@ -8,7 +8,7 @@
 
 import { ColorModeSelector } from '@/components/games/wheel/ColorModeSelector';
 import { SegmentControls } from '@/components/games/wheel/SegmentControls';
-import { type WheelDesignConfig, type ColorMode } from '@/lib/types/game-design.types';
+import { type WheelDesignConfig, type ColorMode } from '@/lib/types/game';
 
 interface WheelColorSettingsProps {
   design: WheelDesignConfig;

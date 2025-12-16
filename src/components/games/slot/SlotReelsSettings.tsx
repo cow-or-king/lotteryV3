@@ -6,7 +6,7 @@
 
 'use client';
 
-import { SlotMachineDesignConfig, SlotSpinEasing, SlotSymbol } from '@/lib/types/game-design.types';
+import { SlotMachineDesignConfig, SlotSpinEasing, SlotSymbol } from '@/lib/types/game';
 
 interface SlotReelsSettingsProps {
   design: SlotMachineDesignConfig;

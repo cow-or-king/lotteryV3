@@ -6,11 +6,7 @@
 
 'use client';
 
-import {
-  ScratchDesignConfig,
-  ScratchWinPattern,
-  ScratchAnimation,
-} from '@/lib/types/game-design.types';
+import { ScratchDesignConfig, ScratchWinPattern, ScratchAnimation } from '@/lib/types/game';
 
 interface ScratchCardSettingsProps {
   design: ScratchDesignConfig;

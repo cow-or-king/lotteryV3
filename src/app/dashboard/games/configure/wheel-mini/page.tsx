@@ -8,7 +8,7 @@
 
 import { useRouter } from 'next/navigation';
 import { WheelMiniPreview } from '@/components/games/WheelMiniPreview';
-import { WheelMiniStyle } from '@/lib/types/game-design.types';
+import { WheelMiniStyle } from '@/lib/types/game';
 import { Save, ArrowLeft, Zap } from 'lucide-react';
 import { useWheelMiniDesignForm } from '@/hooks/games/useWheelMiniDesignForm';
 

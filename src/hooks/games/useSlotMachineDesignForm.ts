@@ -13,7 +13,7 @@ import {
   getDefaultSlotMachineDesign,
   SlotSymbol,
   SlotWinPattern,
-} from '@/lib/types/game-design.types';
+} from '@/lib/types/game';
 
 export function useSlotMachineDesignForm() {
   const router = useRouter();
@@ -47,10 +47,9 @@ export function useSlotMachineDesignForm() {
   }, [existingGame]);
 
   // Mutations
-  // @ts-expect-error - Known tRPC issue: "Type instantiation is excessively deep" with complex nested schemas
   const createGame = api.game.saveSlotMachineDesign.useMutation({
     onSuccess: () => {
-      utils.game.list.invalidate();
+      void utils.game.list.invalidate();
       toast.success('Machine à sous créée avec succès');
       router.push('/dashboard/games');
     },
@@ -62,8 +61,8 @@ export function useSlotMachineDesignForm() {
 
   const updateGame = api.game.update.useMutation({
     onSuccess: () => {
-      utils.game.list.invalidate();
-      utils.game.getById.invalidate();
+      void utils.game.list.invalidate();
+      void utils.game.getById.invalidate();
       toast.success('Machine à sous mise à jour avec succès');
       router.push('/dashboard/games');
     },

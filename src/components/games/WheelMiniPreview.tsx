@@ -4,10 +4,12 @@
  * IMPORTANT: ZERO any types
  */
 
+/* global requestAnimationFrame */
+
 'use client';
 
 import { useState } from 'react';
-import { WheelMiniDesignConfig } from '@/lib/types/game-design.types';
+import { WheelMiniDesignConfig } from '@/lib/types/game';
 
 interface WheelMiniPreviewProps {
   design: WheelMiniDesignConfig;
@@ -24,7 +26,9 @@ export function WheelMiniPreview({
   const [isSpinning, setIsSpinning] = useState(false);
 
   const handleSpin = () => {
-    if (!interactive || isSpinning) return;
+    if (!interactive || isSpinning) {
+      return;
+    }
 
     setIsSpinning(true);
 

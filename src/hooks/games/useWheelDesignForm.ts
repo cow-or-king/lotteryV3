@@ -16,7 +16,7 @@ import {
   generateSegments,
   generateRandomBiColors,
   WheelSegmentDesign,
-} from '@/lib/types/game-design.types';
+} from '@/lib/types/game';
 
 export function useWheelDesignForm() {
   const router = useRouter();

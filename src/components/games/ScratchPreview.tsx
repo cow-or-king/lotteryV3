@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ScratchDesignConfig } from '@/lib/types/game-design.types';
+import { ScratchDesignConfig } from '@/lib/types/game';
 
 interface ScratchPreviewProps {
   design: ScratchDesignConfig;
@@ -25,7 +25,9 @@ export function ScratchPreview({ design, interactive = true }: ScratchPreviewPro
   }, [design]);
 
   const handleZoneClick = (zoneId: string) => {
-    if (!interactive || scratchedZones.has(zoneId)) return;
+    if (!interactive || scratchedZones.has(zoneId)) {
+      return;
+    }
 
     const newScratched = new Set(scratchedZones);
     newScratched.add(zoneId);

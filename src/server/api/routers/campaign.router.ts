@@ -8,7 +8,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { CreateCampaignUseCase } from '@/core/use-cases/campaign/create-campaign.use-case';
-import { SuggestGameUseCase } from '@/core/use-cases/campaign/suggest-game.use-case';
 import { PrismaCampaignRepository } from '@/infrastructure/repositories/prisma-campaign.repository';
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 import { PrismaQRCodeRepository } from '@/infrastructure/repositories/prisma-qrcode.repository';
@@ -110,15 +109,13 @@ export const campaignRouter = createTRPCRouter({
       // Générer la config du jeu basée sur le template
       const gameConfig = generateGameConfigFromTemplate(template, prizeNames);
 
-      // Debug: Vérifier que la config contient des segments
-      console.log('📝 Game config generated:', JSON.stringify(gameConfig, null, 2));
-
       // Créer le jeu dans la base de données
       const game = await ctx.prisma.game.create({
         data: {
           name: `${input.name} - ${template.name}`,
-          type: template.type,
-          config: gameConfig, // Prisma s'occupe de la sérialisation JSON
+          type: template.type as 'WHEEL' | 'WHEEL_MINI' | 'SLOT_MACHINE',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          config: gameConfig as any,
           primaryColor: template.primaryColor,
           secondaryColor: template.secondaryColor,
           vibrationEnabled: true,
@@ -126,13 +123,6 @@ export const campaignRouter = createTRPCRouter({
           createdBy: ctx.userId,
         },
       });
-
-      console.log(
-        '✅ Game created with id:',
-        game.id,
-        'config:',
-        JSON.stringify(game.config, null, 2),
-      );
 
       finalGameId = game.id;
     }

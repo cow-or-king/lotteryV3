@@ -6,7 +6,7 @@
 
 'use client';
 
-import { SlotMachineDesignConfig, SlotWinPattern } from '@/lib/types/game-design.types';
+import { SlotMachineDesignConfig, SlotWinPattern } from '@/lib/types/game';
 import { Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useState } from 'react';
 

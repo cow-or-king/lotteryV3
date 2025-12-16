@@ -16,7 +16,7 @@ import {
   ScratchWinPattern,
   ScratchAnimation,
   ScratchZone,
-} from '@/lib/types/game-design.types';
+} from '@/lib/types/game';
 import { Save, ArrowLeft, Palette } from 'lucide-react';
 
 export default function ScratchConfiguratorPage() {

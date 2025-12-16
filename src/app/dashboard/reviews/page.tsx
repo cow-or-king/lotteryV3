@@ -12,21 +12,25 @@ import {
   NoStoresMessage,
   ResponseModal,
   ReviewFilters,
-  ReviewList,
-  ReviewStatsCards,
 } from '@/components/reviews';
-import { AIServiceBadge } from '@/components/ui/AIServiceBadge';
+import { ReviewsHeader } from '@/components/reviews/ReviewsHeader';
+import { ReviewsContent } from '@/components/reviews/ReviewsContent';
 import { useGoogleApiConfig, useReviewResponse, useReviews } from '@/hooks/reviews';
-import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/trpc/client';
-import React, { useState } from 'react';
+import { useReviewsPage } from '@/hooks/reviews/useReviewsPage';
+import React from 'react';
 
 export default function ReviewsPage() {
-  const { toast } = useToast();
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
-
-  // Récupérer la liste des stores
-  const { data: stores, isLoading: storesLoading } = api.store.list.useQuery();
+  const pageState = useReviewsPage();
+  const {
+    selectedStoreId,
+    setSelectedStoreId,
+    stores,
+    storesLoading,
+    selectedStore,
+    hasApiKey,
+    isSingleStoreWithoutApi,
+    toast,
+  } = pageState;
 
   // Hooks personnalisés
   const { stats, reviewsData, syncMutation } = useReviews({ storeId: selectedStoreId });
@@ -80,47 +84,18 @@ export default function ReviewsPage() {
     googleApiConfig.validateAndSubmit(selectedStoreId);
   };
 
-  // Sélectionner automatiquement le premier store si disponible
-  React.useEffect(() => {
-    if (stores && stores.length > 0 && !selectedStoreId) {
-      setSelectedStoreId(stores[0]?.id ?? null);
-    }
-  }, [stores, selectedStoreId]);
-
-  // Trouver le store sélectionné pour vérifier l'API key
-  const selectedStore = stores?.find((s) => s.id === selectedStoreId);
-
-  // Vérifier que le commerce a un Place ID ET une API Key configurée
-  const hasApiKey =
-    selectedStore?.googlePlaceId &&
-    selectedStore.googlePlaceId.trim().length > 0 &&
-    selectedStore?.googleApiKeyStatus === 'configured';
-
-  // Compter les commerces sans API configurée
-  const storesWithoutApi =
-    stores?.filter(
-      (s) =>
-        !s.googlePlaceId || s.googlePlaceId.length === 0 || s.googleApiKeyStatus !== 'configured',
-    ) || [];
-  const isSingleStoreWithoutApi = stores && stores.length === 1 && storesWithoutApi.length === 1;
+  // Affichage conditionnel simplifié
+  const showHeader = !isSingleStoreWithoutApi;
+  const showFilters = !isSingleStoreWithoutApi;
+  const showNoApiMessage = selectedStoreId && !hasApiKey;
+  const showContent = selectedStoreId && hasApiKey;
+  const showNoStores = !storesLoading && (!stores || stores.length === 0);
 
   return (
     <div>
-      {/* Header */}
-      {!isSingleStoreWithoutApi && (
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-800">Avis Google</h1>
-              <AIServiceBadge />
-            </div>
-            <p className="text-gray-600">Gérez et répondez aux avis de vos clients</p>
-          </div>
-        </div>
-      )}
+      {showHeader && <ReviewsHeader />}
 
-      {/* Sélecteur de Store + Bouton Sync - masqué si un seul commerce sans API */}
-      {!isSingleStoreWithoutApi && (
+      {showFilters && (
         <ReviewFilters
           stores={stores}
           storesLoading={storesLoading}
@@ -131,8 +106,7 @@ export default function ReviewsPage() {
         />
       )}
 
-      {/* Message si pas d'API Key configurée */}
-      {selectedStoreId && !hasApiKey && (
+      {showNoApiMessage && (
         <NoApiConfigMessage
           onConfigureClick={() =>
             googleApiConfig.openModal(selectedStore?.googlePlaceId || undefined)
@@ -140,29 +114,15 @@ export default function ReviewsPage() {
         />
       )}
 
-      {/* Statistiques - Sticky on scroll */}
-      {selectedStoreId && hasApiKey && (
-        <div className="sticky z-10 bg-linear-to-br from-purple-50/95 via-pink-50/95 to-blue-50/95 backdrop-blur-lg pt-4 pb-2 -mx-6 px-6">
-          <ReviewStatsCards stats={stats} />
-        </div>
+      {showContent && stats && (
+        <ReviewsContent
+          stats={stats}
+          reviews={reviewsData?.reviews}
+          onRespond={reviewResponseHook.openResponseModal}
+        />
       )}
 
-      {/* Liste des avis */}
-      {selectedStoreId && hasApiKey && (
-        <div
-          className="bg-white/50 backdrop-blur-xl border border-purple-600/20 rounded-2xl p-6 overflow-auto"
-          style={{ maxHeight: 'calc(100vh - 220px)' }}
-        >
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Liste des avis</h2>
-          <ReviewList
-            reviews={reviewsData?.reviews}
-            onRespond={reviewResponseHook.openResponseModal}
-          />
-        </div>
-      )}
-
-      {/* Message si aucun store */}
-      {!storesLoading && (!stores || stores.length === 0) && <NoStoresMessage />}
+      {showNoStores && <NoStoresMessage />}
 
       {/* Modal: Configuration API Google */}
       <GoogleApiConfigModal

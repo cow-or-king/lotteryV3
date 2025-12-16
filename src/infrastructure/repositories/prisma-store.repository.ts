@@ -121,7 +121,9 @@ export class PrismaStoreRepository implements StoreRepository {
     return store !== null;
   }
 
-  async listByUser(userId: string): Promise<Array<{ id: string; name: string }>> {
+  async listByUser(
+    userId: string,
+  ): Promise<Array<{ id: string; name: string; defaultQrCodeId: string | null }>> {
     return await prisma.store.findMany({
       where: {
         brand: {
@@ -131,6 +133,7 @@ export class PrismaStoreRepository implements StoreRepository {
       select: {
         id: true,
         name: true,
+        defaultQrCodeId: true,
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -7,7 +7,7 @@
 'use client';
 
 import { Image as ImageIcon } from 'lucide-react';
-import type { WheelDesignConfig } from '@/lib/types/game-design.types';
+import type { WheelDesignConfig } from '@/lib/types/game';
 
 interface WheelLogoSettingsProps {
   design: WheelDesignConfig;

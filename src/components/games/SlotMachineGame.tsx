@@ -29,7 +29,24 @@ export default function SlotMachineGame({
   onSpinStart,
   forcedCombination = null,
 }: SlotMachineGameProps) {
-  // Validation de la config
+  // Les hooks doivent être appelés AVANT tout return conditionnel
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [_reelPositions, setReelPositions] = useState<[number, number, number]>([0, 0, 0]);
+  const [reelSequences, setReelSequences] = useState<[string[], string[], string[]]>([[], [], []]);
+  const reelRefs = [
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+  ];
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      haptic.cancel();
+    };
+  }, []);
+
+  // Validation de la config (APRÈS les hooks)
   if (!config.symbols || config.symbols.length === 0) {
     console.error('❌ Invalid slot machine config: symbols are missing or empty', config);
     return (
@@ -44,22 +61,6 @@ export default function SlotMachineGame({
       </div>
     );
   }
-
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [reelPositions, setReelPositions] = useState<[number, number, number]>([0, 0, 0]);
-  const [reelSequences, setReelSequences] = useState<[string[], string[], string[]]>([[], [], []]);
-  const reelRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ];
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      haptic.cancel();
-    };
-  }, []);
 
   /**
    * Génère une séquence aléatoire de symboles pour un rouleau
@@ -93,11 +94,9 @@ export default function SlotMachineGame({
     onSpinStart?.();
     setIsSpinning(true);
 
-    console.log('🎰 Forcing combination:', forcedCombination);
-
     // Vibration de début
     if (vibrationEnabled && haptic.isAvailable() && haptic.getEnabled()) {
-      haptic.trigger('BUTTON_PRESS');
+      haptic.trigger('BUTTON');
     }
 
     // Générer les séquences pour chaque rouleau (une seule fois)
@@ -115,7 +114,9 @@ export default function SlotMachineGame({
 
     sequences.forEach((sequence, reelIndex) => {
       const reel = reelRefs[reelIndex]?.current;
-      if (!reel) return;
+      if (!reel) {
+        return;
+      }
 
       // Calculer la position finale (dernier symbole)
       const symbolHeight = 120; // Hauteur d'un symbole en px
@@ -155,8 +156,6 @@ export default function SlotMachineGame({
     const totalDuration = config.spinDuration + Math.max(...stopDelays);
 
     setTimeout(() => {
-      console.log('🎰 All reels stopped');
-
       // Vibration finale
       if (vibrationEnabled && haptic.isAvailable() && haptic.getEnabled()) {
         if (forcedCombination) {
@@ -177,9 +176,7 @@ export default function SlotMachineGame({
 
       // Attendre 2 secondes avant d'afficher le résultat
       setTimeout(() => {
-        console.log('📢 Calling onSpinComplete with combination:', finalCombination);
         onSpinComplete?.(finalCombination);
-        console.log('✅ onSpinComplete callback executed');
       }, 2000);
     }, totalDuration);
   };
@@ -190,7 +187,7 @@ export default function SlotMachineGame({
   const renderReel = (reelIndex: number) => {
     // Utiliser la séquence sauvegardée si elle existe, sinon générer une séquence initiale
     const sequence =
-      reelSequences[reelIndex]?.length > 0
+      reelSequences[reelIndex] && reelSequences[reelIndex].length > 0
         ? reelSequences[reelIndex]
         : [config.symbols[0]?.icon || '❓'];
 

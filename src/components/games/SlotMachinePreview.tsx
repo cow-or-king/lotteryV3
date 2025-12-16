@@ -6,7 +6,7 @@
 
 'use client';
 
-import { SlotMachineDesignConfig } from '@/lib/types/game-design.types';
+import { SlotMachineDesignConfig } from '@/lib/types/game';
 import { useEffect, useState } from 'react';
 
 interface SlotMachinePreviewProps {
@@ -31,6 +31,7 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
   useEffect(() => {
     // Initialize reels with random symbols
     initializeReels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [design]);
 
   const initializeReels = () => {

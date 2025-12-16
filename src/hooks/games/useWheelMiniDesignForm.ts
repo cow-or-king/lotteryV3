@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/trpc/client';
 import { toast } from 'sonner';
-import { WheelMiniDesignConfig, getDefaultWheelMiniDesign } from '@/lib/types/game-design.types';
+import { WheelMiniDesignConfig, getDefaultWheelMiniDesign } from '@/lib/types/game';
 
 export function useWheelMiniDesignForm() {
   const router = useRouter();

@@ -33,9 +33,27 @@ export default function WheelGame({
   onSpinStart,
   forcedSegmentId = null,
 }: WheelGameProps) {
-  // Validation de la config
+  // React Hooks MUST be called before any conditional returns
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const wheelRef = useRef<SVGGElement>(null);
+  const engine = useRef(new WheelEngine(config));
+  const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTickAngleRef = useRef(0);
+  const currentSpinResultRef = useRef<SpinResult | null>(null);
+
+  // Cleanup useEffect (must be before early returns)
+  useEffect(() => {
+    return () => {
+      if (tickIntervalRef.current) {
+        clearInterval(tickIntervalRef.current);
+      }
+      haptic.cancel();
+    };
+  }, []);
+
+  // Validation de la config (after hooks)
   if (!config.segments || config.segments.length === 0) {
-    console.error('❌ Invalid wheel config: segments are missing or empty', config);
     return (
       <div className="text-center p-8">
         <div className="inline-block p-6 bg-red-50 rounded-lg">
@@ -47,24 +65,6 @@ export default function WheelGame({
       </div>
     );
   }
-
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
-  const wheelRef = useRef<SVGGElement>(null);
-  const engine = useRef(new WheelEngine(config));
-  const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastTickAngleRef = useRef(0);
-  const currentSpinResultRef = useRef<SpinResult | null>(null);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (tickIntervalRef.current) {
-        clearInterval(tickIntervalRef.current);
-      }
-      haptic.cancel();
-    };
-  }, []);
 
   /**
    * Déclenche la vibration à chaque passage de segment
@@ -88,10 +88,8 @@ export default function WheelGame({
     setIsSpinning(true);
 
     // Obtenir le résultat du spin (avec segment forcé si fourni)
-    console.log('🎰 Forcing segment ID:', forcedSegmentId);
     const result: SpinResult = engine.current.spin(forcedSegmentId || undefined);
     currentSpinResultRef.current = result;
-    console.log('🎰 Spin result:', result);
 
     // Calculer le nombre de segments pour les ticks
     const segmentAngle = 360 / config.segments.length;
@@ -136,8 +134,6 @@ export default function WheelGame({
 
     // Attendre la fin de l'animation
     setTimeout(() => {
-      console.log('🎡 Wheel animation complete, winning segment:', result.winningSegment);
-
       // Arrêter les ticks
       if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current);
@@ -156,9 +152,7 @@ export default function WheelGame({
       setIsSpinning(false);
 
       // Notifier le résultat
-      console.log('📢 Calling onSpinComplete callback');
       onSpinComplete?.(result.winningSegment);
-      console.log('✅ onSpinComplete callback executed');
     }, result.spinDuration + 500); // +500ms pour laisser la roue se stabiliser
   };
 

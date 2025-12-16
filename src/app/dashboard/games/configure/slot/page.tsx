@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { SlotMachinePreview } from '@/components/games/SlotMachinePreview';
 import { SlotReelsSettings } from '@/components/games/slot/SlotReelsSettings';
 import { SlotWinPatternsSettings } from '@/components/games/slot/SlotWinPatternsSettings';
-import { SlotSpinEasing } from '@/lib/types/game-design.types';
+import { SlotSpinEasing } from '@/lib/types/game';
 import { Save, ArrowLeft, Settings, Award } from 'lucide-react';
 import { useSlotMachineDesignForm } from '@/hooks/games/useSlotMachineDesignForm';
 

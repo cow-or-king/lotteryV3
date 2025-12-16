@@ -4,7 +4,8 @@
  * IMPORTANT: Ces jeux NE sont PAS sauvegardés en base de données
  */
 
-import { GameType } from '@prisma/client';
+// Type local pour les types de jeux (évite l'import depuis Prisma)
+type GameType = 'WHEEL' | 'WHEEL_MINI' | 'SLOT_MACHINE' | 'SCRATCH_CARD' | 'INSTANT_WIN' | 'MEMORY';
 
 export interface GameTemplate {
   id: string;
@@ -174,7 +175,7 @@ export function suggestGameTemplate(numberOfPrizes: number): GameTemplate {
   }
 
   // Pour plus de 8 prizes ou moins de 3, utiliser la slot machine
-  return SLOT_MACHINE_TEMPLATES.SLOT_MACHINE_CLASSIC;
+  return SLOT_MACHINE_TEMPLATES.SLOT_MACHINE_CLASSIC!;
 }
 
 /**
@@ -229,7 +230,7 @@ export function generateGameConfigFromTemplate(
     // Générer les winning patterns basés sur les prizes
     const winningPatterns: SlotWinningPattern[] = [];
 
-    prizeNames.forEach((prizeName, prizeIndex) => {
+    prizeNames.forEach((_prizeName, prizeIndex) => {
       // Pour chaque prize, créer des patterns de difficulté variable
       // Plus le prizeIndex est petit, plus la probabilité est élevée → patterns plus faciles
 
