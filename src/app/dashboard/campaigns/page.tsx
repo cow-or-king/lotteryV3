@@ -7,12 +7,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Gift, Users, AlertCircle, Power, ExternalLink } from 'lucide-react';
+import {
+  Plus,
+  Gift,
+  Users,
+  AlertCircle,
+  Power,
+  ExternalLink,
+  Trash2,
+  Edit2,
+  QrCode,
+} from 'lucide-react';
 import { useStores } from '@/hooks/stores';
-import { useAllCampaigns, useToggleCampaignStatus } from '@/hooks/campaigns';
+import { useAllCampaigns, useToggleCampaignStatus, useDeleteCampaign } from '@/hooks/campaigns';
 import CreateCampaignWizard from '@/components/campaigns/CreateCampaignWizard';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 export default function CampaignsPage() {
   const { stores, isLoading: isLoadingStores } = useStores();
@@ -24,8 +35,20 @@ export default function CampaignsPage() {
     name: string;
     newStatus: boolean;
   } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [selectedQRCode, setSelectedQRCode] = useState<{
+    id: string;
+    url: string;
+    campaignName: string;
+  } | null>(null);
 
   const { toggleStatus, isToggling } = useToggleCampaignStatus();
+  const { deleteCampaign, isDeleting } = useDeleteCampaign();
 
   const handleToggleClick = async (campaign: { id: string; name: string; isActive: boolean }) => {
     const newStatus = !campaign.isActive;
@@ -54,6 +77,20 @@ export default function CampaignsPage() {
 
     setShowWarning(false);
     setSelectedCampaign(null);
+  };
+
+  const handleDeleteClick = (campaign: { id: string; name: string }) => {
+    setCampaignToDelete(campaign);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!campaignToDelete) return;
+
+    await deleteCampaign({ id: campaignToDelete.id });
+
+    setShowDeleteConfirm(false);
+    setCampaignToDelete(null);
   };
 
   if (isLoadingStores || isLoadingCampaigns) {
@@ -103,15 +140,36 @@ export default function CampaignsPage() {
               key={campaign.id}
               className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              {/* Status Badge + Toggle */}
+              {/* Status Badge + Toggle + QR Code Icon */}
               <div className="mb-4 flex items-center justify-between">
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    campaign.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {campaign.isActive ? 'Active' : 'Inactive'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      campaign.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {campaign.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                  {campaign.isActive && campaign.qrCodeUrl && (
+                    <button
+                      onClick={() => {
+                        setSelectedQRCode({
+                          id: campaign.id,
+                          url: campaign.qrCodeUrl,
+                          campaignName: campaign.name,
+                        });
+                        setShowQRCode(true);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                      title="Voir le QR Code"
+                    >
+                      <QrCode className="h-3 w-3" />
+                      QR
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={() => handleToggleClick(campaign)}
                   disabled={isToggling}
@@ -166,16 +224,18 @@ export default function CampaignsPage() {
                   Tester
                 </Link>
                 <button
-                  className="flex-1 rounded-md bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
-                  onClick={() => toast.info('Voir les détails (à implémenter)')}
-                >
-                  Détails
-                </button>
-                <button
-                  className="flex-1 rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="flex-1 rounded-md bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 flex items-center justify-center gap-1"
                   onClick={() => toast.info('Modifier (à implémenter)')}
                 >
+                  <Edit2 className="h-4 w-4" />
                   Modifier
+                </button>
+                <button
+                  className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 flex items-center justify-center gap-1"
+                  onClick={() => handleDeleteClick(campaign)}
+                  title="Supprimer la campagne"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -240,6 +300,125 @@ export default function CampaignsPage() {
                 className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isToggling ? 'Activation...' : 'Activer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && campaignToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium text-gray-900">Supprimer la campagne</h3>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Êtes-vous sûr de vouloir supprimer la campagne{' '}
+                    <strong>{campaignToDelete.name}</strong> ?
+                  </p>
+                  <p className="mt-2 text-sm text-red-600">
+                    <strong>Attention :</strong> Cette action est irréversible. Toutes les données
+                    associées (participants, lots gagnés, etc.) seront définitivement supprimées.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-lg">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setCampaignToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Dialog */}
+      {showQRCode && selectedQRCode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">QR Code de la campagne</h3>
+                  <p className="mt-1 text-sm text-gray-500">{selectedQRCode.campaignName}</p>
+                </div>
+              </div>
+              <div className="flex justify-center bg-gray-50 p-8 rounded-lg">
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <Image
+                    src={selectedQRCode.url}
+                    alt={`QR Code - ${selectedQRCode.campaignName}`}
+                    width={200}
+                    height={200}
+                    className="w-48 h-48"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs font-medium text-gray-700 mb-1">URL de la campagne:</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}/c/${selectedQRCode.id}`}
+                    className="flex-1 px-2 py-1 text-xs bg-white border border-gray-300 rounded font-mono"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/c/${selectedQRCode.id}`,
+                      );
+                      toast.success('URL copiée !');
+                    }}
+                    className="px-2 py-1 text-xs font-medium text-white bg-purple-600 rounded hover:bg-purple-700"
+                  >
+                    Copier
+                  </button>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-center text-gray-500">
+                Scannez ce QR code ou partagez l&apos;URL pour accéder à cette campagne
+              </p>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-lg">
+              <button
+                onClick={() => {
+                  setShowQRCode(false);
+                  setSelectedQRCode(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={() => {
+                  // Télécharger le QR code
+                  const link = document.createElement('a');
+                  link.href = selectedQRCode.url;
+                  link.download = `qr-code-${selectedQRCode.campaignName}.png`;
+                  link.click();
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+              >
+                Télécharger QR
               </button>
             </div>
           </div>

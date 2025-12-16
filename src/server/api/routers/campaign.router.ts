@@ -30,7 +30,9 @@ const CreateCampaignSchema = z.object({
   storeId: z.string().cuid(),
   isActive: z.boolean().optional().default(false),
   prizes: z.array(PrizeConfigSchema).min(1).max(50),
-  gameId: z.string().cuid().optional(),
+  // Peut être un templateId (template-*) OU un gameId (cuid)
+  gameId: z.string().optional(),
+  templateId: z.string().optional(),
   maxParticipants: z.number().int().min(1).max(1000000).optional(),
   prizeClaimExpiryDays: z.number().int().min(1).max(365).optional(),
   requireReview: z.boolean().optional(),
@@ -44,127 +46,102 @@ const qrCodeRepo = new PrismaQRCodeRepository();
 
 export const campaignRouter = createTRPCRouter({
   /**
-   * Suggère un type de jeu basé sur le nombre de lots
-   * ET crée le jeu dans la base de données
+   * Suggère un template de jeu basé sur le nombre de lots
+   * NE crée PAS le jeu dans la base de données (templates virtuels)
    */
-  suggestGame: protectedProcedure
+  suggestGameTemplate: protectedProcedure
     .input(
       z.object({
         numberOfPrizes: z.number().int().min(1).max(50),
-        prizeNames: z.array(z.string()).optional(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const useCase = new SuggestGameUseCase();
-      const result = await useCase.execute({
-        numberOfPrizes: input.numberOfPrizes,
-      });
+    .query(async ({ input }) => {
+      const { suggestGameTemplate } = await import('@/lib/constants/game-templates');
+      const template = suggestGameTemplate(input.numberOfPrizes);
 
-      if (!result.success) {
+      return {
+        templateId: template.id,
+        name: template.name,
+        description: template.description,
+        type: template.type,
+        previewImage: template.previewImage,
+      };
+    }),
+
+  /**
+   * Liste tous les templates de jeux disponibles
+   */
+  listGameTemplates: protectedProcedure.query(async () => {
+    const { ALL_GAME_TEMPLATES } = await import('@/lib/constants/game-templates');
+
+    return ALL_GAME_TEMPLATES.map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      type: t.type,
+      previewImage: t.previewImage,
+      minPrizes: t.minPrizes,
+      maxPrizes: t.maxPrizes,
+    }));
+  }),
+
+  /**
+   * Crée une nouvelle campagne avec les prizes
+   */
+  create: protectedProcedure.input(CreateCampaignSchema).mutation(async ({ input, ctx }) => {
+    let finalGameId = input.gameId;
+
+    // Si un templateId est fourni, créer le jeu depuis le template
+    if (input.templateId) {
+      const { getTemplateById, generateGameConfigFromTemplate } =
+        await import('@/lib/constants/game-templates');
+      const template = getTemplateById(input.templateId);
+
+      if (!template) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: result.error.message,
+          message: 'Template de jeu introuvable',
         });
       }
 
-      const suggestion = result.data;
+      // Extraire les noms des prizes pour générer la config
+      const prizeNames = input.prizes.map((p) => p.name);
 
-      // Créer le jeu dans la base de données avec la configuration appropriée
-      const gameType = suggestion.primarySuggestion;
-      const gameName = `Jeu auto-généré (${gameType})`;
+      // Générer la config du jeu basée sur le template
+      const gameConfig = generateGameConfigFromTemplate(template, prizeNames);
 
-      // Générer la configuration du jeu selon le type
-      let gameConfig: Record<string, unknown> = {};
-
-      if (gameType === 'WHEEL' || gameType === 'WHEEL_MINI') {
-        // Configuration pour roue
-        const segmentCount = input.numberOfPrizes;
-        const colors = [
-          '#8B5CF6',
-          '#EC4899',
-          '#F59E0B',
-          '#10B981',
-          '#3B82F6',
-          '#EF4444',
-          '#8B5CF6',
-          '#EC4899',
-        ];
-
-        // Calculer les probabilités pour que la somme fasse exactement 100
-        const baseProbability = Math.floor(100 / segmentCount);
-        const remainder = 100 - baseProbability * segmentCount;
-
-        const segments = Array.from({ length: segmentCount }, (_, i) => ({
-          id: `segment-${i + 1}`,
-          label: input.prizeNames?.[i] || `Lot ${i + 1}`,
-          color: colors[i % colors.length],
-          // Ajouter le reste au premier segment pour atteindre exactement 100%
-          probability: i === 0 ? baseProbability + remainder : baseProbability,
-          prize: {
-            type: 'PRIZE' as const,
-            value: input.prizeNames?.[i] || `Lot ${i + 1}`,
-          },
-        }));
-
-        gameConfig = {
-          segments,
-          spinDuration: 3000,
-          pointerPosition: 'top',
-        };
-      } else if (gameType === 'SLOT_MACHINE') {
-        // Configuration pour machine à sous
-        gameConfig = {
-          reelsCount: 3,
-          symbolsPerReel: 10,
-          symbols: [
-            { id: 'cherry', icon: '🍒', value: 10, color: '#EF4444' },
-            { id: 'lemon', icon: '🍋', value: 15, color: '#FBBF24' },
-            { id: 'orange', icon: '🍊', value: 20, color: '#F97316' },
-            { id: 'star', icon: '⭐', value: 50, color: '#FBBF24' },
-            { id: 'seven', icon: '7️⃣', value: 100, color: '#DC2626' },
-          ],
-          spinDuration: 2000,
-          spinEasing: 'EASE_OUT',
-        };
-      } else {
-        // Configuration par défaut pour autres types
-        gameConfig = {
-          numberOfPrizes: input.numberOfPrizes,
-          mode: 'default',
-        };
-      }
+      // Debug: Vérifier que la config contient des segments
+      console.log('📝 Game config generated:', JSON.stringify(gameConfig, null, 2));
 
       // Créer le jeu dans la base de données
       const game = await ctx.prisma.game.create({
         data: {
-          name: gameName,
-          type: gameType,
-          config: gameConfig as Parameters<typeof ctx.prisma.game.create>[0]['data']['config'],
-          primaryColor: '#8B5CF6',
-          secondaryColor: '#EC4899',
+          name: `${input.name} - ${template.name}`,
+          type: template.type,
+          config: gameConfig, // Prisma s'occupe de la sérialisation JSON
+          primaryColor: template.primaryColor,
+          secondaryColor: template.secondaryColor,
           vibrationEnabled: true,
           isActive: true,
           createdBy: ctx.userId,
         },
       });
 
-      return {
-        gameId: game.id,
-        name: gameName,
-        type: gameType,
-        reason: suggestion.reason,
-        alternatives: suggestion.alternativeSuggestions,
-      };
-    }),
+      console.log(
+        '✅ Game created with id:',
+        game.id,
+        'config:',
+        JSON.stringify(game.config, null, 2),
+      );
 
-  /**
-   * Crée une nouvelle campagne avec les prizes
-   */
-  create: protectedProcedure.input(CreateCampaignSchema).mutation(async ({ input, ctx }) => {
+      finalGameId = game.id;
+    }
+
     const useCase = new CreateCampaignUseCase(campaignRepo, storeRepo, qrCodeRepo);
 
     const result = await useCase.execute({
       ...input,
+      gameId: finalGameId,
       userId: ctx.userId,
     });
 
@@ -246,12 +223,22 @@ export const campaignRouter = createTRPCRouter({
     // Récupérer toutes les campagnes
     const campaigns = await campaignRepo.listAll(storeIds);
 
-    // Ajouter le nom du commerce à chaque campagne
+    // Ajouter le nom du commerce et les infos QR Code à chaque campagne
     return campaigns.map((campaign) => {
       const store = stores.find((s) => s.id === campaign.storeId);
+
+      // Récupérer le QR code par défaut du commerce si la campagne est active
+      let qrCodeUrl: string | null = null;
+      if (campaign.isActive && store?.defaultQrCodeId) {
+        // On ne fait pas d'appel async ici pour ne pas ralentir, on renvoie juste l'ID
+        // Le frontend pourra afficher le QR code via une route API
+        qrCodeUrl = `/api/qr/${store.defaultQrCodeId}`;
+      }
+
       return {
         ...campaign,
         storeName: store?.name || 'Commerce inconnu',
+        qrCodeUrl,
       };
     });
   }),

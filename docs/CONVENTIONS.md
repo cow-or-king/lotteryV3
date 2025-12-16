@@ -485,14 +485,14 @@ for (const store of stores) {
 ### 5. Gradients - Utiliser bg-gradient-to-\*
 
 ```tsx
-// ✅ BON - Utiliser bg-gradient-to-*
-<div className="bg-gradient-to-r from-purple-600 to-pink-500">
+// ✅ BON - Utiliser bg-linear-to-*
+<div className="bg-linear-to-* from-purple-600 to-pink-500">
 
-// ❌ MAUVAIS - Ne pas utiliser bg-linear-to-*
-<div className="bg-linear-to-r from-purple-600 to-pink-500">
+// ❌ MAUVAIS - Ne pas utiliser bg-gradient-to-*
+<div className="bg-gradient-to-* from-purple-600 to-pink-500">
 ```
 
-**RÈGLE:** Toujours utiliser `bg-gradient-to-*` (Tailwind CSS standard) au lieu de `bg-linear-to-*`
+**RÈGLE:** Toujours utiliser `bg-linear-to-*` (Tailwind CSS standard) au lieu de `bg-gradient-to-*`
 
 ### 5. Toast Notifications
 

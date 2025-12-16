@@ -1,16 +1,22 @@
 /**
- * Campaign Creation Wizard
+ * Campaign Creation Wizard V2
  * Wizard multi-étapes pour créer une campagne
  * IMPORTANT: ZERO any types
+ *
+ * Changements:
+ * - Step 2 (Statut) supprimé → toujours créé ACTIF et lié au QR code du commerce
+ * - Step 2 (Prizes) → Cartes cliquables au lieu de sélecteurs
+ * - Step 3 (Game) → Templates système + jeux personnalisés avec previews
+ * - Step 4 (Settings) → Expiration + limite participants fusionnés
  */
 
 'use client';
 
 import React, { useState } from 'react';
-import { X, ArrowLeft, ArrowRight, Calendar, Gift, Gamepad2, Clock, Users } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, Gift, Gamepad2, Clock, Users } from 'lucide-react';
 import { useStores } from '@/hooks/stores';
 import { api } from '@/lib/trpc/client';
-import { useCreateCampaign, useGameSuggestion } from '@/hooks/campaigns';
+import { useCreateCampaign } from '@/hooks/campaigns';
 
 interface WizardProps {
   isOpen: boolean;
@@ -22,7 +28,7 @@ interface PrizeConfig {
   quantity: number;
 }
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
+type Step = 1 | 2 | 3 | 4;
 
 export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -32,21 +38,22 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
   const [storeId, setStoreId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [isActive, setIsActive] = useState(false);
   const [prizes, setPrizes] = useState<PrizeConfig[]>([]);
-  const [gameId, setGameId] = useState<string | null>(null);
+
+  // Game selection: templateId OU gameId
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [gameSelectionMode, setGameSelectionMode] = useState<'template' | 'custom'>('template');
+
   const [prizeClaimExpiryDays, setPrizeClaimExpiryDays] = useState(30);
   const [maxParticipants, setMaxParticipants] = useState<number | null>(null);
 
   // Hooks
   const { stores, isLoading: isLoadingStores } = useStores();
   const { data: prizeSets, isLoading: isLoadingPrizeSets } = api.prizeSet.list.useQuery();
-  const { data: availableGames, isLoading: isLoadingGames } = api.game.list.useQuery();
-  const { suggestGame, isLoading: isSuggesting, data: gameSuggestion } = useGameSuggestion();
+  const { data: templates } = api.campaign.listGameTemplates.useQuery();
+  const { data: customGames, isLoading: isLoadingGames } = api.game.list.useQuery();
   const { createCampaign, isCreating } = useCreateCampaign();
-
-  // Game selection mode
-  const [gameSelectionMode, setGameSelectionMode] = useState<'auto' | 'manual'>('auto');
 
   // Get unique brands from stores
   const brands =
@@ -67,43 +74,8 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
 
   if (!isOpen) return null;
 
-  const handleNext = async () => {
-    if (currentStep === 3 && prizes.length > 0 && !gameId) {
-      // Calculer le nombre total de gains dans tous les lots sélectionnés
-      const totalPrizesCount = prizes.reduce((total, prize) => {
-        const prizeSet = prizeSets?.find((ps) => ps.id === prize.prizeSetId);
-        const itemsCount = prizeSet?.items?.length || 0;
-        return total + itemsCount * prize.quantity;
-      }, 0);
-
-      // Récupérer les noms des prix pour la configuration du jeu
-      const prizeNames: string[] = [];
-      for (const prizeConfig of prizes) {
-        const prizeSet = prizeSets?.find((ps) => ps.id === prizeConfig.prizeSetId);
-        if (prizeSet && prizeSet.items) {
-          for (const item of prizeSet.items) {
-            if (item.prizeTemplate) {
-              prizeNames.push(item.prizeTemplate.name);
-            }
-          }
-        }
-      }
-
-      // Auto-suggest game based on total prize count and create it
-      try {
-        const result = await suggestGame({
-          numberOfPrizes: totalPrizesCount,
-          prizeNames,
-        });
-        if (result && result.gameId) {
-          setGameId(result.gameId);
-        }
-      } catch (error) {
-        console.error('Error suggesting game:', error);
-      }
-    }
-
-    if (currentStep < 6) {
+  const handleNext = () => {
+    if (currentStep < 4) {
       setCurrentStep((currentStep + 1) as Step);
     }
   };
@@ -133,12 +105,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
         for (const item of prizeSet.items) {
           if (!item.prizeTemplate) continue;
 
-          // Calculate quantity based on set quantity and item quantity
-          // If item quantity is 0, it means unlimited
-          const itemQuantity =
-            item.quantity === 0
-              ? 999999 // Unlimited represented as a very large number
-              : item.quantity * prizeConfig.quantity;
+          const itemQuantity = item.quantity === 0 ? 999999 : item.quantity * prizeConfig.quantity;
 
           transformedPrizes.push({
             name: item.prizeTemplate.name,
@@ -155,14 +122,14 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
         storeId,
         name,
         description: description || undefined,
-        isActive,
-        gameId: gameId || undefined,
+        isActive: true, // Créé actif par défaut et lié au QR code du commerce
+        templateId: selectedTemplateId || undefined,
+        gameId: selectedGameId || undefined,
         prizeClaimExpiryDays,
         maxParticipants: maxParticipants || undefined,
         prizes: transformedPrizes,
       });
 
-      // Reset and close
       handleClose();
     } catch (error) {
       console.error('Error creating campaign:', error);
@@ -175,9 +142,10 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
     setStoreId('');
     setName('');
     setDescription('');
-    setIsActive(false);
     setPrizes([]);
-    setGameId(null);
+    setSelectedTemplateId(null);
+    setSelectedGameId(null);
+    setGameSelectionMode('template');
     setPrizeClaimExpiryDays(30);
     setMaxParticipants(null);
     onClose();
@@ -192,57 +160,33 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
       ? stores
       : [];
 
-  const addPrize = () => {
-    setPrizes([...prizes, { prizeSetId: '', quantity: 1 }]);
-  };
-
-  const updatePrize = (index: number, field: keyof PrizeConfig, value: string | number) => {
-    const updated = [...prizes];
-    const item = updated[index];
-    if (!item) return;
-
-    if (field === 'quantity') {
-      item[field] = Number(value);
+  const togglePrizeSet = (prizeSetId: string) => {
+    const existing = prizes.find((p) => p.prizeSetId === prizeSetId);
+    if (existing) {
+      setPrizes(prizes.filter((p) => p.prizeSetId !== prizeSetId));
     } else {
-      item[field] = value as string;
+      setPrizes([...prizes, { prizeSetId, quantity: 1 }]);
     }
-    setPrizes(updated);
   };
 
-  const removePrize = (index: number) => {
-    setPrizes(prizes.filter((_, i) => i !== index));
+  const updatePrizeQuantity = (prizeSetId: string, quantity: number) => {
+    setPrizes(prizes.map((p) => (p.prizeSetId === prizeSetId ? { ...p, quantity } : p)));
   };
 
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        // Si plusieurs enseignes, vérifier que l'enseigne est sélectionnée
         const brandValid = brands.length <= 1 || selectedBrandId;
         return brandValid && storeId && name && name.length >= 2;
       case 2:
-        // Toujours valide, status est optionnel
-        return true;
-      case 3:
-        // Vérifier qu'il y a au moins un lot (prize set) avec quantité
         return prizes.length > 0 && prizes.every((p) => p.prizeSetId && p.quantity > 0);
-      case 4:
-        // Auto mode: pas besoin de gameId, la suggestion se fera plus tard
-        // Manual mode: il faut un gameId sélectionné
-        return gameSelectionMode === 'auto' || gameId !== null;
-      case 5:
-        return prizeClaimExpiryDays > 0;
-      case 6:
-        // Validation finale avant création
-        const brandValidFinal = brands.length <= 1 || selectedBrandId;
+      case 3:
         return (
-          brandValidFinal &&
-          storeId &&
-          name &&
-          name.length >= 2 &&
-          prizes.length > 0 &&
-          prizes.every((p) => p.prizeSetId && p.quantity > 0) &&
-          prizeClaimExpiryDays > 0
+          (gameSelectionMode === 'template' && selectedTemplateId !== null) ||
+          (gameSelectionMode === 'custom' && selectedGameId !== null)
         );
+      case 4:
+        return prizeClaimExpiryDays > 0;
       default:
         return false;
     }
@@ -250,12 +194,12 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative w-full max-w-2xl rounded-xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-4xl rounded-xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Nouvelle Campagne</h2>
-            <p className="text-sm text-gray-500">Étape {currentStep} sur 6</p>
+            <p className="text-sm text-gray-500">Étape {currentStep} sur 4</p>
           </div>
           <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-6 w-6" />
@@ -265,7 +209,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
         {/* Progress */}
         <div className="px-6 py-4 bg-gray-50">
           <div className="flex items-center gap-2">
-            {[1, 2, 3, 4, 5, 6].map((step) => (
+            {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
                 className={`h-2 flex-1 rounded-full ${
@@ -288,9 +232,9 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
                     value={selectedBrandId}
                     onChange={(e) => {
                       setSelectedBrandId(e.target.value);
-                      setStoreId(''); // Reset store selection when brand changes
+                      setStoreId('');
                     }}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
                     disabled={isLoadingStores}
                   >
                     <option value="">Sélectionnez une enseigne</option>
@@ -308,7 +252,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
                 <select
                   value={storeId}
                   onChange={(e) => setStoreId(e.target.value)}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
                   disabled={isLoadingStores || (brands.length > 1 && !selectedBrandId)}
                 >
                   <option value="">
@@ -352,189 +296,240 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
             </div>
           )}
 
-          {/* Step 2: Status */}
+          {/* Step 2: Prizes (CARTES CLIQUABLES) */}
           {currentStep === 2 && (
-            <div className="space-y-4">
-              <div className="text-center mb-6">
-                <Calendar className="h-12 w-12 text-purple-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold text-gray-900">Statut de la campagne</h3>
-                <p className="text-sm text-gray-500 mt-2">
-                  Gestion de l&apos;activation de votre campagne
-                </p>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-                <p className="text-sm text-blue-800">
-                  ℹ️ Votre campagne sera créée en mode <strong>inactif</strong> par défaut.
-                </p>
-                <p className="text-sm text-blue-700 mt-2">
-                  Vous pourrez l&apos;activer depuis la liste des campagnes une fois la création
-                  terminée.
-                </p>
-                <p className="text-xs text-blue-600 mt-3">
-                  Note: Une seule campagne peut être active par commerce à la fois.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Prizes */}
-          {currentStep === 3 && (
             <div className="space-y-4">
               <div className="text-center mb-6">
                 <Gift className="h-12 w-12 text-purple-600 mx-auto mb-2" />
                 <h3 className="text-lg font-semibold text-gray-900">Configuration des lots</h3>
                 <p className="text-sm text-gray-500">
-                  Sélectionnez un lot (ensemble de gains avec probabilités pré-définies)
+                  Cliquez sur les cartes pour sélectionner vos lots
                 </p>
               </div>
 
-              {prizes.map((prize, index) => (
-                <div key={index} className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1 space-y-2">
-                    <select
-                      value={prize.prizeSetId}
-                      onChange={(e) => updatePrize(index, 'prizeSetId', e.target.value)}
-                      className="w-full rounded-md border-gray-300 text-sm text-gray-900"
-                      disabled={isLoadingPrizeSets}
-                    >
-                      <option value="">Sélectionnez un lot</option>
-                      {prizeSets?.map((prizeSet) => {
-                        const itemsCount = prizeSet.items?.length || 0;
-                        return (
-                          <option key={prizeSet.id} value={prizeSet.id}>
-                            {prizeSet.name} ({itemsCount} gain{itemsCount > 1 ? 's' : ''})
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <input
-                      type="number"
-                      min="1"
-                      value={prize.quantity}
-                      onChange={(e) => updatePrize(index, 'quantity', e.target.value)}
-                      className="w-full rounded-md border-gray-300 text-sm text-gray-900"
-                      placeholder="Quantité totale disponible"
-                    />
-                  </div>
-                  <button
-                    onClick={() => removePrize(index)}
-                    className="text-red-600 hover:text-red-800 p-2"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+              {isLoadingPrizeSets ? (
+                <div className="text-center py-8">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+                  <p className="text-sm text-gray-500 mt-2">Chargement des lots...</p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {prizeSets?.map((prizeSet) => {
+                    const isSelected = prizes.some((p) => p.prizeSetId === prizeSet.id);
+                    const selectedConfig = prizes.find((p) => p.prizeSetId === prizeSet.id);
+                    const itemsCount = prizeSet.items?.length || 0;
 
-              <button
-                onClick={addPrize}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-400 hover:text-purple-600"
-              >
-                + Ajouter un lot
-              </button>
+                    return (
+                      <div
+                        key={prizeSet.id}
+                        onClick={() => togglePrizeSet(prizeSet.id)}
+                        className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                          isSelected
+                            ? 'border-purple-600 bg-purple-50'
+                            : 'border-gray-200 hover:border-purple-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-gray-900">{prizeSet.name}</h4>
+                          <div
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                              isSelected ? 'bg-purple-600 border-purple-600' : 'border-gray-300'
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 12 12"
+                              >
+                                <path
+                                  d="M10 3L4.5 8.5L2 6"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  fill="none"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+
+                        {prizeSet.description && (
+                          <p className="text-sm text-gray-600 mb-2">{prizeSet.description}</p>
+                        )}
+
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Gift className="h-4 w-4" />
+                          <span>
+                            {itemsCount} gain{itemsCount > 1 ? 's' : ''}
+                          </span>
+                        </div>
+
+                        {isSelected && (
+                          <div
+                            className="mt-3 pt-3 border-t border-purple-200"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Quantité
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={selectedConfig?.quantity || 1}
+                              onChange={(e) =>
+                                updatePrizeQuantity(prizeSet.id, Number(e.target.value))
+                              }
+                              className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900 text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {prizes.length === 0 && !isLoadingPrizeSets && (
+                <p className="text-center text-sm text-gray-500 py-4">
+                  Sélectionnez au moins un lot pour continuer
+                </p>
+              )}
             </div>
           )}
 
-          {/* Step 4: Game Selection */}
-          {currentStep === 4 && (
-            <div className="space-y-4">
+          {/* Step 3: Game Selection (TEMPLATES + CUSTOM) */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
               <div className="text-center mb-6">
                 <Gamepad2 className="h-12 w-12 text-purple-600 mx-auto mb-2" />
                 <h3 className="text-lg font-semibold text-gray-900">Type de jeu</h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  Choisissez comment sélectionner le jeu pour votre campagne
+                  Choisissez un template ou utilisez un jeu personnalisé
                 </p>
               </div>
 
-              {/* Mode selection */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              {/* Mode Selector */}
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
-                  onClick={() => setGameSelectionMode('auto')}
+                  onClick={() => {
+                    setGameSelectionMode('template');
+                    setSelectedGameId(null);
+                  }}
                   className={`p-4 rounded-lg border-2 transition-all ${
-                    gameSelectionMode === 'auto'
+                    gameSelectionMode === 'template'
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-300'
                   }`}
                 >
                   <div className="text-center">
-                    <div className="text-2xl mb-2">🎯</div>
-                    <div className="font-semibold text-gray-900">Suggestion auto</div>
-                    <div className="text-xs text-gray-500 mt-1">Adapté au nombre de gains</div>
+                    <div className="text-3xl mb-2">🎨</div>
+                    <div className="font-semibold text-gray-900">Templates</div>
+                    <div className="text-xs text-gray-500 mt-1">Jeux par défaut</div>
                   </div>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setGameSelectionMode('manual')}
+                  onClick={() => {
+                    setGameSelectionMode('custom');
+                    setSelectedTemplateId(null);
+                  }}
                   className={`p-4 rounded-lg border-2 transition-all ${
-                    gameSelectionMode === 'manual'
+                    gameSelectionMode === 'custom'
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-300'
                   }`}
                 >
                   <div className="text-center">
-                    <div className="text-2xl mb-2">🎮</div>
-                    <div className="font-semibold text-gray-900">Choix manuel</div>
-                    <div className="text-xs text-gray-500 mt-1">Sélectionner un jeu existant</div>
+                    <div className="text-3xl mb-2">✨</div>
+                    <div className="font-semibold text-gray-900">Mes jeux</div>
+                    <div className="text-xs text-gray-500 mt-1">Jeux personnalisés</div>
                   </div>
                 </button>
               </div>
 
-              {/* Auto mode */}
-              {gameSelectionMode === 'auto' && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  {gameSuggestion ? (
-                    <div>
-                      <p className="text-sm text-purple-900 font-medium mb-2">
-                        ✓ Jeu suggéré automatiquement
-                      </p>
-                      <p className="text-xs text-purple-700">
-                        {gameSuggestion.name} - {gameSuggestion.reason}
-                      </p>
+              {/* Template Selection */}
+              {gameSelectionMode === 'template' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {templates?.map((template) => (
+                    <div
+                      key={template.id}
+                      onClick={() => setSelectedTemplateId(template.id)}
+                      className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                        selectedTemplateId === template.id
+                          ? 'border-purple-600 bg-purple-50'
+                          : 'border-gray-200 hover:border-purple-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        {template.previewImage ? (
+                          <img
+                            src={template.previewImage}
+                            alt={template.name}
+                            className="w-full h-32 object-cover rounded-md mb-3"
+                          />
+                        ) : (
+                          <div className="w-full h-32 bg-linear-to-br from-purple-100 to-pink-100 rounded-md mb-3 flex items-center justify-center">
+                            <Gamepad2 className="h-12 w-12 text-purple-400" />
+                          </div>
+                        )}
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                          {template.name}
+                        </h4>
+                        <p className="text-xs text-gray-500">{template.description}</p>
+                        <div className="mt-2 text-xs text-purple-600 font-medium">
+                          {template.minPrizes}-{template.maxPrizes} lots
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-purple-900">
-                      {isSuggesting
-                        ? 'Suggestion en cours...'
-                        : "Jeu suggéré disponible à l'étape suivante"}
-                    </p>
-                  )}
+                  ))}
                 </div>
               )}
 
-              {/* Manual mode */}
-              {gameSelectionMode === 'manual' && (
-                <div className="space-y-3">
+              {/* Custom Games Selection */}
+              {gameSelectionMode === 'custom' && (
+                <div>
                   {isLoadingGames ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-purple-600 border-r-transparent"></div>
-                      <p className="text-sm text-gray-500 mt-2">Chargement des jeux...</p>
+                    <div className="text-center py-8">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+                      <p className="text-sm text-gray-500 mt-2">Chargement de vos jeux...</p>
                     </div>
-                  ) : availableGames && availableGames.length > 0 ? (
-                    <>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Sélectionnez un jeu *
-                      </label>
-                      <select
-                        value={gameId || ''}
-                        onChange={(e) => setGameId(e.target.value || null)}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
-                      >
-                        <option value="">-- Choisir un jeu --</option>
-                        {availableGames.map((game) => (
-                          <option key={game.id} value={game.id}>
-                            {game.name} ({game.type})
-                          </option>
-                        ))}
-                      </select>
-                    </>
+                  ) : customGames && customGames.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {customGames.map((game) => (
+                        <div
+                          key={game.id}
+                          onClick={() => setSelectedGameId(game.id)}
+                          className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                            selectedGameId === game.id
+                              ? 'border-purple-600 bg-purple-50'
+                              : 'border-gray-200 hover:border-purple-300'
+                          }`}
+                        >
+                          <div className="text-center">
+                            <div
+                              className="w-full h-32 rounded-md mb-3 flex items-center justify-center"
+                              style={{
+                                background: `linear-gradient(135deg, ${game.primaryColor || '#8B5CF6'}, ${game.secondaryColor || '#EC4899'})`,
+                              }}
+                            >
+                              <Gamepad2 className="h-12 w-12 text-white" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                              {game.name}
+                            </h4>
+                            <div className="text-xs text-gray-500">{game.type}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                      <Gamepad2 className="mx-auto h-10 w-10 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-600">
-                        Aucun jeu disponible. Créez d'abord un jeu ou utilisez la suggestion
-                        automatique.
+                    <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <Gamepad2 className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                      <p className="text-sm text-gray-600 mb-2">Aucun jeu personnalisé</p>
+                      <p className="text-xs text-gray-500">
+                        Créez d'abord un jeu ou utilisez les templates
                       </p>
                     </div>
                   )}
@@ -543,42 +538,37 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
             </div>
           )}
 
-          {/* Step 5: Prize Claim Expiry */}
-          {currentStep === 5 && (
-            <div className="space-y-4">
+          {/* Step 4: Settings (FUSIONNÉ: Expiration + Limite) */}
+          {currentStep === 4 && (
+            <div className="space-y-6">
               <div className="text-center mb-6">
                 <Clock className="h-12 w-12 text-purple-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold text-gray-900">Expiration des gains</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Paramètres de la campagne</h3>
               </div>
 
-              <div>
+              {/* Expiration des gains */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre de jours pour récupérer un gain *
+                  <Clock className="inline h-4 w-4 mr-2" />
+                  Expiration des gains *
                 </label>
                 <input
                   type="number"
                   min="1"
+                  max="365"
                   value={prizeClaimExpiryDays}
                   onChange={(e) => setPrizeClaimExpiryDays(Number(e.target.value))}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Les participants auront {prizeClaimExpiryDays} jours pour récupérer leur gain
+                  Les participants auront {prizeClaimExpiryDays} jour
+                  {prizeClaimExpiryDays > 1 ? 's' : ''} pour récupérer leur gain
                 </p>
               </div>
-            </div>
-          )}
 
-          {/* Step 6: Max Participants */}
-          {currentStep === 6 && (
-            <div className="space-y-4">
-              <div className="text-center mb-6">
-                <Users className="h-12 w-12 text-purple-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold text-gray-900">Limite de participants</h3>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 mb-4">
+              {/* Limite de participants */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <label className="flex items-center gap-2 mb-3">
                   <input
                     type="checkbox"
                     checked={maxParticipants !== null}
@@ -586,6 +576,7 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
                     className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
                   <span className="text-sm font-medium text-gray-700">
+                    <Users className="inline h-4 w-4 mr-2" />
                     Limiter le nombre de participants
                   </span>
                 </label>
@@ -602,11 +593,26 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
                 )}
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-900">
-                  ℹ️ Une fois créée, cette campagne sera automatiquement associée au QR code par
-                  défaut de votre commerce.
-                </p>
+              {/* Informations importantes */}
+              <div className="space-y-3">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-900">
+                    ℹ️ Votre campagne sera créée en mode <strong>inactif</strong>.
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Activez-la depuis la liste des campagnes pour la rendre publique et l'associer
+                    au QR code de votre commerce.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-sm text-purple-900">
+                    🎯 Une seule campagne peut être active par commerce à la fois.
+                  </p>
+                  <p className="text-xs text-purple-700 mt-1">
+                    La campagne active sera automatiquement liée au QR code par défaut du commerce.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -623,10 +629,10 @@ export default function CreateCampaignWizard({ isOpen, onClose }: WizardProps) {
             Précédent
           </button>
 
-          {currentStep < 6 ? (
+          {currentStep < 4 ? (
             <button
               onClick={handleNext}
-              disabled={!canProceed() || isSuggesting}
+              disabled={!canProceed()}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Suivant

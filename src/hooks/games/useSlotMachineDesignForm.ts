@@ -48,8 +48,6 @@ export function useSlotMachineDesignForm() {
 
   // Mutations
   // @ts-expect-error - Known tRPC issue: "Type instantiation is excessively deep" with complex nested schemas
-  // This is a limitation of TypeScript's type inference with deeply nested Zod schemas in tRPC
-  // The runtime behavior is correct, only the type inference fails
   const createGame = api.game.saveSlotMachineDesign.useMutation({
     onSuccess: () => {
       utils.game.list.invalidate();

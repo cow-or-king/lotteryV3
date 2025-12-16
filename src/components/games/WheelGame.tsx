@@ -33,6 +33,21 @@ export default function WheelGame({
   onSpinStart,
   forcedSegmentId = null,
 }: WheelGameProps) {
+  // Validation de la config
+  if (!config.segments || config.segments.length === 0) {
+    console.error('❌ Invalid wheel config: segments are missing or empty', config);
+    return (
+      <div className="text-center p-8">
+        <div className="inline-block p-6 bg-red-50 rounded-lg">
+          <p className="text-red-600 font-semibold mb-2">Configuration invalide</p>
+          <p className="text-red-500 text-sm">
+            La roue ne contient pas de segments. Veuillez vérifier la configuration du jeu.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const wheelRef = useRef<SVGGElement>(null);

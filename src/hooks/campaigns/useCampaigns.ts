@@ -48,6 +48,7 @@ export function useCreateCampaign() {
 
       // Invalider les queries pour rafraîchir les données
       utils.campaign.listByStore.invalidate();
+      utils.campaign.listAll.invalidate(); // Rafraîchir la liste complète aussi
     },
     onError: (error) => {
       toast({

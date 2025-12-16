@@ -148,6 +148,45 @@ export interface WheelGameConfig extends GameBaseConfig {
 }
 
 /**
+ * Symbole de la machine à sous
+ */
+export interface SlotSymbol {
+  id: string;
+  icon: string;
+  value: number;
+  color: string;
+}
+
+/**
+ * Pattern gagnant pour slot machine
+ */
+export interface SlotWinningPattern {
+  symbols: [string, string, string];
+  prizeIndex: number;
+}
+
+/**
+ * Configuration spécifique à la Machine à Sous
+ */
+export interface SlotMachineGameConfig {
+  // Rouleaux
+  reelsCount: number; // Nombre de rouleaux (généralement 3)
+  symbolsPerReel: number; // Nombre de symboles par rouleau
+  symbols: SlotSymbol[]; // Symboles disponibles
+
+  // Animation
+  spinDuration: number; // Durée en ms
+  spinEasing: 'LINEAR' | 'EASE_OUT' | 'EASE_IN_OUT';
+
+  // Apparence
+  backgroundColor: string;
+  reelBorderColor: string;
+
+  // Winning patterns
+  winningPatterns?: SlotWinningPattern[];
+}
+
+/**
  * Union type pour toutes les configs
  */
 export type GameConfig = WheelGameConfig; // | ScratchGameConfig | SlotGameConfig...

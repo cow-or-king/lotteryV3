@@ -27,7 +27,7 @@ export default function CampaignLandingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-500 to-pink-500">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
           <p className="mt-4 text-white text-lg">Chargement...</p>
@@ -38,7 +38,7 @@ export default function CampaignLandingPage() {
 
   if (!campaign) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-700 to-gray-900">
         <div className="text-center text-white max-w-md mx-4">
           <h1 className="text-3xl font-bold mb-4">Campagne introuvable</h1>
           <p className="text-gray-300">Cette campagne n'existe pas ou n'est plus active.</p>
@@ -48,10 +48,10 @@ export default function CampaignLandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
         {/* Header avec gradient */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-8 text-center">
+        <div className="bg-linear-to-r from-purple-600 to-pink-600 p-8 text-center">
           <Gift className="h-16 w-16 text-white mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">{campaign.name}</h1>
           {campaign.description && <p className="text-purple-100">{campaign.description}</p>}
@@ -93,7 +93,7 @@ export default function CampaignLandingPage() {
           {/* Bouton pour jouer */}
           <button
             onClick={handlePlayClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
           >
             <Play className="h-6 w-6" />
             Jouer maintenant

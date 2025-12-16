@@ -2,10 +2,10 @@
  * Next.js Middleware
  * Gestion de l'authentification et protection des routes
  * IMPORTANT: ZERO any types
+ * NOTE: Ne PAS faire d'appels réseau dans le middleware (Edge Runtime limitations)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionService } from '@/infrastructure/auth/session.service';
 
 /**
  * Routes protégées qui nécessitent une authentification
@@ -25,7 +25,15 @@ const PROTECTED_ROUTES = [
 const PUBLIC_ONLY_ROUTES = ['/login', '/register'];
 
 /**
+ * Cookie names
+ */
+const ACCESS_TOKEN_COOKIE = 'rl-access-token';
+const REFRESH_TOKEN_COOKIE = 'rl-refresh-token';
+
+/**
  * Middleware de protection des routes
+ * IMPORTANT: Ne vérifie que la présence des cookies, pas leur validité
+ * La validation se fait dans le tRPC context (Node.js runtime)
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,11 +44,13 @@ export async function middleware(request: NextRequest) {
   // Vérifier si la route est publique uniquement
   const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
 
-  // Vérifier la session
-  const hasSession = await sessionService.hasValidSession(request);
+  // Vérifier la présence des cookies (pas leur validité)
+  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+  const hasAuthCookies = !!(accessToken && refreshToken);
 
   // Redirection pour les routes protégées
-  if (isProtectedRoute && !hasSession) {
+  if (isProtectedRoute && !hasAuthCookies) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('from', pathname);
@@ -48,7 +58,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirection pour les routes publiques uniquement
-  if (isPublicOnlyRoute && hasSession) {
+  if (isPublicOnlyRoute && hasAuthCookies) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

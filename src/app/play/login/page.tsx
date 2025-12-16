@@ -38,7 +38,7 @@ export default function PlayLoginPage() {
 
   if (!campaignId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-700 to-gray-900">
         <div className="text-center text-white max-w-md mx-4">
           <h1 className="text-3xl font-bold mb-4">Erreur</h1>
           <p className="text-gray-300">Aucune campagne spécifiée</p>
@@ -48,11 +48,11 @@ export default function PlayLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
         {/* Logo/Titre */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-pink-500 mb-4">
             <Shield className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Connexion</h1>

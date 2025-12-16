@@ -290,8 +290,8 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
           <div
             className={`rounded-2xl p-8 text-center shadow-2xl transform scale-110 border-4 ${
               winResult.matchCount === 3
-                ? 'bg-gradient-to-br from-green-400 to-emerald-600 border-yellow-400'
-                : 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300'
+                ? 'bg-linear-to-br from-green-400 to-emerald-600 border-yellow-400'
+                : 'bg-linear-to-br from-yellow-400 to-orange-500 border-yellow-300'
             }`}
           >
             <div className="text-8xl mb-4 animate-bounce">

@@ -11,7 +11,8 @@ import { api } from '@/lib/trpc/client';
 import { Gift, Sparkles, Trophy, PartyPopper } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import WheelGame from '@/components/games/WheelGame';
-import type { WheelGameConfig } from '@/lib/types/game.types';
+import SlotMachineGame from '@/components/games/SlotMachineGame';
+import type { WheelGameConfig, SlotMachineGameConfig } from '@/lib/types/game.types';
 import { toast } from 'sonner';
 
 type GameState = 'idle' | 'playing' | 'result';
@@ -32,6 +33,7 @@ export default function GamePlayPage() {
     } | null;
     claimCode: string | null;
     winningSegmentId: string | null;
+    winningCombination?: [string, string, string] | null;
   } | null>(null);
 
   // Récupérer la campagne avec l'API publique
@@ -44,7 +46,12 @@ export default function GamePlayPage() {
   useEffect(() => {
     if (campaign) {
       console.log('Campaign data:', campaign);
-      console.log('Game config:', campaign.game);
+      console.log('Game type:', campaign.game?.type);
+      console.log('Game config:', campaign.game?.config);
+      if (campaign.game?.config) {
+        console.log('Config type:', typeof campaign.game.config);
+        console.log('Config keys:', Object.keys(campaign.game.config));
+      }
     }
   }, [campaign]);
 
@@ -102,7 +109,7 @@ export default function GamePlayPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-500 to-pink-500">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
           <p className="mt-4 text-white text-lg">Chargement du jeu...</p>
@@ -113,7 +120,7 @@ export default function GamePlayPage() {
 
   if (!campaign) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-700 to-gray-900">
         <div className="text-center text-white max-w-md mx-4">
           <h1 className="text-3xl font-bold mb-4">Campagne introuvable</h1>
           <p className="text-gray-300">Cette campagne n'existe pas ou n'est plus active.</p>
@@ -123,7 +130,7 @@ export default function GamePlayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+    <div className="min-h-screen bg-linear-to-br from-purple-500 to-pink-500 p-4">
       {/* Header */}
       <div className="max-w-4xl mx-auto mb-6">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 text-white">
@@ -146,7 +153,7 @@ export default function GamePlayPage() {
             {/* État IDLE: Prêt à jouer */}
             {gameState === 'idle' && (
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 mb-6 animate-pulse">
+                <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-linear-to-br from-purple-500 to-pink-500 mb-6 animate-pulse">
                   <Sparkles className="h-16 w-16 text-white" />
                 </div>
                 <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -157,24 +164,57 @@ export default function GamePlayPage() {
                 </p>
                 <button
                   onClick={handlePlay}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-5 px-12 rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg text-xl"
+                  className="bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold py-5 px-12 rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg text-xl"
                 >
                   JOUER MAINTENANT
                 </button>
               </div>
             )}
 
-            {/* État PLAYING: Roue de la fortune */}
+            {/* État PLAYING: Jeu gamifié */}
+            {/* @ts-expect-error - Known tRPC issue: "Type instantiation is excessively deep" with complex nested schemas */}
             {gameState === 'playing' && campaign.game?.config && (
               <div className="text-center">
-                <h2 className="text-4xl font-bold text-gray-900 mb-8">Tournez la roue !</h2>
-                <WheelGame
-                  config={campaign.game.config as unknown as WheelGameConfig}
-                  primaryColor="#7C3AED"
-                  secondaryColor="#EC4899"
-                  onSpinComplete={handleSpinComplete}
-                  forcedSegmentId={result?.winningSegmentId || null}
-                />
+                {campaign.game.type === 'WHEEL_MINI' || campaign.game.type === 'WHEEL' ? (
+                  <>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-8">Tournez la roue !</h2>
+                    <WheelGame
+                      config={campaign.game.config as unknown as WheelGameConfig}
+                      primaryColor="#7C3AED"
+                      secondaryColor="#EC4899"
+                      onSpinComplete={handleSpinComplete}
+                      forcedSegmentId={result?.winningSegmentId || null}
+                    />
+                  </>
+                ) : campaign.game.type === 'SLOT_MACHINE' ? (
+                  <>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-8">Lancez la machine !</h2>
+                    <SlotMachineGame
+                      config={campaign.game.config as unknown as SlotMachineGameConfig}
+                      primaryColor="#FBBF24"
+                      secondaryColor="#DC2626"
+                      onSpinComplete={handleSpinComplete}
+                      forcedCombination={
+                        (result?.winningCombination as [string, string, string]) || null
+                      }
+                    />
+                  </>
+                ) : (
+                  <div className="py-12">
+                    <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-6">
+                      <Gift className="h-16 w-16 text-gray-400" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                      Jeu de type {campaign.game.type}
+                    </h2>
+                    <p className="text-gray-600 text-lg">
+                      Ce type de jeu n'est pas encore implémenté.
+                    </p>
+                    <p className="text-sm text-gray-500 mt-4">
+                      Seules les roues et machines à sous sont actuellement supportées.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

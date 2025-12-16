@@ -152,7 +152,7 @@ export function WinnerCard({ winner, onMarkAsClaimed, isMarkingAsClaimed }: Winn
         <button
           onClick={() => onMarkAsClaimed(winner.id)}
           disabled={isMarkingAsClaimed}
-          className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-xl transition-all duration-300 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-linear-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-xl transition-all duration-300 disabled:cursor-not-allowed"
         >
           {isMarkingAsClaimed ? 'Traitement...' : 'Marquer comme réclamé'}
         </button>
