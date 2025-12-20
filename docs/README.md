@@ -270,7 +270,7 @@ Voir [planning/ROADMAP.md](./planning/ROADMAP.md) et [planning/TODO.md](./planni
 
 ### Ressources Externes
 
-- **Supabase Dashboard**: https://app.supabase.com/project/ynrdyircogzytfgueyva
+- **Supabase Dashboard**: https://app.supabase.com/project/dhedkewujbazelsdihtr
 - **GitHub Repository**: git@github.com:cow-or-king/lotteryV3.git
 - **Next.js Documentation**: https://nextjs.org/docs
 - **tRPC Documentation**: https://trpc.io/docs

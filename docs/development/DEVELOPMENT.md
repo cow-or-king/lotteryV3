@@ -5,7 +5,7 @@
 ### 1. **Supabase** (Base de données PostgreSQL + Auth) ✅
 
 - **Status**: ✅ CRÉÉ ET CONFIGURÉ
-- **Project**: ynrdyircogzytfgueyva
+- **Project**: dhedkewujbazelsdihtr
 - **Region**: EU West 1
 - **Database**: PostgreSQL configuré avec Prisma
 - **Tables**: Créées via migration SQL

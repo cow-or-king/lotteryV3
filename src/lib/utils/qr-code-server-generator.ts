@@ -30,7 +30,7 @@ interface GenerateDefaultQRCodeResult {
 
 /**
  * Génère un QR Code SVG par défaut pour un Store
- * - URL cible: ${NEXT_PUBLIC_APP_URL}/s/${storeId} (utilise l'ID pour permanence)
+ * - URL cible: ${NEXT_PUBLIC_APP_URL}/c/{shortCode} (utilise un shortCode unique)
  * - Format: SVG
  * - Pas de logo
  * - Configuration par défaut (noir & blanc)
@@ -41,16 +41,21 @@ interface GenerateDefaultQRCodeResult {
 export async function generateDefaultQRCodeForStore(
   params: GenerateDefaultQRCodeParams,
 ): Promise<GenerateDefaultQRCodeResult> {
-  const { storeId, storeName, userId } = params;
+  const { storeId, storeName, storeSlug, userId } = params;
 
   try {
-    // Construire l'URL cible avec l'ID (permanent, ne change pas si le nom change)
+    // Générer un shortCode unique basé sur le slug du store + timestamp
+    const timestamp = Date.now().toString(36); // Base 36 pour raccourcir
+    const shortCode = `${storeSlug}-${timestamp}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+
+    // Construire l'URL cible avec le shortCode (permanent)
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const targetUrl = `${baseUrl}/s/${storeId}`;
+    const targetUrl = `${baseUrl}/c/${shortCode}`;
 
     logger.info(`Generating default QR Code for store ${storeId}`, {
       storeName,
       storeId,
+      shortCode,
       targetUrl,
     });
 
@@ -71,7 +76,7 @@ export async function generateDefaultQRCodeForStore(
       data: {
         name: `QR Code par défaut - ${storeName}`,
         url: targetUrl,
-        shortCode: null, // QR Code statique, pas de shortCode
+        shortCode, // IMPORTANT: shortCode unique pour identifier le store
         type: 'STATIC',
         style: 'SQUARE',
         animation: 'NONE',

@@ -20,16 +20,19 @@ interface GamePlayHeaderProps {
 
 export function GamePlayHeader({ campaign, mockUser }: GamePlayHeaderProps) {
   return (
-    <div className="max-w-4xl mx-auto mb-6">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{campaign.name}</h1>
-            {mockUser && <p className="text-sm text-purple-100 mt-1">Bienvenue, {mockUser.name}</p>}
-          </div>
-          <Trophy className="h-12 w-12 text-yellow-300" />
-        </div>
+    <div className="mb-8 text-center">
+      <div className="inline-block bg-white/70 backdrop-blur-xl border border-white/30 px-6 py-3 rounded-full text-sm font-semibold text-gray-700 shadow-lg mb-4">
+        Étape 2 sur 2
       </div>
+      <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">{campaign.name}</h1>
+      {mockUser && (
+        <p className="text-lg text-gray-700">
+          Bienvenue,{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 font-semibold">
+            {mockUser.name}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

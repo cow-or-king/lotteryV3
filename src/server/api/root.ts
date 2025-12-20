@@ -20,6 +20,7 @@ import { gameRouter } from './routers/game.router';
 import { wheelDesignRouter } from './routers/wheel-design.router';
 import { campaignRouter } from './routers/campaign.router';
 import { winnerRouter } from './routers/winner.router';
+import { conditionRouter } from './routers/condition.router';
 
 /**
  * Router principal de l'API
@@ -41,6 +42,7 @@ export const appRouter = createTRPCRouter({
   wheelDesign: wheelDesignRouter,
   campaign: campaignRouter,
   winner: winnerRouter,
+  condition: conditionRouter,
 });
 
 /**

@@ -611,7 +611,7 @@ echo "✅ Script completed successfully"
 
 ## 🔗 Liens Utiles
 
-- [Supabase Dashboard](https://app.supabase.com/project/ynrdyircogzytfgueyva)
+- [Supabase Dashboard](https://app.supabase.com/project/dhedkewujbazelsdihtr)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [Google OAuth Setup](../docs/api/CURRENT-APIS.md)
 - [Database Schema](../prisma/schema.prisma)

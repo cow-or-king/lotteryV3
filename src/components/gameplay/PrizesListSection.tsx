@@ -27,8 +27,8 @@ export function PrizesListSection({ campaign }: PrizesListSectionProps) {
   const hasPrizes = campaign.prizes && campaign.prizes.length > 0;
 
   return (
-    <div className="border-t border-gray-200 pt-8 mt-12">
-      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+    <div className="border-t border-white/30 pt-8 mt-12">
+      <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         <Gift className="h-6 w-6 text-purple-600" />
         Lots à gagner ({campaign.prizes?.length || 0})
       </h3>
@@ -38,7 +38,7 @@ export function PrizesListSection({ campaign }: PrizesListSectionProps) {
           {campaign.prizes?.map((prize) => (
             <div
               key={prize.id}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-2xl p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -46,9 +46,9 @@ export function PrizesListSection({ campaign }: PrizesListSectionProps) {
                     className="w-4 h-4 rounded-full mb-2"
                     style={{ backgroundColor: prize.color }}
                   />
-                  <h4 className="font-semibold text-gray-900">{prize.name}</h4>
+                  <h4 className="font-semibold text-gray-800">{prize.name}</h4>
                   {prize.description && (
-                    <p className="text-sm text-gray-600 mt-1">{prize.description}</p>
+                    <p className="text-sm text-gray-700 mt-1">{prize.description}</p>
                   )}
                   {prize.value && (
                     <p className="text-sm font-medium text-purple-600 mt-2">
@@ -57,10 +57,10 @@ export function PrizesListSection({ campaign }: PrizesListSectionProps) {
                   )}
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-600">
                     {prize.remaining}/{prize.quantity}
                   </div>
-                  <div className="text-xs text-gray-400">restants</div>
+                  <div className="text-xs text-gray-500">restants</div>
                   <div className="text-xs text-purple-600 mt-1">{prize.probability}%</div>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export function PrizesListSection({ campaign }: PrizesListSectionProps) {
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 text-center py-4">Aucun lot configuré</p>
+        <p className="text-gray-600 text-center py-4">Aucun lot configuré</p>
       )}
     </div>
   );

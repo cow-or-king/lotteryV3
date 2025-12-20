@@ -20,6 +20,7 @@ export const qrCodeRouter = createTRPCRouter({
   getById: qrCodeQueriesRouter.getById,
   getStats: qrCodeQueriesRouter.getStats,
   scan: qrCodeQueriesRouter.scan,
+  getActiveCampaignByShortCode: qrCodeQueriesRouter.getActiveCampaignByShortCode,
 
   // Mutations CRUD
   create: qrCodeMutationsRouter.create,

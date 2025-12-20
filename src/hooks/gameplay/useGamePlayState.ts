@@ -37,11 +37,26 @@ export function useGamePlayState(campaignId: string) {
     { enabled: !!campaignId },
   );
 
-  // Vérifier l'utilisateur mockup au chargement
+  // Récupérer l'utilisateur depuis le cookie de jeu
   useEffect(() => {
-    const storedUser = localStorage.getItem('mockUser');
-    if (storedUser) {
-      setMockUser(JSON.parse(storedUser));
+    const getCookie = (name: string): string | null => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    };
+
+    const userCookie = getCookie('rl-game-user');
+    if (userCookie) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userCookie));
+        setMockUser({
+          name: userData.name || 'Joueur',
+          email: userData.email || '',
+        });
+      } catch (error) {
+        console.error('Error parsing user cookie:', error);
+      }
     }
   }, []);
 

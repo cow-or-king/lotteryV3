@@ -1,24 +1,28 @@
 /**
  * Step 4: Campaign Settings
- * Prize expiration days and maximum participants limit
+ * Prize expiration days, maximum participants limit, and minimum days between plays
  */
 
 'use client';
 
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, Calendar } from 'lucide-react';
 
 interface Step4SettingsProps {
   prizeClaimExpiryDays: number;
   maxParticipants: number | null;
+  minDaysBetweenPlays: number | null;
   onExpiryChange: (days: number) => void;
   onMaxParticipantsChange: (max: number | null) => void;
+  onMinDaysBetweenPlaysChange: (days: number | null) => void;
 }
 
 export default function Step4Settings({
   prizeClaimExpiryDays,
   maxParticipants,
+  minDaysBetweenPlays,
   onExpiryChange,
   onMaxParticipantsChange,
+  onMinDaysBetweenPlaysChange,
 }: Step4SettingsProps) {
   return (
     <div className="space-y-6">
@@ -71,6 +75,40 @@ export default function Step4Settings({
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
             placeholder="Nombre maximum de participants"
           />
+        )}
+      </div>
+
+      {/* Délai minimum entre 2 participations */}
+      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <label className="flex items-center gap-2 mb-3">
+          <input
+            type="checkbox"
+            checked={minDaysBetweenPlays !== null}
+            onChange={(e) => onMinDaysBetweenPlaysChange(e.target.checked ? 15 : null)}
+            className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            <Calendar className="inline h-4 w-4 mr-2" />
+            Délai minimum entre 2 participations
+          </span>
+        </label>
+
+        {minDaysBetweenPlays !== null && (
+          <>
+            <input
+              type="number"
+              min="1"
+              max="365"
+              value={minDaysBetweenPlays}
+              onChange={(e) => onMinDaysBetweenPlaysChange(Number(e.target.value))}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
+              placeholder="Nombre de jours"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Un utilisateur devra attendre {minDaysBetweenPlays} jour
+              {minDaysBetweenPlays > 1 ? 's' : ''} avant de pouvoir rejouer
+            </p>
+          </>
         )}
       </div>
 

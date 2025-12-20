@@ -312,4 +312,79 @@ export const qrCodeQueriesRouter = createTRPCRouter({
         scanCount: qrCode.scanCount + 1,
       };
     }),
+
+  /**
+   * Récupère la campagne active d'un store via le shortCode du QR code
+   * Public endpoint utilisé par /c/[shortCode]
+   */
+  getActiveCampaignByShortCode: publicProcedure
+    .input(
+      z.object({
+        shortCode: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      // 1. Trouver le QR Code par shortCode
+      const qrCode = await prisma.qRCode.findUnique({
+        where: { shortCode: input.shortCode },
+        include: {
+          store: {
+            select: {
+              id: true,
+              name: true,
+              googleBusinessUrl: true,
+            },
+          },
+        },
+      });
+
+      if (!qrCode || !qrCode.store) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'QR Code introuvable',
+        });
+      }
+
+      // 2. Trouver la campagne ACTIVE du store
+      const campaign = await prisma.campaign.findFirst({
+        where: {
+          storeId: qrCode.store.id,
+          isActive: true,
+        },
+        include: {
+          prizes: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              value: true,
+              color: true,
+            },
+          },
+          game: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc', // Prendre la plus récente si plusieurs actives
+        },
+      });
+
+      if (!campaign) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Aucune campagne active pour ce commerce',
+        });
+      }
+
+      // 3. Retourner la campagne et le store
+      return {
+        campaign,
+        store: qrCode.store,
+      };
+    }),
 });

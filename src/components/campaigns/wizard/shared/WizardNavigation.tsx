@@ -8,7 +8,7 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface WizardNavigationProps {
-  currentStep: 1 | 2 | 3 | 4;
+  currentStep: 1 | 2 | 3 | 4 | 5;
   canProceed: boolean;
   onPrevious: () => void;
   onNext: () => void;
@@ -35,7 +35,7 @@ export default function WizardNavigation({
         Précédent
       </button>
 
-      {currentStep < 4 ? (
+      {currentStep < 5 ? (
         <button
           onClick={onNext}
           disabled={!canProceed}

@@ -13,6 +13,17 @@ import {
   PrizeConfiguration,
   type PrizeConfig,
 } from '@/core/value-objects/prize-configuration.value-object';
+import type { ConditionType } from '@/generated/prisma';
+
+export interface ConditionConfig {
+  id: string;
+  type: ConditionType;
+  title: string;
+  description: string;
+  iconEmoji: string;
+  config: Record<string, string | number | boolean> | null;
+  enablesGame?: boolean;
+}
 
 export interface CreateCampaignDTO {
   name: string;
@@ -20,6 +31,7 @@ export interface CreateCampaignDTO {
   storeId: string;
   isActive?: boolean;
   prizes: PrizeConfig[];
+  conditions?: ConditionConfig[];
   gameId?: string;
   maxParticipants?: number;
   prizeClaimExpiryDays?: number;
@@ -45,9 +57,21 @@ export interface CampaignRepository {
       prizeClaimExpiryDays: number;
       requireReview: boolean;
       requireInstagram: boolean;
+      googleReviewUrl?: string | null;
       isActive: boolean;
     };
     prizes: PrizeConfig[];
+    conditions?: Array<{
+      type: ConditionType;
+      order: number;
+      title: string;
+      description: string;
+      iconEmoji: string;
+      config: Record<string, string | number | boolean> | null;
+      redirectUrl?: string;
+      isRequired: boolean;
+      enablesGame?: boolean;
+    }>;
   }): Promise<{ id: string }>;
 
   activateCampaign(campaignId: string): Promise<void>;
@@ -55,7 +79,9 @@ export interface CampaignRepository {
 }
 
 export interface StoreRepository {
-  getById(id: string): Promise<{ id: string; defaultQrCodeId: string | null } | null>;
+  getById(
+    id: string,
+  ): Promise<{ id: string; defaultQrCodeId: string | null; googleBusinessUrl: string } | null>;
   verifyOwnership(storeId: string, userId: string): Promise<boolean>;
 }
 
@@ -121,7 +147,23 @@ export class CreateCampaignUseCase {
 
     const isActiveCampaign = dto.isActive ?? false;
 
-    // 7. Créer la campagne avec les prizes
+    // 7. Transformer les conditions pour le repository
+    const conditions = dto.conditions?.map((condition, index) => ({
+      type: condition.type,
+      order: index,
+      title: condition.title,
+      description: condition.description,
+      iconEmoji: condition.iconEmoji,
+      config: condition.config,
+      redirectUrl: condition.config?.googleReviewUrl
+        ? String(condition.config.googleReviewUrl)
+        : undefined,
+      isRequired: true,
+      enablesGame: condition.enablesGame ?? true,
+    }));
+
+    // 8. Créer la campagne avec les prizes et conditions
+    // IMPORTANT: Copier automatiquement googleBusinessUrl du Store vers googleReviewUrl de la Campaign
     const campaign = await this.campaignRepo.createWithPrizes({
       campaign: {
         name: dto.name,
@@ -132,9 +174,11 @@ export class CreateCampaignUseCase {
         prizeClaimExpiryDays: expiryDays,
         requireReview: dto.requireReview ?? false,
         requireInstagram: dto.requireInstagram ?? false,
+        googleReviewUrl: store.googleBusinessUrl || null,
         isActive: isActiveCampaign,
       },
       prizes: prizeConfig.getPrizes() as PrizeConfig[],
+      conditions,
     });
 
     // 8. Si la campagne est active, désactiver les autres et mettre à jour le QR

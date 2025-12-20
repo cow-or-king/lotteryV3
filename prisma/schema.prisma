@@ -31,6 +31,22 @@ model User {
   @@map("users")
 }
 
+model GameUser {
+  id            String   @id @default(cuid())
+  supabaseId    String   @unique @map("supabase_id")
+  email         String
+  name          String?
+  avatarUrl     String?  @map("avatar_url")
+  provider      String   @default("google")
+  lastLoginAt   DateTime @default(now()) @map("last_login_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([supabaseId])
+  @@map("game_users")
+}
+
 model Subscription {
   id                   String    @id @default(cuid())
   userId               String    @unique @map("user_id")
@@ -73,38 +89,53 @@ model Brand {
 }
 
 model Store {
-  id                    String             @id @default(cuid())
-  slug                  String             @unique
-  brandId               String             @map("brand_id")
-  name                  String
-  description           String?
-  googlePlaceId         String?            @map("google_place_id")
-  googleBusinessUrl     String             @map("google_business_url")
-  googlePlacesApiKey    String?            @map("google_places_api_key")
-  googleApiKeyStatus    String?            @default("not_configured") @map("google_api_key_status")
-  lastReviewSync        DateTime?          @map("last_review_sync")
-  autoSyncEnabled       Boolean            @default(false) @map("auto_sync_enabled")
-  syncFrequencyHours    Int                @default(24) @map("sync_frequency_hours")
-  defaultQrCodeId       String?            @unique @map("default_qr_code_id")
-  qrCodeCustomized      Boolean            @default(false) @map("qr_code_customized")
-  qrCodeCustomizedAt    DateTime?          @map("qr_code_customized_at")
-  isActive              Boolean            @default(true) @map("is_active")
-  isPaid                Boolean            @default(false) @map("is_paid")
-  createdAt             DateTime           @default(now()) @map("created_at")
-  updatedAt             DateTime           @updatedAt @map("updated_at")
-  campaigns             Campaign[]
-  games                 Game[]
-  qrCodes               QRCode[]
-  defaultQrCode         QRCode?            @relation("StoreDefaultQRCode", fields: [defaultQrCodeId], references: [id], onDelete: SetNull)
-  responseTemplates     ResponseTemplate[]
-  reviews               Review[]
-  brand                 Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  id                       String                      @id @default(cuid())
+  slug                     String                      @unique
+  brandId                  String                      @map("brand_id")
+  name                     String
+  description              String?
+  googlePlaceId            String?                     @map("google_place_id")
+  googleBusinessUrl        String                      @map("google_business_url")
+  googlePlacesApiKey       String?                     @map("google_places_api_key")
+  googleApiKeyStatus       String?                     @default("not_configured") @map("google_api_key_status")
+  lastReviewSync           DateTime?                   @map("last_review_sync")
+  autoSyncEnabled          Boolean                     @default(false) @map("auto_sync_enabled")
+  syncFrequencyHours       Int                         @default(24) @map("sync_frequency_hours")
+  defaultQrCodeId          String?                     @unique @map("default_qr_code_id")
+  qrCodeCustomized         Boolean                     @default(false) @map("qr_code_customized")
+  qrCodeCustomizedAt       DateTime?                   @map("qr_code_customized_at")
+  isActive                 Boolean                     @default(true) @map("is_active")
+  isPaid                   Boolean                     @default(false) @map("is_paid")
+  createdAt                DateTime                    @default(now()) @map("created_at")
+  updatedAt                DateTime                    @updatedAt @map("updated_at")
+  campaigns                Campaign[]
+  games                    Game[]
+  qrCodes                  QRCode[]
+  defaultQrCode            QRCode?                     @relation("StoreDefaultQRCode", fields: [defaultQrCodeId], references: [id], onDelete: SetNull)
+  responseTemplates        ResponseTemplate[]
+  reviews                  Review[]
+  storeConditionCompletions StoreConditionCompletion[]
+  brand                    Brand                       @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId])
   @@index([brandId, createdAt(sort: Desc)])
   @@index([slug])
   @@index([googleBusinessUrl])
   @@map("stores")
+}
+
+model StoreConditionCompletion {
+  id            String        @id @default(cuid())
+  email         String
+  storeId       String        @map("store_id")
+  conditionType ConditionType @map("condition_type")
+  completedAt   DateTime      @default(now()) @map("completed_at")
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([email, storeId, conditionType])
+  @@index([email, storeId])
+  @@index([storeId])
+  @@map("store_condition_completions")
 }
 
 model StoreHistory {
@@ -123,25 +154,28 @@ model StoreHistory {
 }
 
 model Campaign {
-  id                   String        @id @default(cuid())
+  id                   String              @id @default(cuid())
   name                 String
   description          String?
-  storeId              String        @map("store_id")
-  startDate            DateTime      @map("start_date")
-  endDate              DateTime      @map("end_date")
-  isActive             Boolean       @default(false) @map("is_active")
-  wheelStyle           String        @default("classic") @map("wheel_style")
-  wheelAnimation       String        @default("spin") @map("wheel_animation")
-  type                 String        @default("generic")
-  requireReview        Boolean       @default(false) @map("require_review")
-  requireInstagram     Boolean       @default(false) @map("require_instagram")
-  gameId               String?       @map("game_id")
-  maxParticipants      Int?          @map("max_participants")
-  prizeClaimExpiryDays Int           @default(30) @map("prize_claim_expiry_days")
-  createdAt            DateTime      @default(now()) @map("created_at")
-  updatedAt            DateTime      @updatedAt @map("updated_at")
-  store                Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  game                 Game?         @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  storeId              String              @map("store_id")
+  startDate            DateTime            @map("start_date")
+  endDate              DateTime            @map("end_date")
+  isActive             Boolean             @default(false) @map("is_active")
+  wheelStyle           String              @default("classic") @map("wheel_style")
+  wheelAnimation       String              @default("spin") @map("wheel_animation")
+  type                 String              @default("generic")
+  requireReview        Boolean             @default(false) @map("require_review")
+  requireInstagram     Boolean             @default(false) @map("require_instagram")
+  googleReviewUrl      String?             @map("google_review_url")
+  gameId               String?             @map("game_id")
+  maxParticipants      Int?                @map("max_participants")
+  prizeClaimExpiryDays Int                 @default(30) @map("prize_claim_expiry_days")
+  minDaysBetweenPlays  Int?                @map("min_days_between_plays")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  store                Store               @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  game                 Game?               @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  conditions           CampaignCondition[]
   participants         Participant[]
   prizes               Prize[]
   reviews              Review[]
@@ -150,6 +184,28 @@ model Campaign {
   @@index([gameId])
   @@index([isActive, startDate, endDate])
   @@map("campaigns")
+}
+
+model CampaignCondition {
+  id                String        @id @default(cuid())
+  campaignId        String        @map("campaign_id")
+  type              ConditionType
+  order             Int
+  title             String
+  description       String?
+  redirectUrl       String?       @map("redirect_url")
+  iconEmoji         String?       @default("✍️") @map("icon_emoji")
+  config            Json?
+  isRequired        Boolean       @default(true) @map("is_required")
+  enablesGame       Boolean       @default(true) @map("enables_game")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  campaign          Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, order])
+  @@index([campaignId])
+  @@index([type])
+  @@map("campaign_conditions")
 }
 
 model Prize {
@@ -172,23 +228,27 @@ model Prize {
 }
 
 model Participant {
-  id                 String    @id @default(cuid())
-  email              String
-  name               String?
-  phone              String?
-  campaignId         String    @map("campaign_id")
-  hasPlayed          Boolean   @default(false) @map("has_played")
-  playedAt           DateTime? @map("played_at")
-  ipAddress          String?   @map("ip_address")
-  userAgent          String?   @map("user_agent")
-  hasReviewed        Boolean   @default(false) @map("has_reviewed")
-  reviewRating       Int?      @map("review_rating")
-  reviewComment      String?   @map("review_comment")
-  consentDate        DateTime? @map("consent_date")
-  dataRetentionUntil DateTime? @map("data_retention_until")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  campaign           Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  review             Review?
+  id                    String    @id @default(cuid())
+  email                 String
+  name                  String?
+  phone                 String?
+  campaignId            String    @map("campaign_id")
+  hasPlayed             Boolean   @default(false) @map("has_played")
+  playCount             Int       @default(0) @map("play_count")
+  playedAt              DateTime? @map("played_at")
+  ipAddress             String?   @map("ip_address")
+  userAgent             String?   @map("user_agent")
+  hasReviewed           Boolean   @default(false) @map("has_reviewed")
+  reviewRating          Int?      @map("review_rating")
+  reviewComment         String?   @map("review_comment")
+  consentDate           DateTime? @map("consent_date")
+  dataRetentionUntil    DateTime? @map("data_retention_until")
+  completedConditions   Json      @default("[]") @map("completed_conditions")
+  playedConditions      Json      @default("[]") @map("played_conditions")
+  currentConditionOrder Int       @default(0) @map("current_condition_order")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  campaign              Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  review                Review?
 
   @@unique([email, campaignId])
   @@index([campaignId])
@@ -591,4 +651,14 @@ enum GameType {
   DICE
   MYSTERY_BOX
   WHEEL_MINI
+}
+
+enum ConditionType {
+  GOOGLE_REVIEW
+  INSTAGRAM_FOLLOW
+  TIKTOK_FOLLOW
+  NEWSLETTER
+  LOYALTY_PROGRAM
+  CUSTOM_REDIRECT
+  GAME
 }

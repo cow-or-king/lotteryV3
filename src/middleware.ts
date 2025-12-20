@@ -29,14 +29,36 @@ const PUBLIC_ONLY_ROUTES = ['/login', '/register'];
  */
 const ACCESS_TOKEN_COOKIE = 'rl-access-token';
 const REFRESH_TOKEN_COOKIE = 'rl-refresh-token';
+const GAME_SESSION_COOKIE = 'rl-game-session';
 
 /**
  * Middleware de protection des routes
- * IMPORTANT: Ne vérifie que la présence des cookies, pas leur validité
+ * IMPORTANT: Sépare complètement l'auth admin (dashboard) et l'auth jeu (play)
+ * Ne vérifie que la présence des cookies, pas leur validité
  * La validation se fait dans le tRPC context (Node.js runtime)
  */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search, hash } = request.nextUrl;
+
+  // IMPORTANT: Intercepter les redirections OAuth mal configurées
+  // Si on arrive sur /dashboard avec access_token ou error dans l'URL/hash
+  // => Supabase a redirigé vers /dashboard au lieu de /auth/callback
+  if (pathname === '/dashboard') {
+    const url = request.nextUrl.clone();
+    const hasOAuthParams =
+      url.searchParams.has('access_token') ||
+      url.searchParams.has('error') ||
+      url.searchParams.has('code') ||
+      hash.includes('access_token') ||
+      hash.includes('error');
+
+    if (hasOAuthParams) {
+      // Rediriger vers /auth/callback en préservant tous les params
+      url.pathname = '/auth/callback';
+      console.log('🔄 Redirection OAuth détectée:', pathname, '→', url.pathname);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Vérifier si la route est protégée
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
@@ -44,40 +66,33 @@ export async function middleware(request: NextRequest) {
   // Vérifier si la route est publique uniquement
   const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
 
-  // Vérifier la présence des cookies (pas leur validité)
+  // IMPORTANT: Séparer les cookies admin et game
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
-  const hasAuthCookies = !!(accessToken && refreshToken);
+  const gameSession = request.cookies.get(GAME_SESSION_COOKIE)?.value;
 
-  // Redirection pour les routes protégées
-  if (isProtectedRoute && !hasAuthCookies) {
+  const hasAdminAuth = !!(accessToken && refreshToken);
+  const hasGameAuth = !!gameSession;
+
+  // Redirection pour les routes protégées (ADMIN UNIQUEMENT)
+  if (isProtectedRoute && !hasAdminAuth) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('from', pathname);
     return NextResponse.redirect(url);
   }
 
-  // Redirection pour les routes publiques uniquement
-  if (isPublicOnlyRoute && hasAuthCookies) {
+  // Redirection pour les routes publiques uniquement (ADMIN UNIQUEMENT)
+  // Si on a une session game, on ne redirige PAS vers dashboard
+  if (isPublicOnlyRoute && hasAdminAuth && !hasGameAuth) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
-  // Callback d'authentification (magic link, reset password, etc.)
+  // Callback d'authentification
   if (pathname === '/auth/callback') {
-    const url = request.nextUrl.clone();
-    const code = url.searchParams.get('code');
-
-    if (!code) {
-      url.pathname = '/login';
-      url.searchParams.delete('code');
-      url.searchParams.delete('next');
-      url.searchParams.set('error', 'Invalid authentication code');
-      return NextResponse.redirect(url);
-    }
-
-    // Le code sera traité côté client
+    // Accepter les callbacks avec ou sans code (implicit flow vs PKCE flow)
     return NextResponse.next();
   }
 

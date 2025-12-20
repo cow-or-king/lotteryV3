@@ -51,6 +51,9 @@ export function useCreateCampaign() {
       utils.campaign.listAll.invalidate(); // Rafraîchir la liste complète aussi
     },
     onError: (error) => {
+      console.error('❌ Campaign creation error:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error data:', error.data);
       toast({
         title: 'Erreur',
         description: error.message,

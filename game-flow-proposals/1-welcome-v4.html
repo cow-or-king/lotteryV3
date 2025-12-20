@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome V4 - Glassmorphism</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -50px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.9); }
+            75% { transform: translate(50px, 50px) scale(1.05); }
+        }
+        .float { animation: float 3s ease-in-out infinite; }
+        .blob { animation: blob 7s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen p-4 relative bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <!-- Animated Background Blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute -top-20 -left-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-30 blob"></div>
+        <div class="absolute -top-20 -right-20 w-96 h-96 bg-pink-300 rounded-full blur-3xl opacity-30 blob" style="animation-delay: 2s;"></div>
+        <div class="absolute -bottom-20 left-1/4 w-96 h-96 bg-blue-300 rounded-full blur-3xl opacity-30 blob" style="animation-delay: 4s;"></div>
+        <div class="absolute -bottom-20 right-1/4 w-96 h-96 bg-yellow-200 rounded-full blur-3xl opacity-30 blob" style="animation-delay: 6s;"></div>
+    </div>
+
+    <div class="max-w-4xl w-full py-8">
+        <!-- Header Animated -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center mb-6 float">
+                <div class="w-28 h-28 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full flex items-center justify-center shadow-2xl">
+                    <span class="text-5xl">🎁</span>
+                </div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
+                Gagnez à <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Coup Sûr</span> !
+            </h1>
+            <p class="text-2xl text-gray-700 max-w-2xl mx-auto font-medium">
+                Partagez votre avis = <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 font-bold">1 cadeau garanti</span>
+            </p>
+        </div>
+
+        <!-- Big Prize Showcase -->
+        <div class="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl p-8 mb-10 border border-white/30">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full font-bold text-sm mb-4">
+                    ⚡ CAMPAGNE ACTIVE
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-3">
+                    Mega Prize Campaign 2024
+                </h2>
+                <p class="text-gray-700 text-lg">Plus de 1000€ de cadeaux à remporter cette semaine !</p>
+            </div>
+
+            <!-- Prize Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-4 text-center border border-white/30 shadow-lg">
+                    <div class="text-4xl mb-2">☕</div>
+                    <p class="text-gray-800 font-semibold text-sm">Café offert</p>
+                </div>
+                <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-4 text-center border border-white/30 shadow-lg">
+                    <div class="text-4xl mb-2">🍰</div>
+                    <p class="text-gray-800 font-semibold text-sm">Dessert</p>
+                </div>
+                <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-4 text-center border border-white/30 shadow-lg">
+                    <div class="text-4xl mb-2">🎟️</div>
+                    <p class="text-gray-800 font-semibold text-sm">-20% carte</p>
+                </div>
+                <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-4 text-center border border-white/30 shadow-lg">
+                    <div class="text-4xl mb-2">🎉</div>
+                    <p class="text-gray-800 font-semibold text-sm">Menu VIP</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- How it Works - Horizontal Timeline -->
+        <div class="mb-10">
+            <h3 class="text-3xl font-bold text-gray-800 text-center mb-8">3 étapes simples</h3>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex-1 bg-white/70 backdrop-blur-xl rounded-2xl p-6 border border-white/30 text-center shadow-lg">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-2xl text-white shadow-lg">
+                        1
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">📝 Avis Google</h4>
+                    <p class="text-gray-700 text-sm">2 clics suffisent</p>
+                </div>
+
+                <div class="hidden md:block text-gray-400 text-3xl">→</div>
+
+                <div class="flex-1 bg-white/70 backdrop-blur-xl rounded-2xl p-6 border border-white/30 text-center shadow-lg">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-2xl text-white shadow-lg">
+                        2
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">🎰 Roue chance</h4>
+                    <p class="text-gray-700 text-sm">Tournez et gagnez</p>
+                </div>
+
+                <div class="hidden md:block text-gray-400 text-3xl">→</div>
+
+                <div class="flex-1 bg-white/70 backdrop-blur-xl rounded-2xl p-6 border border-white/30 text-center shadow-lg">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-2xl text-white shadow-lg">
+                        3
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">🎁 Votre cadeau</h4>
+                    <p class="text-gray-700 text-sm">À récupérer en magasin</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giant CTA -->
+        <div class="text-center">
+            <button class="w-full group max-w-md relative px-8 py-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-2xl font-black rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <span class="flex items-center justify-center gap-3">
+                    <span>🚀 PARTICIPER MAINTENANT</span>
+                </span>
+            </button>
+            <div class="mt-6 flex items-center justify-center gap-6 text-gray-700">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium">100% Gagnant</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium">2 minutes</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Gratuit</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

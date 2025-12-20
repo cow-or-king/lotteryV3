@@ -15,6 +15,7 @@ import CampaignCard from '@/components/campaigns/CampaignCard';
 import QRCodeModal from '@/components/campaigns/QRCodeModal';
 import DeleteCampaignModal from '@/components/campaigns/DeleteCampaignModal';
 import ToggleWarningModal from '@/components/campaigns/ToggleWarningModal';
+import EditCampaignModal from '@/components/campaigns/EditCampaignModal';
 import EmptyState from '@/components/campaigns/EmptyState';
 
 export default function CampaignsPage() {
@@ -43,6 +44,16 @@ export default function CampaignsPage() {
     campaignName: string;
   } | null>(null);
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [campaignToEdit, setCampaignToEdit] = useState<{
+    id: string;
+    name: string;
+    description?: string | null;
+    maxParticipants?: number | null;
+    minDaysBetweenPlays?: number | null;
+    prizeClaimExpiryDays?: number | null;
+  } | null>(null);
+
   const handleQRCodeClick = (campaign: { id: string; url: string; campaignName: string }) => {
     setSelectedQRCode(campaign);
     setShowQRCode(true);
@@ -51,6 +62,23 @@ export default function CampaignsPage() {
   const handleCloseQRCode = () => {
     setShowQRCode(false);
     setSelectedQRCode(null);
+  };
+
+  const handleEditClick = (campaign: {
+    id: string;
+    name: string;
+    description?: string | null;
+    maxParticipants?: number | null;
+    minDaysBetweenPlays?: number | null;
+    prizeClaimExpiryDays?: number | null;
+  }) => {
+    setCampaignToEdit(campaign);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEdit = () => {
+    setShowEditModal(false);
+    setCampaignToEdit(null);
   };
 
   if (isLoading) {
@@ -103,6 +131,7 @@ export default function CampaignsPage() {
               onToggleClick={handleToggleClick}
               onDeleteClick={handleDeleteClick}
               onQRCodeClick={handleQRCodeClick}
+              onEditClick={handleEditClick}
             />
           ))}
         </div>
@@ -128,6 +157,13 @@ export default function CampaignsPage() {
       />
 
       <QRCodeModal isOpen={showQRCode} qrCode={selectedQRCode} onClose={handleCloseQRCode} />
+
+      <EditCampaignModal
+        isOpen={showEditModal}
+        campaign={campaignToEdit}
+        onClose={handleCloseEdit}
+        onSuccess={handleCloseEdit}
+      />
 
       {/* Wizard Modal */}
       <CreateCampaignWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />

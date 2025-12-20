@@ -7,6 +7,7 @@
 import { prisma } from '@/infrastructure/database/prisma-client';
 import type { CampaignRepository } from '@/core/use-cases/campaign/create-campaign.use-case';
 import type { PrizeConfig } from '@/core/value-objects/prize-configuration.value-object';
+import type { ConditionType } from '@/generated/prisma';
 
 export class PrismaCampaignRepository implements CampaignRepository {
   async createWithPrizes(data: {
@@ -17,17 +18,30 @@ export class PrismaCampaignRepository implements CampaignRepository {
       gameId?: string;
       maxParticipants?: number;
       prizeClaimExpiryDays: number;
+      minDaysBetweenPlays?: number;
       requireReview: boolean;
       requireInstagram: boolean;
+      googleReviewUrl?: string | null;
       isActive: boolean;
     };
     prizes: PrizeConfig[];
+    conditions?: Array<{
+      type: ConditionType;
+      order: number;
+      title: string;
+      description: string;
+      iconEmoji: string;
+      config: Record<string, string | number | boolean> | null;
+      redirectUrl?: string;
+      isRequired: boolean;
+      enablesGame?: boolean;
+    }>;
   }): Promise<{ id: string }> {
     // Utiliser des dates par défaut (aujourd'hui) pour startDate et endDate
     // car elles sont toujours requises dans la DB mais plus utilisées dans l'application
     const now = new Date();
 
-    // Créer la campagne avec les prizes en une transaction
+    // Créer la campagne avec les prizes et conditions en une transaction
     const campaign = await prisma.campaign.create({
       data: {
         name: data.campaign.name,
@@ -38,8 +52,10 @@ export class PrismaCampaignRepository implements CampaignRepository {
         gameId: data.campaign.gameId,
         maxParticipants: data.campaign.maxParticipants,
         prizeClaimExpiryDays: data.campaign.prizeClaimExpiryDays,
+        minDaysBetweenPlays: data.campaign.minDaysBetweenPlays,
         requireReview: data.campaign.requireReview,
         requireInstagram: data.campaign.requireInstagram,
+        googleReviewUrl: data.campaign.googleReviewUrl,
         isActive: data.campaign.isActive,
         // Créer les prizes en même temps
         prizes: {
@@ -53,6 +69,24 @@ export class PrismaCampaignRepository implements CampaignRepository {
             remaining: prize.quantity, // Au début, remaining = quantity
           })),
         },
+        // Créer les conditions si fournies
+        ...(data.conditions && data.conditions.length > 0
+          ? {
+              conditions: {
+                create: data.conditions.map((condition) => ({
+                  type: condition.type,
+                  order: condition.order,
+                  title: condition.title,
+                  description: condition.description,
+                  iconEmoji: condition.iconEmoji,
+                  config: condition.config,
+                  redirectUrl: condition.redirectUrl,
+                  isRequired: condition.isRequired,
+                  enablesGame: condition.enablesGame ?? true, // Par défaut, les conditions donnent accès au jeu
+                })),
+              },
+            }
+          : {}),
       },
       select: {
         id: true,
@@ -102,6 +136,14 @@ export class PrismaCampaignRepository implements CampaignRepository {
     prizeClaimExpiryDays: number;
     requireReview: boolean;
     requireInstagram: boolean;
+    googleReviewUrl: string | null;
+    game?: {
+      id: string;
+      type: string;
+      config: unknown;
+      primaryColor: string;
+      secondaryColor: string;
+    } | null;
     prizes: Array<{
       id: string;
       name: string;
@@ -120,6 +162,15 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return await prisma.campaign.findUnique({
       where: { id },
       include: {
+        game: {
+          select: {
+            id: true,
+            type: true,
+            config: true,
+            primaryColor: true,
+            secondaryColor: true,
+          },
+        },
         prizes: {
           select: {
             id: true,

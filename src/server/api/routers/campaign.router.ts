@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { CreateCampaignUseCase } from '@/core/use-cases/campaign/create-campaign.use-case';
 import { PrismaCampaignRepository } from '@/infrastructure/repositories/prisma-campaign.repository';
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
@@ -23,12 +23,23 @@ const PrizeConfigSchema = z.object({
   quantity: z.number().int().min(1),
 });
 
+const ConditionConfigSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  title: z.string(),
+  description: z.string(),
+  iconEmoji: z.string(),
+  config: z.any().nullable().optional(),
+  enablesGame: z.boolean().optional().default(true),
+});
+
 const CreateCampaignSchema = z.object({
   name: z.string().min(2).max(200),
   description: z.string().optional(),
   storeId: z.string().cuid(),
   isActive: z.boolean().optional().default(false),
   prizes: z.array(PrizeConfigSchema).min(1).max(50),
+  conditions: z.array(ConditionConfigSchema).optional().default([]),
   // Peut être un templateId (template-*) OU un gameId (cuid)
   gameId: z.string().optional(),
   templateId: z.string().optional(),
@@ -177,6 +188,37 @@ export const campaignRouter = createTRPCRouter({
     }),
 
   /**
+   * Récupère une campagne par ID - version publique pour les landing pages
+   * Ne requiert pas d'authentification et ne retourne que les campagnes actives
+   */
+  getByIdPublic: publicProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const campaign = await campaignRepo.getById(input.id);
+
+      if (!campaign) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Campagne introuvable',
+        });
+      }
+
+      // Vérifier que la campagne est active
+      if (!campaign.isActive) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: "Cette campagne n'est pas active",
+        });
+      }
+
+      return campaign;
+    }),
+
+  /**
    * Liste toutes les campagnes d'un commerce
    */
   listByStore: protectedProcedure
@@ -213,22 +255,38 @@ export const campaignRouter = createTRPCRouter({
     // Récupérer toutes les campagnes
     const campaigns = await campaignRepo.listAll(storeIds);
 
-    // Ajouter le nom du commerce et les infos QR Code à chaque campagne
+    // Récupérer tous les QR codes par défaut des stores en une seule requête
+    const qrCodeIds = stores
+      .filter((s) => s.defaultQrCodeId)
+      .map((s) => s.defaultQrCodeId) as string[];
+
+    const qrCodes = await ctx.prisma.qRCode.findMany({
+      where: { id: { in: qrCodeIds } },
+      select: { id: true, shortCode: true },
+    });
+
+    // Créer un map pour un accès rapide
+    const qrCodeMap = new Map(qrCodes.map((qr) => [qr.id, qr.shortCode]));
+
+    // Ajouter le nom du commerce et le shortCode du QR Code à chaque campagne
     return campaigns.map((campaign) => {
       const store = stores.find((s) => s.id === campaign.storeId);
 
-      // Récupérer le QR code par défaut du commerce si la campagne est active
+      // Récupérer le shortCode du QR code si la campagne est active
       let qrCodeUrl: string | null = null;
+      let qrCodeShortCode: string | null = null;
       if (campaign.isActive && store?.defaultQrCodeId) {
-        // On ne fait pas d'appel async ici pour ne pas ralentir, on renvoie juste l'ID
-        // Le frontend pourra afficher le QR code via une route API
-        qrCodeUrl = `/api/qr/${store.defaultQrCodeId}`;
+        qrCodeShortCode = qrCodeMap.get(store.defaultQrCodeId) || null;
+        if (qrCodeShortCode) {
+          qrCodeUrl = `/c/${qrCodeShortCode}`;
+        }
       }
 
       return {
         ...campaign,
         storeName: store?.name || 'Commerce inconnu',
         qrCodeUrl,
+        qrCodeShortCode, // Ajouter le shortCode pour le bouton "Tester"
       };
     });
   }),
@@ -285,6 +343,66 @@ export const campaignRouter = createTRPCRouter({
         // Désactiver la campagne
         await campaignRepo.deactivateCampaign(input.id);
       }
+
+      return { success: true };
+    }),
+
+  /**
+   * Met à jour une campagne
+   */
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        name: z.string().min(2).max(200).optional(),
+        description: z.string().optional(),
+        maxParticipants: z.number().int().min(1).max(1000000).optional().nullable(),
+        minDaysBetweenPlays: z.number().int().min(1).max(365).optional().nullable(),
+        prizeClaimExpiryDays: z.number().int().min(1).max(365).optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Récupérer la campagne pour vérifier l'accès
+      const campaign = await campaignRepo.getById(input.id);
+
+      if (!campaign) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Campagne introuvable',
+        });
+      }
+
+      // Vérifier que l'utilisateur a accès à ce commerce
+      const hasAccess = await storeRepo.verifyOwnership(campaign.storeId, ctx.userId);
+      if (!hasAccess) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: "Vous n'avez pas accès à cette campagne",
+        });
+      }
+
+      // Construire l'objet de mise à jour
+      const updateData: {
+        name?: string;
+        description?: string;
+        maxParticipants?: number | null;
+        minDaysBetweenPlays?: number | null;
+        prizeClaimExpiryDays?: number;
+      } = {};
+
+      if (input.name !== undefined) updateData.name = input.name;
+      if (input.description !== undefined) updateData.description = input.description;
+      if (input.maxParticipants !== undefined) updateData.maxParticipants = input.maxParticipants;
+      if (input.minDaysBetweenPlays !== undefined)
+        updateData.minDaysBetweenPlays = input.minDaysBetweenPlays;
+      if (input.prizeClaimExpiryDays !== undefined)
+        updateData.prizeClaimExpiryDays = input.prizeClaimExpiryDays;
+
+      // Mettre à jour la campagne
+      await ctx.prisma.campaign.update({
+        where: { id: input.id },
+        data: updateData,
+      });
 
       return { success: true };
     }),

@@ -95,12 +95,15 @@ export class PrismaStoreRepository implements StoreRepository {
   }
 
   // Campaign-specific methods
-  async getById(id: string): Promise<{ id: string; defaultQrCodeId: string | null } | null> {
+  async getById(
+    id: string,
+  ): Promise<{ id: string; defaultQrCodeId: string | null; googleBusinessUrl: string } | null> {
     return await prisma.store.findUnique({
       where: { id },
       select: {
         id: true,
         defaultQrCodeId: true,
+        googleBusinessUrl: true,
       },
     });
   }

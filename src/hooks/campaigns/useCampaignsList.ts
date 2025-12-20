@@ -17,6 +17,7 @@ export type Campaign = {
   isActive: boolean;
   maxParticipants?: number | null;
   qrCodeUrl?: string | null;
+  qrCodeShortCode?: string | null; // Ajouter le shortCode
   _count: {
     prizes: number;
     participants: number;

@@ -7,7 +7,6 @@
 
 import { Gift, Users, ExternalLink, Trash2, Edit2, QrCode, Power } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from 'sonner';
 
 export type CampaignCardProps = {
   campaign: {
@@ -17,7 +16,10 @@ export type CampaignCardProps = {
     storeName: string;
     isActive: boolean;
     maxParticipants?: number | null;
+    minDaysBetweenPlays?: number | null;
+    prizeClaimExpiryDays?: number | null;
     qrCodeUrl?: string | null;
+    qrCodeShortCode?: string | null; // Ajouter le shortCode
     _count: {
       prizes: number;
       participants: number;
@@ -27,6 +29,14 @@ export type CampaignCardProps = {
   onToggleClick: (campaign: { id: string; name: string; isActive: boolean }) => void;
   onDeleteClick: (campaign: { id: string; name: string }) => void;
   onQRCodeClick: (campaign: { id: string; url: string; campaignName: string }) => void;
+  onEditClick: (campaign: {
+    id: string;
+    name: string;
+    description?: string | null;
+    maxParticipants?: number | null;
+    minDaysBetweenPlays?: number | null;
+    prizeClaimExpiryDays?: number | null;
+  }) => void;
 };
 
 export default function CampaignCard({
@@ -35,6 +45,7 @@ export default function CampaignCard({
   onToggleClick,
   onDeleteClick,
   onQRCodeClick,
+  onEditClick,
 }: CampaignCardProps) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -110,17 +121,37 @@ export default function CampaignCard({
 
       {/* Actions */}
       <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
-        <Link
-          href={`/c/${campaign.id}`}
-          target="_blank"
-          className="flex-1 rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-1"
-        >
-          <ExternalLink className="h-4 w-4" />
-          Tester
-        </Link>
+        {campaign.qrCodeShortCode ? (
+          <Link
+            href={`/c/${campaign.qrCodeShortCode}`}
+            target="_blank"
+            className="flex-1 rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-1"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Tester
+          </Link>
+        ) : (
+          <button
+            disabled
+            className="flex-1 rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed flex items-center justify-center gap-1"
+            title="QR code non configuré"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Tester
+          </button>
+        )}
         <button
           className="flex-1 rounded-md bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 flex items-center justify-center gap-1"
-          onClick={() => toast.info('Modifier (à implémenter)')}
+          onClick={() =>
+            onEditClick({
+              id: campaign.id,
+              name: campaign.name,
+              description: campaign.description,
+              maxParticipants: campaign.maxParticipants,
+              minDaysBetweenPlays: campaign.minDaysBetweenPlays,
+              prizeClaimExpiryDays: campaign.prizeClaimExpiryDays,
+            })
+          }
         >
           <Edit2 className="h-4 w-4" />
           Modifier

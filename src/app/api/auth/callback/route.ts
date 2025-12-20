@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sessionService } from '@/infrastructure/auth/session.service';
 import { brandUserId } from '@/lib/types/branded.type';
+import { PrismaGameUserRepository } from '@/infrastructure/repositories/prisma-gameuser.repository';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
+    const campaignId = searchParams.get('campaignId');
 
     // Si erreur dans l'URL
     if (error) {
@@ -59,14 +61,69 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const { session, user } = data;
 
-    // Valider et brander l'userId pour type-safety
+    // Si campaignId présent = Auth Jeu (Google depuis /c/[shortCode])
+    // Sinon = Auth Admin (login email/password)
+    const isGameAuth = !!campaignId;
+
+    if (isGameAuth) {
+      // Pour le jeu, créer/mettre à jour le GameUser dans la BD
+      const gameUserRepo = new PrismaGameUserRepository();
+      const gameUserResult = await gameUserRepo.upsert({
+        supabaseId: user.id,
+        email: user.email ?? '',
+        name: user.user_metadata?.given_name || user.user_metadata?.name || 'Joueur',
+        avatarUrl: user.user_metadata?.avatar_url,
+        provider: 'google',
+      });
+
+      if (!gameUserResult.success) {
+        console.error('Failed to create/update GameUser:', gameUserResult.error);
+        return NextResponse.redirect(
+          new URL(`/c/${campaignId}?error=game_user_creation_failed`, request.url),
+        );
+      }
+
+      const response = NextResponse.redirect(new URL(`/play/${campaignId}`, request.url));
+
+      // IMPORTANT: Pour l'auth jeu, on ne crée PAS de cookies admin
+      // On crée UNIQUEMENT des cookies game
+      response.cookies.set('rl-game-session', session.access_token, {
+        httpOnly: false, // Doit être accessible côté client
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 jours
+        path: '/',
+      });
+
+      // Stocker aussi les infos utilisateur pour affichage
+      response.cookies.set(
+        'rl-game-user',
+        JSON.stringify({
+          id: gameUserResult.data.id,
+          email: gameUserResult.data.email,
+          name: gameUserResult.data.name,
+        }),
+        {
+          httpOnly: false, // Accessible côté client pour affichage
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7,
+          path: '/',
+        },
+      );
+
+      console.log('✅ GameUser créé/mis à jour:', gameUserResult.data.id);
+      console.log('✅ Cookies game créés, PAS de cookies admin');
+      return response;
+    }
+
+    // Auth Admin : utiliser le système de session existant
     const userIdResult = brandUserId(user.id);
     if (!userIdResult.success) {
       console.error('Invalid user ID from Supabase:', userIdResult.error);
       return NextResponse.redirect(new URL('/login?error=invalid_user_id', request.url));
     }
 
-    // Créer la session avec cookies HTTP-only
     const tokens = {
       accessToken: session.access_token,
       refreshToken: session.refresh_token,
@@ -81,7 +138,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL('/login?error=session_failed', request.url));
     }
 
-    // Succès ! Rediriger vers le dashboard
     return NextResponse.redirect(new URL('/dashboard', request.url));
   } catch (err) {
     console.error('Auth callback GET error:', err);
@@ -90,12 +146,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * POST handler pour OAuth callback (existant)
+ * POST handler pour OAuth callback (utilisé par /auth/callback page)
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = (await request.json()) as { code: string };
-    const { code } = body;
+    const body = (await request.json()) as { code: string; campaignId?: string };
+    const { code, campaignId } = body;
 
     if (!code) {
       return NextResponse.json({ error: 'Code is required' }, { status: 400 });
@@ -119,7 +175,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { session, user } = data;
 
-    // Valider et brander l'userId pour type-safety
+    // Si campaignId présent = Auth Jeu (Google depuis /c/[shortCode])
+    // Sinon = Auth Admin (login email/password)
+    const isGameAuth = !!campaignId;
+
+    if (isGameAuth) {
+      // Pour le jeu, on retourne juste les infos utilisateur
+      // Les cookies seront gérés côté page via redirect
+      return NextResponse.json({
+        success: true,
+        isGameAuth: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.given_name || user.user_metadata?.name || 'Joueur',
+        },
+        session: {
+          access_token: session.access_token,
+        },
+      });
+    }
+
+    // Auth Admin : utiliser le système de session existant
     const userIdResult = brandUserId(user.id);
     if (!userIdResult.success) {
       console.error('Invalid user ID from Supabase:', userIdResult.error);
@@ -143,6 +220,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
+      isGameAuth: false,
       user: {
         id: user.id,
         email: user.email,

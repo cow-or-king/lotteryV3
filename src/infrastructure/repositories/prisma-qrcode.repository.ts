@@ -12,17 +12,17 @@ export interface QRCodeRepository {
 
 export class PrismaQRCodeRepository implements QRCodeRepository {
   /**
-   * Met à jour l'URL du QR Code pour pointer vers une campagne
-   * L'URL pointera vers /campaign/[campaignId]/play
+   * Met à jour le QR Code pour l'associer à une campagne
+   * L'URL reste /c/{shortCode} et ne change jamais
+   * Seul le campaignId est mis à jour pour tracking
    */
   async updateCampaignUrl(qrCodeId: string, campaignId: string): Promise<void> {
-    const campaignUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/campaign/${campaignId}/play`;
-
+    // L'URL du QR code ne change pas, elle pointe toujours vers /c/{shortCode}
+    // On met juste à jour le campaignId pour le tracking
     await prisma.qRCode.update({
       where: { id: qrCodeId },
       data: {
-        url: campaignUrl,
-        campaignId, // Associer le QR Code à la campagne
+        campaignId, // Associer le QR Code à la campagne active
         updatedAt: new Date(),
       },
     });

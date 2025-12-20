@@ -28,6 +28,9 @@ export const gamePublicRouter = createTRPCRouter({
             },
           },
         },
+        conditions: {
+          orderBy: { order: 'asc' },
+        },
       },
     });
 
@@ -45,7 +48,7 @@ export const gamePublicRouter = createTRPCRouter({
       });
     }
 
-    // Vérifier si l'utilisateur a déjà joué
+    // Vérifier si l'utilisateur peut jouer (nouveau système playCount)
     const existingParticipation = await prisma.participant.findFirst({
       where: {
         campaignId: input.campaignId,
@@ -53,11 +56,84 @@ export const gamePublicRouter = createTRPCRouter({
       },
     });
 
-    if (existingParticipation) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Vous avez déjà participé à cette campagne',
+    // Vérifier le délai minimum entre 2 jeux
+    if (campaign.minDaysBetweenPlays && existingParticipation?.playedAt) {
+      const daysSinceLastPlay = Math.floor(
+        (Date.now() - existingParticipation.playedAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysSinceLastPlay < campaign.minDaysBetweenPlays) {
+        const daysRemaining = campaign.minDaysBetweenPlays - daysSinceLastPlay;
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Vous devez attendre encore ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} avant de pouvoir rejouer.`,
+        });
+      }
+    }
+
+    // NOUVEAU SYSTÈME: Tracking par condition avec playedConditions
+    let nextPlayableConditionId: string | null = null;
+
+    if (campaign.conditions.length > 0) {
+      const participant = existingParticipation;
+
+      if (!participant) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Vous devez compléter au moins une condition avant de jouer',
+        });
+      }
+
+      const completedConditions = (participant.completedConditions as string[]) || [];
+      const playedConditions = (participant.playedConditions as string[]) || [];
+
+      // Récupérer les types de conditions pour lesquelles un jeu a déjà été joué au niveau STORE
+      const storePlayedGames = await prisma.$queryRaw<Array<{ condition_type: string }>>`
+        SELECT condition_type
+        FROM store_played_games
+        WHERE email = ${input.playerEmail}
+          AND store_id = ${campaign.storeId}
+      `;
+      const storePlayedTypes = new Set(storePlayedGames.map((g) => g.condition_type));
+
+      // Trouver les conditions complétées qui donnent accès au jeu ET pour lesquelles on n'a pas encore joué
+      const completedGameEnabledConditions = completedConditions.filter((condId) => {
+        const cond = campaign.conditions.find((c) => c.id === condId);
+        return cond?.enablesGame === true;
       });
+
+      // Filtrer les conditions pour lesquelles on peut jouer :
+      // 1. Pas encore joué pour cette condition dans cette campagne (playedConditions)
+      // 2. ET pas encore joué pour ce TYPE de condition au niveau STORE (storePlayedTypes)
+      const playableConditions = completedGameEnabledConditions.filter((condId) => {
+        if (playedConditions.includes(condId)) return false;
+
+        const condition = campaign.conditions.find((c) => c.id === condId);
+        if (!condition) return false;
+
+        // Vérifier si un jeu a déjà été joué pour ce TYPE de condition au niveau store
+        return !storePlayedTypes.has(condition.type);
+      });
+
+      // Vérifier si l'utilisateur peut jouer
+      if (playableConditions.length === 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            'Vous avez déjà joué pour toutes les conditions complétées. Complétez la prochaine condition pour rejouer.',
+        });
+      }
+
+      // Prendre la première condition pour laquelle on peut jouer
+      nextPlayableConditionId = playableConditions[0] || null;
+    } else {
+      // Pas de conditions, vérifier simplement si déjà joué
+      if (existingParticipation && existingParticipation.hasPlayed) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Vous avez déjà participé à cette campagne',
+        });
+      }
     }
 
     // Vérifier le nombre max de participants
@@ -77,16 +153,54 @@ export const gamePublicRouter = createTRPCRouter({
     // Effectuer le tirage au sort
     const wonPrize = selectPrize(campaign.prizes);
 
-    // Créer le participant
-    const participant = await prisma.participant.create({
-      data: {
+    // Préparer les playedConditions à mettre à jour
+    const existingPlayedConditions = (existingParticipation?.playedConditions as string[]) || [];
+    const updatedPlayedConditions = nextPlayableConditionId
+      ? [...existingPlayedConditions, nextPlayableConditionId]
+      : existingPlayedConditions;
+
+    // Trouver le TYPE de la condition qui donne accès au jeu
+    const playableCondition = campaign.conditions.find((c) => c.id === nextPlayableConditionId);
+    const playableConditionType = playableCondition?.type;
+
+    // Créer ou mettre à jour le participant
+    const participant = await prisma.participant.upsert({
+      where: {
+        email_campaignId: {
+          email: input.playerEmail,
+          campaignId: input.campaignId,
+        },
+      },
+      create: {
         campaignId: input.campaignId,
         email: input.playerEmail,
         name: input.playerName,
         hasPlayed: true,
+        playCount: 1, // Premier jeu
         playedAt: new Date(),
+        completedConditions: [],
+        playedConditions: nextPlayableConditionId ? [nextPlayableConditionId] : [],
+        currentConditionOrder: campaign.conditions.length,
+      },
+      update: {
+        hasPlayed: true,
+        playCount: {
+          increment: 1, // Incrémenter le compteur de jeux
+        },
+        playedAt: new Date(),
+        playedConditions: updatedPlayedConditions,
       },
     });
+
+    // NOUVEAU: Enregistrer au niveau STORE qu'un jeu a été joué pour ce TYPE de condition
+    if (playableConditionType) {
+      await prisma.$executeRaw`
+        INSERT INTO store_played_games (id, email, store_id, condition_type, campaign_id, played_at)
+        VALUES (gen_random_uuid()::text, ${input.playerEmail}, ${campaign.storeId}, ${playableConditionType}::"ConditionType", ${input.campaignId}, NOW())
+        ON CONFLICT (email, store_id, condition_type)
+        DO UPDATE SET played_at = NOW(), campaign_id = ${input.campaignId}
+      `;
+    }
 
     // Générer le code de réclamation si un lot a été gagné
     let claimCode: string | null = null;
@@ -231,6 +345,7 @@ export const gamePublicRouter = createTRPCRouter({
         isActive: campaign.isActive,
         storeName: campaign.store.name,
         maxParticipants: campaign.maxParticipants,
+        googleReviewUrl: campaign.googleReviewUrl,
         prizes: campaign.prizes,
         game: campaign.game,
         _count: campaign._count,
