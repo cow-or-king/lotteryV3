@@ -26,8 +26,8 @@ const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 7, // 7 jours
 };
 
-const ACCESS_TOKEN_COOKIE = 'rl-access-token';
-const REFRESH_TOKEN_COOKIE = 'rl-refresh-token';
+const ACCESS_TOKEN_COOKIE = 'cb-access-token';
+const REFRESH_TOKEN_COOKIE = 'cb-refresh-token';
 
 /**
  * Service de gestion de session

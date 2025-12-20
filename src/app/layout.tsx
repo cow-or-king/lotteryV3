@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ReviewLottery v3.0',
-  description: 'Professional SaaS for Review Management with Gamification',
+  title: 'Connect & Boost',
+  description: 'Plateforme SaaS de gamification pour booster votre engagement client',
 };
 
 export const viewport: Viewport = {

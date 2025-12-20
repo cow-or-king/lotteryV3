@@ -4,6 +4,8 @@
  * IMPORTANT: ZERO any types
  */
 
+import Image from 'next/image';
+
 interface SidebarLogoProps {
   isCompactMode: boolean;
 }
@@ -17,24 +19,38 @@ export function SidebarLogo({ isCompactMode }: SidebarLogoProps) {
       }}
     >
       {isCompactMode ? (
-        <div style={{ fontSize: '32px', margin: 0 }}>🎲</div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Image src="/badge.png" alt="C&B" width={40} height={40} />
+        </div>
       ) : (
         <>
-          <h1
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Image src="/badge.png" alt="Connect & Boost" width={48} height={48} />
+            <h1
+              style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                background:
+                  'linear-gradient(135deg, #FFB800 0%, #FF006E 50%, #8B5CF6 75%, #00D9FF 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                margin: 0,
+              }}
+            >
+              Connect & Boost
+            </h1>
+          </div>
+          <p
             style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              fontSize: '12px',
+              color: '#6b7280',
+              marginTop: '8px',
+              marginLeft: '60px',
               margin: 0,
             }}
           >
-            🎲 ReviewLottery
-          </h1>
-          <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', margin: 0 }}>
-            v3.0 - Admin Panel
+            Admin Panel
           </p>
         </>
       )}

@@ -41,8 +41,8 @@ export default function QRCodeLandingPage() {
       return null;
     };
 
-    const gameSession = getCookie('rl-game-session');
-    const gameUser = getCookie('rl-game-user');
+    const gameSession = getCookie('cb-game-session');
+    const gameUser = getCookie('cb-game-user');
 
     // Si session existe et correspond à cette campagne, rediriger vers le jeu
     if (gameSession && gameUser) {

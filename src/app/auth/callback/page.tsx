@@ -25,7 +25,7 @@ export default function AuthCallbackPage() {
 
       // Si pas de campaignId dans l'URL, vérifier le localStorage
       if (!campaignId) {
-        const pendingCampaign = localStorage.getItem('rl-pending-campaign');
+        const pendingCampaign = localStorage.getItem('cb-pending-campaign');
         if (pendingCampaign) {
           campaignId = pendingCampaign;
           console.log('🔍 CampaignId récupéré depuis localStorage:', campaignId);
@@ -86,12 +86,12 @@ export default function AuthCallbackPage() {
             }
 
             console.log('✅ Stockage cookies jeu');
-            document.cookie = `rl-game-session=${sessionData.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; ${process.env.NODE_ENV === 'production' ? 'secure;' : ''} samesite=lax`;
-            document.cookie = `rl-game-user=${JSON.stringify({ id: user.id, email: user.email, name: user.user_metadata?.name || user.user_metadata?.given_name || 'Joueur' })}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+            document.cookie = `cb-game-session=${sessionData.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; ${process.env.NODE_ENV === 'production' ? 'secure;' : ''} samesite=lax`;
+            document.cookie = `cb-game-user=${JSON.stringify({ id: user.id, email: user.email, name: user.user_metadata?.name || user.user_metadata?.given_name || 'Joueur' })}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
           }
 
           // Nettoyer le localStorage après succès
-          localStorage.removeItem('rl-pending-campaign');
+          localStorage.removeItem('cb-pending-campaign');
 
           setStatus('success');
           setMessage('Authentification réussie! Redirection...');
@@ -148,12 +148,12 @@ export default function AuthCallbackPage() {
         };
 
         if (data.isGameAuth && data.session && campaignId) {
-          document.cookie = `rl-game-session=${data.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; ${process.env.NODE_ENV === 'production' ? 'secure;' : ''} samesite=lax`;
-          document.cookie = `rl-game-user=${JSON.stringify({ id: data.user.id, email: data.user.email, name: data.user.name })}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+          document.cookie = `cb-game-session=${data.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; ${process.env.NODE_ENV === 'production' ? 'secure;' : ''} samesite=lax`;
+          document.cookie = `cb-game-user=${JSON.stringify({ id: data.user.id, email: data.user.email, name: data.user.name })}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
         }
 
         // Nettoyer le localStorage après succès
-        localStorage.removeItem('rl-pending-campaign');
+        localStorage.removeItem('cb-pending-campaign');
 
         setStatus('success');
         setMessage('Authentification réussie! Redirection...');

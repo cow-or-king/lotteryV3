@@ -1,23 +1,24 @@
 /**
- * Landing Page - ReviewLottery
+ * Landing Page - Connect & Boost
  * Page publique d'accueil du site
  * IMPORTANT: ZERO any types
  */
 
 import { Gift, Shield, Sparkles, Star, TrendingUp, Zap } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-cyan-50">
       {/* Header / Navbar */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <Gift className="w-8 h-8 text-purple-600" />
-              <span className="text-2xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                ReviewLottery
+            <div className="flex items-center gap-3">
+              <Image src="/badge.png" alt="Connect & Boost" width={40} height={40} />
+              <span className="text-2xl font-bold bg-gradient-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
+                Connect & Boost
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -49,17 +50,17 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Boostez vos avis Google
+            Connectez et Boostez
             <br />
-            avec des{' '}
-            <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              loteries intelligentes
+            votre{' '}
+            <span className="bg-gradient-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
+              engagement client
             </span>
           </h1>
 
           <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-            ReviewLottery combine l'IA et la gamification pour augmenter votre nombre d'avis Google
-            et fidéliser vos clients avec des campagnes de loterie personnalisées.
+            Connect & Boost combine gamification et stratégies d'engagement pour transformer vos
+            interactions client en expériences mémorables et booster votre croissance.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

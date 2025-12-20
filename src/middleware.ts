@@ -27,9 +27,9 @@ const PUBLIC_ONLY_ROUTES = ['/login', '/register'];
 /**
  * Cookie names
  */
-const ACCESS_TOKEN_COOKIE = 'rl-access-token';
-const REFRESH_TOKEN_COOKIE = 'rl-refresh-token';
-const GAME_SESSION_COOKIE = 'rl-game-session';
+const ACCESS_TOKEN_COOKIE = 'cb-access-token';
+const REFRESH_TOKEN_COOKIE = 'cb-refresh-token';
+const GAME_SESSION_COOKIE = 'cb-game-session';
 
 /**
  * Middleware de protection des routes

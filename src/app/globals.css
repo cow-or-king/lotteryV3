@@ -3,6 +3,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Connect & Boost Brand Colors */
+  --cb-yellow: #FFB800;
+  --cb-orange: #FF8C00;
+  --cb-magenta: #FF006E;
+  --cb-purple: #8B5CF6;
+  --cb-violet: #6366F1;
+  --cb-cyan: #00D9FF;
+  --cb-blue: #0EA5E9;
+  --cb-dark: #1A1A1A;
 }
 
 @theme inline {
@@ -10,6 +20,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Connect & Boost Custom Colors */
+  --color-cb-yellow: var(--cb-yellow);
+  --color-cb-orange: var(--cb-orange);
+  --color-cb-magenta: var(--cb-magenta);
+  --color-cb-purple: var(--cb-purple);
+  --color-cb-violet: var(--cb-violet);
+  --color-cb-cyan: var(--cb-cyan);
+  --color-cb-blue: var(--cb-blue);
+  --color-cb-dark: var(--cb-dark);
 
   /* Custom animations */
   @keyframes blob {

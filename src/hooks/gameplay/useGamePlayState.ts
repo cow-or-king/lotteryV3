@@ -46,7 +46,7 @@ export function useGamePlayState(campaignId: string) {
       return null;
     };
 
-    const userCookie = getCookie('rl-game-user');
+    const userCookie = getCookie('cb-game-user');
     if (userCookie) {
       try {
         const userData = JSON.parse(decodeURIComponent(userCookie));

@@ -62,7 +62,7 @@ export default function GamePage() {
       return null;
     };
 
-    const userCookie = getCookie('rl-game-user');
+    const userCookie = getCookie('cb-game-user');
     if (userCookie) {
       try {
         setGameUser(JSON.parse(decodeURIComponent(userCookie)));

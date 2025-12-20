@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       // IMPORTANT: Pour l'auth jeu, on ne crée PAS de cookies admin
       // On crée UNIQUEMENT des cookies game
-      response.cookies.set('rl-game-session', session.access_token, {
+      response.cookies.set('cb-game-session', session.access_token, {
         httpOnly: false, // Doit être accessible côté client
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       // Stocker aussi les infos utilisateur pour affichage
       response.cookies.set(
-        'rl-game-user',
+        'cb-game-user',
         JSON.stringify({
           id: gameUserResult.data.id,
           email: gameUserResult.data.email,
