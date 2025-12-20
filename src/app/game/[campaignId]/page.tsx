@@ -372,6 +372,33 @@ export default function GamePage() {
                     </div>
                   </div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-4">Prêt à jouer !</h2>
+
+                  {/* Afficher quelle condition donne accès au jeu */}
+                  {conditionsProgress?.nextPlayableConditionId && (
+                    <>
+                      {(() => {
+                        const playableCondition = conditionsProgress.conditions.find(
+                          (c) => c.id === conditionsProgress.nextPlayableConditionId,
+                        );
+                        if (playableCondition) {
+                          return (
+                            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6 max-w-md mx-auto">
+                              <p className="text-green-800 font-medium mb-2">
+                                {playableCondition.iconEmoji}{' '}
+                                <span className="font-bold">{playableCondition.title}</span> validée
+                                !
+                              </p>
+                              <p className="text-green-700 text-sm">
+                                Cette condition vous donne accès au jeu de cette campagne
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </>
+                  )}
+
                   <p className="text-gray-600 mb-8">
                     Tentez votre chance et gagnez un prize à coup sûr !
                   </p>
