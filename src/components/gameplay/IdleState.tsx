@@ -5,10 +5,9 @@
 
 interface IdleStateProps {
   variant: 'already-played' | 'error' | 'no-conditions';
-  campaignName?: string;
 }
 
-export function IdleState({ variant, campaignName }: IdleStateProps) {
+export function IdleState({ variant }: IdleStateProps) {
   // État: Déjà joué
   if (variant === 'already-played') {
     return (

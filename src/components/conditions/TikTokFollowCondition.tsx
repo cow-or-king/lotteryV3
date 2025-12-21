@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 
 interface TikTokFollowConditionProps {
   condition: CampaignConditionData;
-  userName: string;
   onComplete: () => void;
   progressPercentage: number;
   currentStep: number;
@@ -20,7 +19,6 @@ interface TikTokFollowConditionProps {
 
 export function TikTokFollowCondition({
   condition,
-  userName,
   onComplete,
   progressPercentage,
   currentStep,
@@ -38,6 +36,7 @@ export function TikTokFollowCondition({
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [countdown]);
 
   const handleFollowClick = () => {

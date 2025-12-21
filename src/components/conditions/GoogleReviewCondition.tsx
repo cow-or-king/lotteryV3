@@ -11,21 +11,13 @@ import { useEffect, useState } from 'react';
 
 interface GoogleReviewConditionProps {
   condition: CampaignConditionData;
-  userName: string;
   onComplete: () => void;
   progressPercentage: number;
   currentStep: number;
   totalSteps: number;
 }
 
-export function GoogleReviewCondition({
-  condition,
-  userName,
-  onComplete,
-  progressPercentage,
-  currentStep,
-  totalSteps,
-}: GoogleReviewConditionProps) {
+export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewConditionProps) {
   const config = condition.config as GoogleReviewConfig | null;
   // Nettoyer l'URL : supprimer le tiret final s'il existe
   const rawUrl =
@@ -43,6 +35,7 @@ export function GoogleReviewCondition({
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isWaiting, countdown]);
 
   const handleReviewClick = () => {
@@ -83,7 +76,7 @@ export function GoogleReviewCondition({
         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full mb-4 shadow-lg">
           <span className="text-3xl">✍️</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-3">Bienvenue {userName} !</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-3">Bienvenue !</h1>
         <p className="text-xl text-gray-700">Votre avis nous aide à nous améliorer</p>
       </div>
 

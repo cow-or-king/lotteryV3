@@ -29,7 +29,10 @@ const ConditionConfigSchema = z.object({
   title: z.string(),
   description: z.string(),
   iconEmoji: z.string(),
-  config: z.any().nullable().optional(),
+  config: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .nullable()
+    .optional(),
   enablesGame: z.boolean().optional().default(true),
 });
 

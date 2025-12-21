@@ -16,7 +16,6 @@ import { CustomRedirectCondition } from './CustomRedirectCondition';
 
 interface ConditionRendererProps {
   condition: CampaignConditionData;
-  userName: string;
   onConditionComplete: () => void;
   totalConditions: number;
   currentConditionIndex: number;
@@ -24,7 +23,6 @@ interface ConditionRendererProps {
 
 export function ConditionRenderer({
   condition,
-  userName,
   onConditionComplete,
   totalConditions,
   currentConditionIndex,
@@ -38,7 +36,6 @@ export function ConditionRenderer({
       return (
         <GoogleReviewCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -50,7 +47,6 @@ export function ConditionRenderer({
       return (
         <InstagramFollowCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -62,7 +58,6 @@ export function ConditionRenderer({
       return (
         <TikTokFollowCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -74,7 +69,6 @@ export function ConditionRenderer({
       return (
         <NewsletterCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -86,7 +80,6 @@ export function ConditionRenderer({
       return (
         <LoyaltyProgramCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -98,7 +91,6 @@ export function ConditionRenderer({
       return (
         <CustomRedirectCondition
           condition={condition}
-          userName={userName}
           onComplete={onConditionComplete}
           progressPercentage={progressPercentage}
           currentStep={currentConditionIndex + 1}
@@ -106,9 +98,13 @@ export function ConditionRenderer({
         />
       );
 
+    case 'GAME':
+      // Le type GAME ne devrait pas être affiché comme condition
+      // C'est géré automatiquement après la complétion d'une condition avec enablesGame=true
+      return null;
+
     default:
       // Type exhaustiveness check - TypeScript will error if we miss a case
-      const _exhaustiveCheck: never = condition.type;
       return null;
   }
 }

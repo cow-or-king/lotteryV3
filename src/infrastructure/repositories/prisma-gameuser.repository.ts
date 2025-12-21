@@ -64,10 +64,7 @@ export class PrismaGameUserRepository {
       console.error("Erreur lors de l'upsert du GameUser:", error);
       return {
         success: false,
-        error: {
-          code: 'GAMEUSER_UPSERT_ERROR',
-          message: "Impossible de créer/mettre à jour l'utilisateur de jeu",
-        },
+        error: new Error("Impossible de créer/mettre à jour l'utilisateur de jeu"),
       };
     }
   }
@@ -89,10 +86,7 @@ export class PrismaGameUserRepository {
       console.error('Erreur lors de la récupération du GameUser:', error);
       return {
         success: false,
-        error: {
-          code: 'GAMEUSER_FETCH_ERROR',
-          message: "Impossible de récupérer l'utilisateur de jeu",
-        },
+        error: new Error("Impossible de récupérer l'utilisateur de jeu"),
       };
     }
   }
@@ -114,10 +108,7 @@ export class PrismaGameUserRepository {
       console.error('Erreur lors de la récupération du GameUser:', error);
       return {
         success: false,
-        error: {
-          code: 'GAMEUSER_FETCH_ERROR',
-          message: "Impossible de récupérer l'utilisateur de jeu",
-        },
+        error: new Error("Impossible de récupérer l'utilisateur de jeu"),
       };
     }
   }

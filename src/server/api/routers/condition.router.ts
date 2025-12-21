@@ -130,21 +130,11 @@ export const conditionRouter = createTRPCRouter({
       // 2. Il a complété plus de conditions "game-enabled" qu'il n'a joué
       // 3. Il n'a pas encore complété toutes les conditions OU il a joué moins que le nombre de conditions "game-enabled"
 
-      const playCount = participant.playCount || 0;
-
       // Compter seulement les conditions qui donnent accès au jeu
-      const gameEnabledConditions = conditions.filter((c) => c.enablesGame);
       const completedGameEnabledConditions = completedConditions.filter((condId) => {
         const cond = conditions.find((c) => c.id === condId);
         return cond?.enablesGame === true;
       });
-
-      const conditionsCompletedCount = completedConditions.length;
-      const gameEnabledCompletedCount = completedGameEnabledConditions.length;
-      const allConditionsCompleted = currentOrder >= conditions.length;
-
-      // Récupérer les conditions pour lesquelles le jeu a déjà été joué
-      const playedConditions = (participant.playedConditions as string[]) || [];
 
       // NOUVEAU: Récupérer les types de conditions pour lesquelles un jeu a déjà été joué au niveau STORE
       const storePlayedGames = await prisma.$queryRaw<Array<{ condition_type: string }>>`

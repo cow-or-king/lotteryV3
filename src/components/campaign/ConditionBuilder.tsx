@@ -28,7 +28,6 @@ interface ConditionBuilderProps {
 
 export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: ConditionBuilderProps) {
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [editingCondition, setEditingCondition] = useState<string | null>(null);
 
   // Générer un ID unique
   const generateId = () => `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -70,10 +69,9 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
   const handleMoveUp = (index: number) => {
     if (index === 0) return;
     const newConditions = [...conditions];
-    [newConditions[index - 1], newConditions[index]] = [
-      newConditions[index],
-      newConditions[index - 1],
-    ];
+    const temp = newConditions[index];
+    newConditions[index] = newConditions[index - 1]!;
+    newConditions[index - 1] = temp!;
     onChange(newConditions);
   };
 
@@ -81,10 +79,9 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
   const handleMoveDown = (index: number) => {
     if (index === conditions.length - 1) return;
     const newConditions = [...conditions];
-    [newConditions[index], newConditions[index + 1]] = [
-      newConditions[index + 1],
-      newConditions[index],
-    ];
+    const temp = newConditions[index];
+    newConditions[index] = newConditions[index + 1]!;
+    newConditions[index + 1] = temp!;
     onChange(newConditions);
   };
 
@@ -108,7 +105,6 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
       <div className="space-y-3">
         {conditions.map((condition, index) => {
           const metadata = CONDITION_TYPE_METADATA[condition.type];
-          const isFirst = index === 0;
           const canDelete = condition.type !== 'GOOGLE_REVIEW'; // Google Avis ne peut pas être supprimé
 
           return (

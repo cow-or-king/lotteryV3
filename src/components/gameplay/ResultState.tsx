@@ -2,7 +2,7 @@
  * Composant pour l'état RESULT du gameplay
  */
 
-import { Gift, PartyPopper } from 'lucide-react';
+import { Gift } from 'lucide-react';
 
 interface Prize {
   id: string;

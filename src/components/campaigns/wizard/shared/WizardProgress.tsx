@@ -6,7 +6,7 @@
 'use client';
 
 interface WizardProgressProps {
-  currentStep: 1 | 2 | 3 | 4;
+  currentStep: 1 | 2 | 3 | 4 | 5;
   totalSteps: number;
 }
 

@@ -11,21 +11,13 @@ import { useEffect, useState } from 'react';
 
 interface CustomRedirectConditionProps {
   condition: CampaignConditionData;
-  userName: string;
   onComplete: () => void;
   progressPercentage: number;
   currentStep: number;
   totalSteps: number;
 }
 
-export function CustomRedirectCondition({
-  condition,
-  userName,
-  onComplete,
-  progressPercentage,
-  currentStep,
-  totalSteps,
-}: CustomRedirectConditionProps) {
+export function CustomRedirectCondition({ condition, onComplete }: CustomRedirectConditionProps) {
   const [hasClicked, setHasClicked] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -39,6 +31,7 @@ export function CustomRedirectCondition({
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [countdown]);
 
   const handleClick = () => {
@@ -61,22 +54,6 @@ export function CustomRedirectCondition({
 
   return (
     <div className="space-y-8">
-      {/* Progress Bar */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-700 text-sm font-medium">Progression</span>
-          <span className="text-gray-700 text-sm font-medium">
-            {currentStep}/{totalSteps}
-          </span>
-        </div>
-        <div className="h-2 bg-white/70 backdrop-blur-xl rounded-full overflow-hidden border border-white/30">
-          <div
-            className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full transition-all duration-500"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-      </div>
-
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mb-4 shadow-lg">

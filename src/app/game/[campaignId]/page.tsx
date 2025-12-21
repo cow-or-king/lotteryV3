@@ -36,8 +36,9 @@ interface GameResult {
   prize?: {
     id: string;
     name: string;
-    description?: string;
-    value?: number;
+    description: string | null;
+    value: number | null;
+    color: string;
   } | null;
 }
 
@@ -353,7 +354,12 @@ export default function GamePage() {
             {/* CONDITIONS STEP */}
             {currentStep === 'conditions' && conditionsProgress?.currentCondition && (
               <ConditionRenderer
-                condition={conditionsProgress.currentCondition}
+                condition={{
+                  ...conditionsProgress.currentCondition,
+                  config: conditionsProgress.currentCondition.config as
+                    | import('@/types/condition.types').ConditionConfig
+                    | null,
+                }}
                 userName={gameUser?.name || 'Joueur'}
                 onConditionComplete={handleConditionComplete}
                 totalConditions={conditionsProgress.conditions.length}
@@ -374,30 +380,34 @@ export default function GamePage() {
                   <h2 className="text-3xl font-bold text-gray-800 mb-4">Prêt à jouer !</h2>
 
                   {/* Afficher quelle condition donne accès au jeu */}
-                  {conditionsProgress?.nextPlayableConditionId && (
-                    <>
-                      {(() => {
-                        const playableCondition = conditionsProgress.conditions.find(
-                          (c) => c.id === conditionsProgress.nextPlayableConditionId,
-                        );
-                        if (playableCondition) {
-                          return (
-                            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6 max-w-md mx-auto">
-                              <p className="text-green-800 font-medium mb-2">
-                                {playableCondition.iconEmoji}{' '}
-                                <span className="font-bold">{playableCondition.title}</span> validée
-                                !
-                              </p>
-                              <p className="text-green-700 text-sm">
-                                Cette condition vous donne accès au jeu de cette campagne
-                              </p>
-                            </div>
+                  {conditionsProgress?.participant &&
+                    'nextPlayableConditionId' in conditionsProgress &&
+                    conditionsProgress.nextPlayableConditionId && (
+                      <>
+                        {(() => {
+                          const playableCondition = conditionsProgress.conditions.find(
+                            (c) =>
+                              'nextPlayableConditionId' in conditionsProgress &&
+                              c.id === conditionsProgress.nextPlayableConditionId,
                           );
-                        }
-                        return null;
-                      })()}
-                    </>
-                  )}
+                          if (playableCondition) {
+                            return (
+                              <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6 max-w-md mx-auto">
+                                <p className="text-green-800 font-medium mb-2">
+                                  {playableCondition.iconEmoji}{' '}
+                                  <span className="font-bold">{playableCondition.title}</span>{' '}
+                                  validée !
+                                </p>
+                                <p className="text-green-700 text-sm">
+                                  Cette condition vous donne accès au jeu de cette campagne
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </>
+                    )}
 
                   <p className="text-gray-600 mb-8">
                     Tentez votre chance et gagnez un prize à coup sûr !
@@ -536,10 +546,11 @@ export default function GamePage() {
                         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 mb-6">
                           <p className="text-sm font-medium text-gray-700 mb-3">Conditions :</p>
                           <div className="space-y-2">
-                            {conditionsProgress.conditions.map((condition, index) => {
-                              const isCompleted = conditionsProgress.completedConditions.includes(
-                                condition.id,
-                              );
+                            {conditionsProgress.conditions.map((condition) => {
+                              const isCompleted =
+                                conditionsProgress.participant &&
+                                Array.isArray(conditionsProgress.completedConditions) &&
+                                conditionsProgress.completedConditions.includes(condition.id);
                               return (
                                 <div
                                   key={condition.id}

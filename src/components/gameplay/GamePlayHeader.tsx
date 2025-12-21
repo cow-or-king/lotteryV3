@@ -2,8 +2,6 @@
  * Composant Header pour le gameplay
  */
 
-import { Trophy } from 'lucide-react';
-
 interface MockUser {
   name: string;
   email: string;

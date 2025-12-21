@@ -38,7 +38,7 @@ const GAME_SESSION_COOKIE = 'cb-game-session';
  * La validation se fait dans le tRPC context (Node.js runtime)
  */
 export async function middleware(request: NextRequest) {
-  const { pathname, search, hash } = request.nextUrl;
+  const { pathname, hash } = request.nextUrl;
 
   // IMPORTANT: Intercepter les redirections OAuth mal configurées
   // Si on arrive sur /dashboard avec access_token ou error dans l'URL/hash

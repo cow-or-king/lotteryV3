@@ -152,6 +152,14 @@ export const CONDITION_TYPE_METADATA: Record<ConditionType, ConditionTypeMetadat
     color: '#9C27B0',
     requiresAuth: false,
   },
+  GAME: {
+    type: 'GAME',
+    label: 'Jeu',
+    description: 'Accès au jeu (roue/slot)',
+    defaultIcon: '🎰',
+    color: '#F59E0B',
+    requiresAuth: false,
+  },
 };
 
 /**

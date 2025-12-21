@@ -2,7 +2,7 @@
  * Script pour vérifier la nouvelle campagne
  */
 
-import { prisma } from './src/infrastructure/database/prisma-client';
+import { prisma } from '@/infrastructure/database/prisma-client';
 
 async function checkNewCampaign() {
   const campaignId = 'cmjclrrxz0018eg33kckdzb1c';
@@ -21,7 +21,7 @@ async function checkNewCampaign() {
         store: {
           select: {
             name: true,
-            googleReviewUrl: true,
+            googleBusinessUrl: true,
           },
         },
       },
@@ -34,7 +34,7 @@ async function checkNewCampaign() {
 
     console.log('📋 Campagne:', campaign.name);
     console.log('🏪 Commerce:', campaign.store.name);
-    console.log('🔗 URL Google du commerce:', campaign.store.googleReviewUrl);
+    console.log('🔗 URL Google du commerce:', campaign.store.googleBusinessUrl);
     console.log('🔗 URL Google de la campagne:', campaign.googleReviewUrl);
     console.log('');
 

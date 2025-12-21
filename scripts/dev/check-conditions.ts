@@ -2,7 +2,7 @@
  * Script pour vérifier les conditions d'une campagne
  */
 
-import { prisma } from './src/infrastructure/database/prisma-client';
+import { prisma } from '@/infrastructure/database/prisma-client';
 
 async function checkCampaignConditions() {
   const campaignId = 'cmjcjep39000378ncamn20ew7';
@@ -20,7 +20,7 @@ async function checkCampaignConditions() {
       store: {
         select: {
           name: true,
-          googleReviewUrl: true,
+          googleBusinessUrl: true,
         },
       },
     },
@@ -33,7 +33,7 @@ async function checkCampaignConditions() {
 
   console.log('📋 Campagne:', campaign.name);
   console.log('🏪 Commerce:', campaign.store.name);
-  console.log('🔗 URL Google du commerce:', campaign.store.googleReviewUrl);
+  console.log('🔗 URL Google du commerce:', campaign.store.googleBusinessUrl);
   console.log('🔗 URL Google de la campagne:', campaign.googleReviewUrl);
   console.log('');
 

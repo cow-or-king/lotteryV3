@@ -6,12 +6,11 @@
 
 'use client';
 
-import type { CampaignConditionData, NewsletterConfig } from '@/types/condition.types';
+import type { CampaignConditionData } from '@/types/condition.types';
 import { useState } from 'react';
 
 interface NewsletterConditionProps {
   condition: CampaignConditionData;
-  userName: string;
   onComplete: () => void;
   progressPercentage: number;
   currentStep: number;
@@ -20,7 +19,6 @@ interface NewsletterConditionProps {
 
 export function NewsletterCondition({
   condition,
-  userName,
   onComplete,
   progressPercentage,
   currentStep,
@@ -29,8 +27,6 @@ export function NewsletterCondition({
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-
-  const config = condition.config as NewsletterConfig | null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
