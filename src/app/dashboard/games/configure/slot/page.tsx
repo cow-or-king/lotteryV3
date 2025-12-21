@@ -13,8 +13,9 @@ import { SlotWinPatternsSettings } from '@/components/games/slot/SlotWinPatterns
 import { SlotSpinEasing } from '@/lib/types/game';
 import { Save, ArrowLeft, Settings, Award } from 'lucide-react';
 import { useSlotMachineDesignForm } from '@/hooks/games/useSlotMachineDesignForm';
+import { Suspense } from 'react';
 
-export default function SlotMachineConfiguratorPage() {
+function SlotMachineConfiguratorContent() {
   const router = useRouter();
 
   // Hook centralisé pour toute la logique du formulaire
@@ -163,5 +164,23 @@ export default function SlotMachineConfiguratorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrapper avec Suspense pour gérer useSearchParams
+export default function SlotMachineConfiguratorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full flex items-center justify-center h-screen px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      <SlotMachineConfiguratorContent />
+    </Suspense>
   );
 }

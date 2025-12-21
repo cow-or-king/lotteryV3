@@ -6,6 +6,9 @@
 
 'use client';
 
+// Force dynamic rendering for all dashboard pages
+export const dynamic = 'force-dynamic';
+
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardTopBar } from '@/components/dashboard/DashboardTopBar';
 import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper';

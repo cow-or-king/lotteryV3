@@ -67,7 +67,9 @@ export default function EditCampaignModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!campaign) return;
+    if (!campaign) {
+      return;
+    }
 
     updateMutation.mutate({
       id: campaign.id,
@@ -79,7 +81,9 @@ export default function EditCampaignModal({
     });
   };
 
-  if (!isOpen || !campaign) return null;
+  if (!isOpen || !campaign) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

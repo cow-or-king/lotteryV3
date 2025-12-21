@@ -106,10 +106,14 @@ export const gamePublicRouter = createTRPCRouter({
       // 1. Pas encore joué pour cette condition dans cette campagne (playedConditions)
       // 2. ET pas encore joué pour ce TYPE de condition au niveau STORE (storePlayedTypes)
       const playableConditions = completedGameEnabledConditions.filter((condId) => {
-        if (playedConditions.includes(condId)) return false;
+        if (playedConditions.includes(condId)) {
+          return false;
+        }
 
         const condition = campaign.conditions.find((c) => c.id === condId);
-        if (!condition) return false;
+        if (!condition) {
+          return false;
+        }
 
         // Vérifier si un jeu a déjà été joué pour ce TYPE de condition au niveau store
         return !storePlayedTypes.has(condition.type);

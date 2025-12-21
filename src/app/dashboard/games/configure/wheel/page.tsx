@@ -14,11 +14,11 @@ import { WheelTextSettings } from '@/components/games/wheel/WheelTextSettings';
 import { useWheelDesignForm } from '@/hooks/games/useWheelDesignForm';
 import { ArrowLeft, Image as ImageIcon, Palette, Save, Settings, Type } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
 type TabType = 'colors' | 'logo' | 'text' | 'advanced';
 
-export default function WheelConfiguratorPage() {
+function WheelConfiguratorContent() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('colors');
 
@@ -227,5 +227,23 @@ function TabButton({ active, onClick, icon: Icon, label }: TabButtonProps) {
       <span className="hidden sm:inline">{label}</span>
       <span className="sm:hidden">{label.slice(0, 4)}</span>
     </button>
+  );
+}
+
+// Wrapper avec Suspense pour gérer useSearchParams
+export default function WheelConfiguratorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full flex items-center justify-center h-screen px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      <WheelConfiguratorContent />
+    </Suspense>
   );
 }

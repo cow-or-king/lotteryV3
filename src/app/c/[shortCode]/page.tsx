@@ -30,7 +30,9 @@ export default function QRCodeLandingPage() {
 
   // Vérifier si l'utilisateur a déjà une session de jeu
   useEffect(() => {
-    if (!data?.campaign) return;
+    if (!data?.campaign) {
+      return;
+    }
 
     const getCookie = (name: string): string | null => {
       const value = `; ${document.cookie}`;
@@ -59,7 +61,9 @@ export default function QRCodeLandingPage() {
   }, [data, router]);
 
   const handleStartGame = async () => {
-    if (!data?.campaign) return;
+    if (!data?.campaign) {
+      return;
+    }
 
     try {
       // Connexion Google OAuth

@@ -67,7 +67,9 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
 
   // Déplacer une condition vers le haut
   const handleMoveUp = (index: number) => {
-    if (index === 0) return;
+    if (index === 0) {
+      return;
+    }
     const newConditions = [...conditions];
     const temp = newConditions[index];
     newConditions[index] = newConditions[index - 1]!;
@@ -77,7 +79,9 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
 
   // Déplacer une condition vers le bas
   const handleMoveDown = (index: number) => {
-    if (index === conditions.length - 1) return;
+    if (index === conditions.length - 1) {
+      return;
+    }
     const newConditions = [...conditions];
     const temp = newConditions[index];
     newConditions[index] = newConditions[index + 1]!;

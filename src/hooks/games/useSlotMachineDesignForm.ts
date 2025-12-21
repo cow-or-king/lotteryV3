@@ -4,6 +4,8 @@
  * IMPORTANT: ZERO any types
  */
 
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/trpc/client';

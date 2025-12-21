@@ -148,7 +148,9 @@ export const conditionRouter = createTRPCRouter({
       // Peut jouer si: au moins une condition "game-enabled" complétée ET pas encore joué pour ce TYPE au niveau store
       const playableConditions = completedGameEnabledConditions.filter((conditionId) => {
         const condition = conditions.find((c) => c.id === conditionId);
-        if (!condition) return false;
+        if (!condition) {
+          return false;
+        }
 
         // Vérifier si un jeu a déjà été joué pour ce TYPE de condition au niveau store
         return !storePlayedTypes.has(condition.type);
@@ -335,7 +337,7 @@ export const conditionRouter = createTRPCRouter({
       }
 
       // Récupérer le participant
-      let participant = await prisma.participant.findUnique({
+      const participant = await prisma.participant.findUnique({
         where: {
           email_campaignId: {
             email: input.participantEmail,

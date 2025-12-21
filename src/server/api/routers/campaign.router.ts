@@ -406,13 +406,21 @@ export const campaignRouter = createTRPCRouter({
         prizeClaimExpiryDays?: number;
       } = {};
 
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.description !== undefined) updateData.description = input.description;
-      if (input.maxParticipants !== undefined) updateData.maxParticipants = input.maxParticipants;
-      if (input.minDaysBetweenPlays !== undefined)
+      if (input.name !== undefined) {
+        updateData.name = input.name;
+      }
+      if (input.description !== undefined) {
+        updateData.description = input.description;
+      }
+      if (input.maxParticipants !== undefined) {
+        updateData.maxParticipants = input.maxParticipants;
+      }
+      if (input.minDaysBetweenPlays !== undefined) {
         updateData.minDaysBetweenPlays = input.minDaysBetweenPlays;
-      if (input.prizeClaimExpiryDays !== undefined)
+      }
+      if (input.prizeClaimExpiryDays !== undefined) {
         updateData.prizeClaimExpiryDays = input.prizeClaimExpiryDays;
+      }
 
       // Mettre à jour la campagne
       await ctx.prisma.campaign.update({

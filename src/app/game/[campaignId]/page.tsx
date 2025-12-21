@@ -140,7 +140,9 @@ export default function GamePage() {
       conditionsProgress,
     });
 
-    if (!conditionsProgress || !gameUser) return;
+    if (!conditionsProgress || !gameUser) {
+      return;
+    }
 
     // Si on est en train de compléter une condition, ne rien faire
     // (handleConditionComplete va gérer la transition)
@@ -229,7 +231,9 @@ export default function GamePage() {
   }, [conditionsProgress, gameUser, isCompletingCondition, completeConditionMutation.isPending]);
 
   const handlePlay = async () => {
-    if (!gameUser?.email) return;
+    if (!gameUser?.email) {
+      return;
+    }
 
     setCurrentStep('playing');
 
@@ -269,7 +273,9 @@ export default function GamePage() {
   };
 
   const handleConditionComplete = async () => {
-    if (!conditionsProgress?.currentCondition || !gameUser?.email) return;
+    if (!conditionsProgress?.currentCondition || !gameUser?.email) {
+      return;
+    }
 
     try {
       setIsCompletingCondition(true);

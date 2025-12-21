@@ -4,6 +4,8 @@
  * IMPORTANT: ZERO any types
  */
 
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/trpc/client';
@@ -17,6 +19,21 @@ import {
   generateRandomBiColors,
   WheelSegmentDesign,
 } from '@/lib/types/game';
+
+/**
+ * Helper pour extraire les données du design et éviter les erreurs de type inference
+ * Type instantiation excessively deep and possibly infinite
+ */
+function extractDesignData(design: WheelDesignConfig) {
+  const {
+    id: _id,
+    userId: _userId,
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    ...designData
+  } = design as any;
+  return designData;
+}
 
 export function useWheelDesignForm() {
   const router = useRouter();
@@ -98,14 +115,7 @@ export function useWheelDesignForm() {
 
   // Handlers
   const handleSaveDesign = () => {
-    // Exclure les champs qui ne doivent pas être envoyés
-    const {
-      id: _id,
-      userId: _userId,
-      createdAt: _createdAt,
-      updatedAt: _updatedAt,
-      ...designData
-    } = design;
+    const designData = extractDesignData(design);
 
     const dataToSave = {
       ...designData,
