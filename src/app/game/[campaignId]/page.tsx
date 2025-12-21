@@ -352,20 +352,36 @@ export default function GamePage() {
         <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl overflow-hidden">
           <div className="p-8">
             {/* CONDITIONS STEP */}
-            {currentStep === 'conditions' && conditionsProgress?.currentCondition && (
-              <ConditionRenderer
-                condition={{
-                  ...conditionsProgress.currentCondition,
-                  config: conditionsProgress.currentCondition.config as
+            {currentStep === 'conditions' &&
+              conditionsProgress?.currentCondition &&
+              (() => {
+                const currentCondition = conditionsProgress.currentCondition;
+                const typedCondition: import('@/types/condition.types').CampaignConditionData = {
+                  id: currentCondition.id,
+                  campaignId: currentCondition.campaignId,
+                  type: currentCondition.type,
+                  order: currentCondition.order,
+                  title: currentCondition.title,
+                  description: currentCondition.description,
+                  redirectUrl: currentCondition.redirectUrl,
+                  iconEmoji: currentCondition.iconEmoji,
+                  config: currentCondition.config as unknown as
                     | import('@/types/condition.types').ConditionConfig
                     | null,
-                }}
-                userName={gameUser?.name || 'Joueur'}
-                onConditionComplete={handleConditionComplete}
-                totalConditions={conditionsProgress.conditions.length}
-                currentConditionIndex={conditionsProgress.currentCondition.order}
-              />
-            )}
+                  isRequired: currentCondition.isRequired,
+                  createdAt: new Date(currentCondition.createdAt),
+                  updatedAt: new Date(currentCondition.updatedAt),
+                };
+
+                return (
+                  <ConditionRenderer
+                    condition={typedCondition}
+                    onConditionComplete={handleConditionComplete}
+                    totalConditions={conditionsProgress.conditions.length}
+                    currentConditionIndex={conditionsProgress.currentCondition.order}
+                  />
+                );
+              })()}
 
             {/* READY TO PLAY STEP */}
             {currentStep === 'ready-to-play' &&

@@ -25,7 +25,15 @@ const PrizeConfigSchema = z.object({
 
 const ConditionConfigSchema = z.object({
   id: z.string(),
-  type: z.string(),
+  type: z.enum([
+    'GOOGLE_REVIEW',
+    'INSTAGRAM_FOLLOW',
+    'TIKTOK_FOLLOW',
+    'NEWSLETTER',
+    'LOYALTY_PROGRAM',
+    'CUSTOM_REDIRECT',
+    'GAME',
+  ]),
   title: z.string(),
   description: z.string(),
   iconEmoji: z.string(),
@@ -147,6 +155,11 @@ export const campaignRouter = createTRPCRouter({
       ...input,
       gameId: finalGameId,
       userId: ctx.userId,
+      // Transform conditions to ensure config is null instead of undefined
+      conditions: input.conditions?.map((c) => ({
+        ...c,
+        config: c.config ?? null,
+      })),
     });
 
     if (!result.success) {

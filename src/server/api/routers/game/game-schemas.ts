@@ -17,7 +17,7 @@ export const createGameSchema = z.object({
     'DICE',
     'MYSTERY_BOX',
   ]),
-  config: z.record(z.string(), z.unknown()), // JSON config flexible selon le type de jeu
+  config: z.unknown(), // JSON config flexible selon le type de jeu
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   vibrationEnabled: z.boolean().default(true),
@@ -27,7 +27,7 @@ export const createGameSchema = z.object({
 export const updateGameSchema = z.object({
   id: z.string().cuid(),
   name: z.string().min(1).optional(),
-  config: z.record(z.string(), z.unknown()).optional(),
+  config: z.unknown().optional(),
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/)
@@ -42,7 +42,7 @@ export const updateGameSchema = z.object({
 
 export const recordGamePlaySchema = z.object({
   gameId: z.string().cuid(),
-  result: z.record(z.string(), z.unknown()), // Résultat flexible selon le type de jeu
+  result: z.unknown(), // Résultat flexible selon le type de jeu
   prizeWon: z.string().optional(),
   prizeValue: z.number().optional(),
 });

@@ -79,7 +79,7 @@ export class PrismaCampaignRepository implements CampaignRepository {
                   title: condition.title,
                   description: condition.description,
                   iconEmoji: condition.iconEmoji,
-                  config: condition.config,
+                  config: condition.config ?? undefined,
                   redirectUrl: condition.redirectUrl,
                   isRequired: condition.isRequired,
                   enablesGame: condition.enablesGame ?? true, // Par défaut, les conditions donnent accès au jeu

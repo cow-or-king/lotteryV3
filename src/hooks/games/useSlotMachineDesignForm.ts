@@ -36,10 +36,14 @@ export function useSlotMachineDesignForm() {
   useEffect(() => {
     if (existingGame && existingGame.type === 'SLOT_MACHINE') {
       // Parser la config depuis JSON
-      const parsedConfig =
-        typeof existingGame.config === 'string'
-          ? JSON.parse(existingGame.config)
-          : existingGame.config;
+      // Helper function to extract config and avoid type inference issues
+      const extractConfig = (game: typeof existingGame): unknown => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (game as any).config;
+      };
+
+      const config = extractConfig(existingGame);
+      const parsedConfig: unknown = typeof config === 'string' ? JSON.parse(config) : config;
 
       setDesign(parsedConfig as SlotMachineDesignConfig);
       setDesignName(existingGame.name);
@@ -47,17 +51,24 @@ export function useSlotMachineDesignForm() {
   }, [existingGame]);
 
   // Mutations
-  const createGame = api.game.saveSlotMachineDesign.useMutation({
+  type MutationOptions = {
+    onSuccess: () => void;
+    onError: (error: unknown) => void;
+  };
+
+  const createGameOptions: MutationOptions = {
     onSuccess: () => {
       void utils.game.list.invalidate();
       toast.success('Machine à sous créée avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error('Error creating slot machine:', error);
       toast.error('Erreur lors de la création de la machine à sous');
     },
-  });
+  };
+
+  const createGame = api.game.saveSlotMachineDesign.useMutation(createGameOptions);
 
   const updateGame = api.game.update.useMutation({
     onSuccess: () => {
@@ -66,7 +77,7 @@ export function useSlotMachineDesignForm() {
       toast.success('Machine à sous mise à jour avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error('Error updating slot machine:', error);
       toast.error('Erreur lors de la mise à jour de la machine à sous');
     },
