@@ -31,6 +31,7 @@ function extractDesignData(design: WheelDesignConfig) {
     createdAt: _createdAt,
     updatedAt: _updatedAt,
     ...designData
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = design as any;
   return designData;
 }

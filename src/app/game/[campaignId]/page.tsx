@@ -228,6 +228,7 @@ export default function GamePage() {
     // Par défaut
     console.log('⚠️ État par défaut: loading');
     setCurrentStep('loading');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conditionsProgress, gameUser, isCompletingCondition, completeConditionMutation.isPending]);
 
   const handlePlay = async () => {
