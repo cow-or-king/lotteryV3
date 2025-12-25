@@ -54,10 +54,9 @@ export function useWheelDesignForm() {
   useEffect(() => {
     if (existingDesign) {
       // Parser les segments depuis JSON si nécessaire
-      const parsedSegments =
-        typeof existingDesign.segments === 'string'
-          ? JSON.parse(existingDesign.segments)
-          : existingDesign.segments;
+      // Type assertion to avoid deep instantiation issues
+      const segments = (existingDesign as { segments: unknown }).segments;
+      const parsedSegments = typeof segments === 'string' ? JSON.parse(segments) : segments;
 
       // Extract only WheelDesignConfig properties, excluding database fields
       setDesign({
@@ -88,29 +87,37 @@ export function useWheelDesignForm() {
     }
   }, [existingDesign]);
 
-  // Mutations
-  const createDesign = api.wheelDesign.create.useMutation({
+  // Mutations - Extract options to avoid type instantiation depth issues
+  type MutationOptions = {
+    onSuccess: () => void;
+    onError: (error: unknown) => void;
+  };
+
+  const createDesignOptions: MutationOptions = {
     onSuccess: () => {
-      utils.wheelDesign.list.invalidate();
+      void utils.wheelDesign.list.invalidate();
       toast.success('Design créé avec succès');
       router.push('/dashboard/games');
     },
     onError: (_error) => {
       toast.error('Erreur lors de la création du design');
     },
-  });
+  };
 
-  const updateDesign = api.wheelDesign.update.useMutation({
+  const updateDesignOptions: MutationOptions = {
     onSuccess: () => {
-      utils.wheelDesign.list.invalidate();
-      utils.wheelDesign.getById.invalidate();
+      void utils.wheelDesign.list.invalidate();
+      void utils.wheelDesign.getById.invalidate();
       toast.success('Design mis à jour avec succès');
       router.push('/dashboard/games');
     },
     onError: (_error) => {
       toast.error('Erreur lors de la mise à jour du design');
     },
-  });
+  };
+
+  const createDesign = api.wheelDesign.create.useMutation(createDesignOptions);
+  const updateDesign = api.wheelDesign.update.useMutation(updateDesignOptions);
 
   // Handlers
   const handleSaveDesign = () => {

@@ -71,7 +71,7 @@ export function useSlotMachineDesignForm() {
 
   const createGame = api.game.saveSlotMachineDesign.useMutation(createGameOptions);
 
-  const updateGame = api.game.update.useMutation({
+  const updateGameOptions: MutationOptions = {
     onSuccess: () => {
       void utils.game.list.invalidate();
       void utils.game.getById.invalidate();
@@ -81,7 +81,9 @@ export function useSlotMachineDesignForm() {
     onError: (_error) => {
       toast.error('Erreur lors de la mise à jour de la machine à sous');
     },
-  });
+  };
+
+  const updateGame = api.game.update.useMutation(updateGameOptions);
 
   // Handlers
   const handleSaveDesign = () => {
