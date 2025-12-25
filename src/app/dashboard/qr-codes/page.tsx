@@ -89,8 +89,7 @@ export default function QRCodesPage() {
         title: 'Téléchargement réussi',
         description: 'Le QR code a été téléchargé',
       });
-    } catch (error) {
-      console.error('Failed to download QR code:', error);
+    } catch (_error) {
       toast({
         title: 'Erreur',
         description: 'Impossible de télécharger le QR code',

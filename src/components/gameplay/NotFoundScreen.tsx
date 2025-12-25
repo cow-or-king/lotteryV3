@@ -4,7 +4,7 @@
 
 export function NotFoundScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen flex items-center justify-center relative bg-linear-to-br from-purple-50 via-white to-pink-50">
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-20 -left-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl opacity-30 animate-blob"></div>

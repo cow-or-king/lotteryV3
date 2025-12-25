@@ -24,8 +24,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       }
 
       return this.toDomainEntity(subscription);
-    } catch (error) {
-      console.error('Error finding subscription by ID:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -41,8 +40,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       }
 
       return this.toDomainEntity(subscription);
-    } catch (error) {
-      console.error('Error finding subscription by user:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -58,8 +56,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       }
 
       return this.toDomainEntity(subscription);
-    } catch (error) {
-      console.error('Error finding subscription by Stripe customer ID:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -77,8 +74,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       }
 
       return this.toDomainEntity(subscription);
-    } catch (error) {
-      console.error('Error finding subscription by Stripe subscription ID:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -210,8 +206,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       });
 
       return subscriptions.map((sub) => this.toDomainEntity(sub));
-    } catch (error) {
-      console.error('Error finding expired subscriptions:', error);
+    } catch (_error) {
       return [];
     }
   }
@@ -229,8 +224,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       });
 
       return subscriptions.map((sub) => this.toDomainEntity(sub));
-    } catch (error) {
-      console.error('Error finding subscriptions to renew:', error);
+    } catch (_error) {
       return [];
     }
   }
@@ -250,8 +244,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
       ]);
 
       return { FREE: free, STARTER: starter, PROFESSIONAL: professional, ENTERPRISE: enterprise };
-    } catch (error) {
-      console.error('Error counting subscriptions by plan:', error);
+    } catch (_error) {
       return { FREE: 0, STARTER: 0, PROFESSIONAL: 0, ENTERPRISE: 0 };
     }
   }
@@ -279,8 +272,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         EXPIRED: expired,
         SUSPENDED: suspended,
       };
-    } catch (error) {
-      console.error('Error counting subscriptions by status:', error);
+    } catch (_error) {
       return { ACTIVE: 0, TRIAL: 0, CANCELLED: 0, EXPIRED: 0, SUSPENDED: 0 };
     }
   }
@@ -352,8 +344,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         canCreateStore: storesUsed < subscription.storesLimit,
         canCreateCampaign: campaignsUsed < subscription.campaignsLimit,
       };
-    } catch (error) {
-      console.error('Error checking user limits:', error);
+    } catch (_error) {
       return {
         storesUsed: 0,
         storesLimit: 0,

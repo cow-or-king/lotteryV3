@@ -44,8 +44,7 @@ export class AiResponseGeneratorService implements IAiResponseGeneratorService {
       });
 
       return config !== null;
-    } catch (error) {
-      console.error('[AI Service] Error checking availability:', error);
+    } catch (_error) {
       return false;
     }
   }
@@ -63,8 +62,7 @@ export class AiResponseGeneratorService implements IAiResponseGeneratorService {
       });
 
       return config?.provider || null;
-    } catch (error) {
-      console.error('[AI Service] Error getting provider:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -110,7 +108,6 @@ export class AiResponseGeneratorService implements IAiResponseGeneratorService {
 
       return Result.ok(result);
     } catch (error) {
-      console.error('[AI Service] Generation error:', error);
       return Result.fail(error as Error);
     }
   }
@@ -272,8 +269,7 @@ Génère une réponse appropriée en ${input.language === 'fr' ? 'français' : '
           totalTokensUsed: { increment: tokensUsed },
         },
       });
-    } catch (error) {
-      console.error('[AI Service] Error updating stats:', error);
+    } catch (_error) {
       // Non-blocking, on ne throw pas
     }
   }

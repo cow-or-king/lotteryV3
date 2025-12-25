@@ -111,8 +111,13 @@ export default function WheelGame({
         // Extraire l'angle de rotation depuis la matrice
         const values = matrix.split('(')[1]?.split(')')[0]?.split(',');
         if (values && values.length >= 6) {
-          const a = parseFloat(values[0]!);
-          const b = parseFloat(values[1]!);
+          const val0 = values[0];
+          const val1 = values[1];
+          if (!val0 || !val1) {
+            return;
+          }
+          const a = parseFloat(val0);
+          const b = parseFloat(val1);
           const angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
           const normalizedAngle = (angle + 360) % 360;
 

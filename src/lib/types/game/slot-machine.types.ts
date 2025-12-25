@@ -167,5 +167,9 @@ export const DEFAULT_SLOT_MACHINE_DESIGNS: Record<string, SlotMachineDesignConfi
 };
 
 export function getDefaultSlotMachineDesign(): SlotMachineDesignConfig {
-  return DEFAULT_SLOT_MACHINE_DESIGNS.classic!;
+  const classic = DEFAULT_SLOT_MACHINE_DESIGNS.classic;
+  if (!classic) {
+    throw new Error('Default slot machine design not found');
+  }
+  return classic;
 }

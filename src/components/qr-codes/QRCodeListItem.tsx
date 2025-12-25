@@ -67,8 +67,8 @@ export default function QRCodeListItem({
           logoSize: qrCode.logoSize || undefined,
         });
         setQrCodeDataUrl(result.dataUrl);
-      } catch (error) {
-        console.error('Failed to generate QR code preview:', error);
+      } catch (_error) {
+        // Failed to generate QR code preview, will show loading state
       }
     };
 

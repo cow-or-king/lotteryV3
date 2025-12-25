@@ -95,8 +95,7 @@ export function useWheelDesignForm() {
       toast.success('Design créé avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
-      console.error('Error creating design:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la création du design');
     },
   });
@@ -108,8 +107,7 @@ export function useWheelDesignForm() {
       toast.success('Design mis à jour avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
-      console.error('Error updating design:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la mise à jour du design');
     },
   });

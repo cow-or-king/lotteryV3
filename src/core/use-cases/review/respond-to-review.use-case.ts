@@ -97,7 +97,6 @@ export class RespondToReviewUseCase {
     // 6. Publier la réponse sur Google My Business
     const store = await this.storeRepository.findById(updatedReview.storeId);
     if (!store) {
-      console.error('[RespondToReview] Store not found:', updatedReview.storeId);
       return Result.fail(new Error('Store not found'));
     }
 
@@ -114,7 +113,6 @@ export class RespondToReviewUseCase {
     );
 
     if (!publishResult.success) {
-      console.error('[RespondToReview] Failed to publish to Google:', publishResult.error.message);
       // IMPORTANT: La réponse a été sauvegardée en DB mais pas publiée sur Google
       // On pourrait retourner un succès partiel ici, ou fail complètement
       return Result.fail(
@@ -128,12 +126,20 @@ export class RespondToReviewUseCase {
     }
 
     // 8. Retourner les informations de la réponse
+    if (
+      !updatedReview.responseContent ||
+      !updatedReview.respondedBy ||
+      !updatedReview.respondedAt
+    ) {
+      return Result.fail(new Error('Response was not properly saved - missing response data'));
+    }
+
     return Result.ok({
       reviewId: updatedReview.id,
       hasResponse: updatedReview.hasResponse,
-      responseContent: updatedReview.responseContent!,
-      respondedBy: updatedReview.respondedBy!,
-      respondedAt: updatedReview.respondedAt!,
+      responseContent: updatedReview.responseContent,
+      respondedBy: updatedReview.respondedBy,
+      respondedAt: updatedReview.respondedAt,
     });
   }
 }

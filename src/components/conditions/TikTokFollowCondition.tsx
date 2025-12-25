@@ -67,7 +67,7 @@ export function TikTokFollowCondition({
         </div>
         <div className="h-2 bg-white/70 backdrop-blur-xl rounded-full overflow-hidden border border-white/30">
           <div
-            className="h-full bg-gradient-to-r from-black via-gray-800 to-gray-900 rounded-full transition-all duration-500"
+            className="h-full bg-linear-to-r from-black via-gray-800 to-gray-900 rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -75,7 +75,7 @@ export function TikTokFollowCondition({
 
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-black to-gray-800 rounded-full mb-4 shadow-lg">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-black to-gray-800 rounded-full mb-4 shadow-lg">
           <span className="text-3xl">{condition.iconEmoji || '🎵'}</span>
         </div>
         <h1 className="text-4xl font-bold text-gray-800 mb-3">
@@ -92,7 +92,7 @@ export function TikTokFollowCondition({
           <div className="flex-shrink-0">
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${
-                hasClickedFollow ? 'bg-green-500' : 'bg-gradient-to-br from-black to-gray-800'
+                hasClickedFollow ? 'bg-green-500' : 'bg-linear-to-br from-black to-gray-800'
               }`}
             >
               {hasClickedFollow ? '✓' : '🎵'}
@@ -109,7 +109,7 @@ export function TikTokFollowCondition({
             {!hasClickedFollow ? (
               <button
                 onClick={handleFollowClick}
-                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-black to-gray-800 text-white font-bold text-lg rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all"
+                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-linear-to-r from-black to-gray-800 text-white font-bold text-lg rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />

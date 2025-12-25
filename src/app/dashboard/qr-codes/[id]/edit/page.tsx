@@ -121,9 +121,8 @@ export default function EditQRCodePage() {
       if (logoStoragePath) {
         try {
           await deleteLogoMutation.mutateAsync({ storagePath: logoStoragePath });
-        } catch (error) {
+        } catch (_error) {
           // Continue even if delete fails
-          console.error('Failed to delete old logo:', error);
         }
       }
 

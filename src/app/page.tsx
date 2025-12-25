@@ -10,14 +10,14 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 via-white to-cyan-50">
       {/* Header / Navbar */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
               <Image src="/badge.png" alt="Connect & Boost" width={40} height={40} />
-              <span className="text-2xl font-bold bg-gradient-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-linear-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
                 Connect & Boost
               </span>
             </div>
@@ -53,7 +53,7 @@ export default function HomePage() {
             Connectez et Boostez
             <br />
             votre{' '}
-            <span className="bg-gradient-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-cb-yellow via-cb-magenta to-cb-cyan bg-clip-text text-transparent">
               engagement client
             </span>
           </h1>

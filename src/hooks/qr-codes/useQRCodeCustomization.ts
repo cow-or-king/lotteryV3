@@ -128,9 +128,8 @@ export function useQRCodeCustomization({
       });
 
       window.location.reload();
-    } catch (error) {
-      console.error('Erreur personnalisation:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la personnalisation');
+    } catch (_error) {
+      toast.error(_error instanceof Error ? _error.message : 'Erreur lors de la personnalisation');
     }
   };
 
@@ -152,9 +151,8 @@ export function useQRCodeCustomization({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error('Erreur export:', error);
-      toast.error(error instanceof Error ? error.message : "Erreur lors de l'export");
+    } catch (_error) {
+      toast.error(_error instanceof Error ? _error.message : "Erreur lors de l'export");
     }
   };
 

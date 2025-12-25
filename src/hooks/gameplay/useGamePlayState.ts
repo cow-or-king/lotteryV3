@@ -56,8 +56,8 @@ export function useGamePlayState(campaignId: string) {
           name: userData.name || 'Joueur',
           email: userData.email || '',
         });
-      } catch (error) {
-        console.error('Error parsing user cookie:', error);
+      } catch (_error) {
+        // Error parsing user cookie, ignore
       }
     }
   }, []);

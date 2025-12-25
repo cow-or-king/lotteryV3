@@ -175,7 +175,11 @@ export function suggestGameTemplate(numberOfPrizes: number): GameTemplate {
   }
 
   // Pour plus de 8 prizes ou moins de 3, utiliser la slot machine
-  return SLOT_MACHINE_TEMPLATES.SLOT_MACHINE_CLASSIC!;
+  const slotMachineClassic = SLOT_MACHINE_TEMPLATES.SLOT_MACHINE_CLASSIC;
+  if (!slotMachineClassic) {
+    throw new Error('Slot machine classic template not found');
+  }
+  return slotMachineClassic;
 }
 
 /**
@@ -254,10 +258,12 @@ export function generateGameConfigFromTemplate(
         // Prizes rares (5-15%)
         // Patterns : 3 symboles rares identiques
         const symbol = SLOT_SYMBOLS[Math.min(prizeIndex - 2, SLOT_SYMBOLS.length - 1)];
-        winningPatterns.push({
-          symbols: [symbol!, symbol!, symbol!] as [string, string, string],
-          prizeIndex,
-        });
+        if (symbol) {
+          winningPatterns.push({
+            symbols: [symbol, symbol, symbol] as [string, string, string],
+            prizeIndex,
+          });
+        }
       }
     });
 

@@ -49,7 +49,11 @@ export namespace Result {
   > => {
     const errors = results.filter(Result.isFail);
     if (errors.length > 0) {
-      return Result.fail(errors[0]!.error) as never;
+      const firstError = errors[0];
+      if (!firstError) {
+        throw new Error('Unexpected: errors array is empty after length check');
+      }
+      return Result.fail(firstError.error) as never;
     }
 
     const values = results.map((r) => (r as { success: true; data: unknown }).data);

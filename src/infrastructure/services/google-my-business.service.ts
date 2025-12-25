@@ -35,11 +35,10 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
    */
   async fetchReviews(
     googlePlaceId: string,
-    options?: FetchReviewsOptions,
+    _options?: FetchReviewsOptions,
   ): Promise<Result<readonly GoogleReviewData[]>> {
     try {
-      // STUB: Log pour debug
-      console.log(`[STUB] Fetching reviews for place ${googlePlaceId}`, options);
+      // STUB: Fetch reviews implementation placeholder
 
       // STUB: Retourne un tableau vide
       // En production, faire l'appel API réel ici
@@ -83,15 +82,12 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
    * ```
    */
   async publishResponse(
-    googleReviewId: string,
-    responseContent: string,
-    apiKey: string,
+    _googleReviewId: string,
+    _responseContent: string,
+    _apiKey: string,
   ): Promise<Result<void>> {
     try {
-      // STUB: Log pour debug
-      console.log(`[STUB] Publishing response to review ${googleReviewId}`);
-      console.log(`[STUB] Response content: ${responseContent.substring(0, 50)}...`);
-      console.log(`[STUB] API Key provided: ${apiKey ? 'YES' : 'NO'}`);
+      // STUB: Publish response implementation placeholder
 
       // STUB: En production, décrypter apiKey et faire l'appel API
       // const decryptedKey = await decrypt(apiKey);
@@ -114,8 +110,7 @@ export class GoogleMyBusinessService implements IGoogleMyBusinessService {
    */
   async validateCredentials(apiKey: string): Promise<Result<boolean>> {
     try {
-      // STUB: Log pour debug
-      console.log(`[STUB] Validating API credentials`);
+      // STUB: Validate credentials implementation placeholder
 
       if (!apiKey || apiKey.trim().length === 0) {
         return Result.ok(false);

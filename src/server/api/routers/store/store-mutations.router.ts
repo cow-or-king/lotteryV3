@@ -153,8 +153,8 @@ export const storeMutationsRouter = createTRPCRouter({
             where: { id: result.data.brandId },
             data: { logoUrl: url },
           });
-        } catch (error) {
-          console.error('Erreur upload logo:', error);
+        } catch (_error) {
+          // Error uploading logo, continue without logo
         }
       }
 
@@ -164,8 +164,8 @@ export const storeMutationsRouter = createTRPCRouter({
         storeName: result.data.name,
         storeSlug: result.data.slug,
         userId: ctx.user.id,
-      }).catch((error) => {
-        console.error('Erreur génération QR Code par défaut:', error);
+      }).catch((_error) => {
+        // Error generating default QR code, continue
       });
 
       const brand = await prisma.brand.findUnique({

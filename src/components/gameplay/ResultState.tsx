@@ -27,14 +27,14 @@ export function ResultState({ result }: ResultStateProps) {
     return (
       <div className="text-center py-8">
         <div className="inline-block bg-white/70 backdrop-blur-xl border border-white/30 px-6 py-3 rounded-full text-sm font-semibold mb-6 shadow-lg">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 font-bold">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600 font-bold">
             ✓ Participation validée
           </span>
         </div>
 
         <h1 className="text-5xl font-bold text-gray-800 mb-2">
           Vous avez{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600">
             gagné
           </span>
         </h1>
@@ -43,7 +43,7 @@ export function ResultState({ result }: ResultStateProps) {
         {/* Prize Info */}
         <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl overflow-hidden mb-6">
           <div className="p-8 text-center border-b border-white/30">
-            <div className="inline-block bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl p-8 mb-6 shadow-lg">
+            <div className="inline-block bg-linear-to-br from-yellow-400 to-orange-500 rounded-3xl p-8 mb-6 shadow-lg">
               <span className="text-7xl">🎁</span>
             </div>
             <h2 className="text-4xl font-bold text-gray-800 mb-3">{result.prize.name}</h2>
@@ -52,7 +52,7 @@ export function ResultState({ result }: ResultStateProps) {
             )}
             {result.prize.value && (
               <div className="inline-block bg-white/70 backdrop-blur-xl border border-white/30 px-5 py-2.5 rounded-full border-purple-200 shadow">
-                <span className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                <span className="text-sm font-semibold text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600">
                   Valeur: {result.prize.value}€
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function ResultState({ result }: ResultStateProps) {
                   Code de réclamation
                 </p>
                 <div className="bg-white/70 backdrop-blur-xl border-2 border-purple-300 rounded-2xl p-6 mb-6 shadow-lg">
-                  <div className="font-mono text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 tracking-wider">
+                  <div className="font-mono text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600 tracking-wider">
                     {result.claimCode}
                   </div>
                 </div>
@@ -75,7 +75,7 @@ export function ResultState({ result }: ResultStateProps) {
 
               {/* Actions */}
               <div className="space-y-3">
-                <button className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl transform hover:scale-105 transition-all shadow-xl">
+                <button className="w-full px-6 py-4 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl transform hover:scale-105 transition-all shadow-xl">
                   Copier le code
                 </button>
                 <button className="w-full px-6 py-4 bg-white/70 backdrop-blur-xl border border-white/30 text-gray-800 font-semibold rounded-2xl hover:bg-white/50 transition-all border-purple-200 shadow">
@@ -95,7 +95,7 @@ export function ResultState({ result }: ResultStateProps) {
 
   return (
     <div className="text-center py-8">
-      <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 mb-6">
+      <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-linear-to-br from-gray-200 to-gray-300 mb-6">
         <Gift className="h-16 w-16 text-gray-600" />
       </div>
       <h2 className="text-4xl font-bold text-gray-800 mb-4">Pas de chance cette fois...</h2>

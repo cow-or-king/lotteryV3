@@ -101,5 +101,9 @@ export const DEFAULT_SCRATCH_DESIGNS: Record<string, ScratchDesignConfig> = {
 };
 
 export function getDefaultScratchDesign(): ScratchDesignConfig {
-  return DEFAULT_SCRATCH_DESIGNS.classic!;
+  const classic = DEFAULT_SCRATCH_DESIGNS.classic;
+  if (!classic) {
+    throw new Error('Default scratch design not found');
+  }
+  return classic;
 }

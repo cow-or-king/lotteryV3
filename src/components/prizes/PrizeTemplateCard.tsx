@@ -118,7 +118,9 @@ export function PrizeTemplateCard({
               ? `entre ${template.minPrice.toFixed(2)}€ et ${template.maxPrice.toFixed(2)}€`
               : template.minPrice !== null
                 ? `${template.minPrice.toFixed(2)}€`
-                : `${template.maxPrice!.toFixed(2)}€`}
+                : template.maxPrice !== null
+                  ? `${template.maxPrice.toFixed(2)}€`
+                  : ''}
           </>
         )}
       </div>

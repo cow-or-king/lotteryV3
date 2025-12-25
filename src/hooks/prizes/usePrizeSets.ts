@@ -64,8 +64,8 @@ export function usePrizeSets(prizeTemplates: PrizeTemplate[] | undefined) {
 
   // Handlers
   const handleOpenCreateForm = (brands: Array<{ id: string }>) => {
-    if (brands.length === 1) {
-      setFormData({ ...formData, brandId: brands[0]!.id });
+    if (brands.length === 1 && brands[0]) {
+      setFormData({ ...formData, brandId: brands[0].id });
     }
     setSelectedItems([]);
     setShowCreateForm(true);

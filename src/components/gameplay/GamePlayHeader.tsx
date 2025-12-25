@@ -26,7 +26,7 @@ export function GamePlayHeader({ campaign, mockUser }: GamePlayHeaderProps) {
       {mockUser && (
         <p className="text-lg text-gray-700">
           Bienvenue,{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 font-semibold">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600 font-semibold">
             {mockUser.name}
           </span>
         </p>

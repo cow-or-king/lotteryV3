@@ -36,7 +36,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     if (!result.success) {
-      console.error('Failed to upsert GameUser:', result.error);
       return NextResponse.json({ error: 'Failed to create/update game user' }, { status: 500 });
     }
 
@@ -44,8 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: true,
       data: result.data,
     });
-  } catch (err) {
-    console.error('Game user API error:', err);
+  } catch (_err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

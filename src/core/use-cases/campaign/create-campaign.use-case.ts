@@ -194,9 +194,8 @@ export class CreateCampaignUseCase {
         try {
           await this.qrCodeRepo.updateCampaignUrl(store.defaultQrCodeId, campaign.id);
           qrCodeUpdated = true;
-        } catch (error) {
+        } catch (_error) {
           // Log l'erreur mais ne pas faire échouer la création
-          console.error('Erreur lors de la mise à jour du QR Code:', error);
         }
       }
     }

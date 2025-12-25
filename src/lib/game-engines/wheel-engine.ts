@@ -90,7 +90,11 @@ export class WheelEngine {
     }
 
     // Fallback au dernier segment (ne devrait jamais arriver avec validation correcte)
-    return this.config.segments[this.config.segments.length - 1]!;
+    const lastSegment = this.config.segments[this.config.segments.length - 1];
+    if (!lastSegment) {
+      throw new Error('Wheel configuration error: no segments available');
+    }
+    return lastSegment;
   }
 
   /**

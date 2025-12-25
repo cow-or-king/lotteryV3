@@ -156,7 +156,11 @@ export default function StoresPage() {
         storeBrand={
           storesHook.editingStore && storesHook.stores
             ? (() => {
-                const store = storesHook.stores.find((s) => s.id === storesHook.editingStore!.id);
+                const editingStore = storesHook.editingStore;
+                if (!editingStore) {
+                  return null;
+                }
+                const store = storesHook.stores.find((s) => s.id === editingStore.id);
                 return store
                   ? {
                       brandName: store.brandName,

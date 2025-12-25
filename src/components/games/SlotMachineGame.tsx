@@ -48,7 +48,6 @@ export default function SlotMachineGame({
 
   // Validation de la config (APRÈS les hooks)
   if (!config.symbols || config.symbols.length === 0) {
-    console.error('❌ Invalid slot machine config: symbols are missing or empty', config);
     return (
       <div className="text-center p-8">
         <div className="inline-block p-6 bg-red-50 rounded-lg">
@@ -143,13 +142,16 @@ export default function SlotMachineGame({
       }, stopDelays[reelIndex]);
 
       // Sauvegarder la position du rouleau
-      setTimeout(() => {
-        setReelPositions((prev) => {
-          const newPositions = [...prev] as [number, number, number];
-          newPositions[reelIndex] = sequence.length - 1;
-          return newPositions;
-        });
-      }, config.spinDuration + stopDelays[reelIndex]!);
+      setTimeout(
+        () => {
+          setReelPositions((prev) => {
+            const newPositions = [...prev] as [number, number, number];
+            newPositions[reelIndex] = sequence.length - 1;
+            return newPositions;
+          });
+        },
+        config.spinDuration + (stopDelays[reelIndex] ?? 0),
+      );
     });
 
     // Attendre que tous les rouleaux s'arrêtent
@@ -168,11 +170,25 @@ export default function SlotMachineGame({
       setIsSpinning(false);
 
       // Récupérer la combinaison finale
-      const finalCombination: [string, string, string] = [
-        sequences[0]![sequences[0]!.length - 1]!,
-        sequences[1]![sequences[1]!.length - 1]!,
-        sequences[2]![sequences[2]!.length - 1]!,
-      ];
+      const seq0 = sequences[0];
+      const seq1 = sequences[1];
+      const seq2 = sequences[2];
+
+      if (!seq0 || !seq1 || !seq2) {
+        console.error('Missing sequence data');
+        return;
+      }
+
+      const symbol0 = seq0[seq0.length - 1];
+      const symbol1 = seq1[seq1.length - 1];
+      const symbol2 = seq2[seq2.length - 1];
+
+      if (!symbol0 || !symbol1 || !symbol2) {
+        console.error('Missing final symbols');
+        return;
+      }
+
+      const finalCombination: [string, string, string] = [symbol0, symbol1, symbol2];
 
       // Attendre 2 secondes avant d'afficher le résultat
       setTimeout(() => {
@@ -209,7 +225,7 @@ export default function SlotMachineGame({
             transform: 'translateY(0)',
           }}
         >
-          {sequence!.map((symbolIcon, index) => {
+          {sequence.map((symbolIcon, index) => {
             const symbol = config.symbols.find((s) => s.icon === symbolIcon);
             return (
               <div

@@ -50,13 +50,10 @@ export function useCreateCampaign() {
       utils.campaign.listByStore.invalidate();
       utils.campaign.listAll.invalidate(); // Rafraîchir la liste complète aussi
     },
-    onError: (error) => {
-      console.error('❌ Campaign creation error:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error data:', error.data);
+    onError: (_error) => {
       toast({
         title: 'Erreur',
-        description: error.message,
+        description: _error.message,
         variant: 'error',
       });
     },

@@ -71,7 +71,6 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
       });
 
       // 1. Lister les comptes My Business
-      console.log('[GMB] Fetching My Business accounts...');
       const accountsResponse = await mybusinessaccountmanagement.accounts.list();
       const accounts = accountsResponse.data.accounts || [];
 
@@ -84,17 +83,13 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
         return Result.fail(new Error('Account name is missing'));
       }
 
-      console.log('[GMB] Found account:', accountName);
-
       // 2. Lister les locations (établissements) de ce compte
-      console.log('[GMB] Fetching locations...');
       const locationsResponse = await mybusinessbusinessinformation.accounts.locations.list({
         parent: accountName,
         readMask: 'name,title,storeCode,metadata',
       });
 
       const locations = locationsResponse.data.locations || [];
-      console.log(`[GMB] Found ${locations.length} locations`);
 
       // 3. Trouver la location correspondant au Place ID
       const targetLocation = locations.find(
@@ -102,29 +97,18 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
       );
 
       if (!targetLocation || !targetLocation.name) {
-        console.error(
-          '[GMB] Available locations:',
-          locations.map((l) => ({
-            name: l.name,
-            title: l.title,
-            placeId: l.metadata?.placeId,
-          })),
-        );
         return Result.fail(
           new Error(
-            `Location not found for Place ID: ${googlePlaceId}. Check available locations in logs.`,
+            `Location not found for Place ID: ${googlePlaceId}. Found ${locations.length} locations but none matched.`,
           ),
         );
       }
 
-      console.log('[GMB] Found target location:', targetLocation.title, targetLocation.name);
-
       // 4. Récupérer les avis pour cette location
       // Note: L'API My Business v4.9 pour les reviews n'est plus disponible
       // Pour l'instant, on retourne un tableau vide avec un message explicatif
-
-      console.warn('[GMB] ⚠️  Google My Business API v4 (reviews) is deprecated.');
-      console.warn('[GMB] ⚠️  Review fetching needs to be implemented with the new API endpoints.');
+      // ⚠️ Google My Business API v4 (reviews) is deprecated.
+      // ⚠️ Review fetching needs to be implemented with the new API endpoints.
 
       // Stub reviews (en attendant l'implémentation complète)
       const stubReviews: GoogleReviewData[] = [
@@ -140,7 +124,6 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
 
       return Result.ok(stubReviews);
     } catch (error) {
-      console.error('[GMB] Error fetching reviews:', error);
       return Result.fail(new Error('Failed to fetch reviews: ' + (error as Error).message));
     }
   }
@@ -157,9 +140,6 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
   ): Promise<Result<void>> {
     try {
       const auth = await this.getAuthClient(apiKey);
-
-      console.log('[GMB] Publishing response to review:', googleReviewName);
-      console.log('[GMB] Response content:', responseContent);
 
       // Format requis: locations/{locationId}/reviews/{reviewId}
       // Si le format inclut "accounts/", on l'extrait
@@ -205,14 +185,11 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[GMB] API Error:', response.status, errorText);
         return Result.fail(new Error(`API request failed (${response.status}): ${errorText}`));
       }
 
-      console.log('[GMB] ✅ Response published successfully');
       return Result.ok(undefined);
     } catch (error) {
-      console.error('[GMB] Error publishing response:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return Result.fail(new Error(`Failed to publish response: ${errorMessage}`));
     }
@@ -233,8 +210,7 @@ export class GoogleMyBusinessProductionService implements IGoogleMyBusinessServi
       const response = await mybusinessaccountmanagement.accounts.list();
 
       return Result.ok((response.data.accounts?.length || 0) > 0);
-    } catch (error) {
-      console.error('[GMB] Validation error:', error);
+    } catch (_error) {
       return Result.ok(false);
     }
   }

@@ -25,8 +25,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       }
 
       return this.toDomainEntity(user);
-    } catch (error) {
-      console.error('Error finding user by ID:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -42,8 +41,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       }
 
       return this.toDomainEntity(user);
-    } catch (error) {
-      console.error('Error finding user by email:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -55,8 +53,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       });
 
       return count > 0;
-    } catch (error) {
-      console.error('Error checking if email exists:', error);
+    } catch (_error) {
       return false;
     }
   }
@@ -114,8 +111,7 @@ export class UserRepositoryPrisma implements IUserRepository {
           },
         },
       });
-    } catch (error) {
-      console.error('Error counting user stores:', error);
+    } catch (_error) {
       return 0;
     }
   }
@@ -134,8 +130,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       });
 
       return users.map((user) => this.toDomainEntity(user));
-    } catch (error) {
-      console.error('Error finding all users:', error);
+    } catch (_error) {
       return [];
     }
   }

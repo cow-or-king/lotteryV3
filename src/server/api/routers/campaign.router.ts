@@ -351,8 +351,8 @@ export const campaignRouter = createTRPCRouter({
         if (store?.defaultQrCodeId) {
           try {
             await qrCodeRepo.updateCampaignUrl(store.defaultQrCodeId, input.id);
-          } catch (error) {
-            console.error('Erreur lors de la mise à jour du QR Code:', error);
+          } catch (_error) {
+            // Error updating QR Code, continue
           }
         }
       } else {

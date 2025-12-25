@@ -14,10 +14,17 @@ import type { IAuthProvider, AuthUser, AuthTokens } from '@/core/ports/auth.port
 export type { AuthUser, AuthTokens };
 
 /**
- * Configuration Supabase
+ * Configuration Supabase - Validate at module load
  */
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing Supabase configuration: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set',
+  );
+}
+
+// Type-safe constants after validation
+const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * Service d'authentification Supabase

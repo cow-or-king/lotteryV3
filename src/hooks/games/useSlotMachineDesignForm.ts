@@ -64,8 +64,7 @@ export function useSlotMachineDesignForm() {
       toast.success('Machine à sous créée avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error: unknown) => {
-      console.error('Error creating slot machine:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la création de la machine à sous');
     },
   };
@@ -79,8 +78,7 @@ export function useSlotMachineDesignForm() {
       toast.success('Machine à sous mise à jour avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error: unknown) => {
-      console.error('Error updating slot machine:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la mise à jour de la machine à sous');
     },
   });

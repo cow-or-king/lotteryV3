@@ -63,12 +63,19 @@ export const qrCodeCustomizeRouter = createTRPCRouter({
           logoSize: input.logoSize,
         });
 
+        if (!result.svgUrl || !result.pngUrl || !result.customizedAt) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Customization result is incomplete',
+          });
+        }
+
         return {
           success: true,
           qrCodeId: input.qrCodeId,
-          svgUrl: result.svgUrl!,
-          pngUrl: result.pngUrl!,
-          customizedAt: result.customizedAt!,
+          svgUrl: result.svgUrl,
+          pngUrl: result.pngUrl,
+          customizedAt: result.customizedAt,
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -108,12 +115,19 @@ export const qrCodeCustomizeRouter = createTRPCRouter({
 
         logger.info(`Export QR Code ${input.qrCodeId} (${input.format}) by user ${ctx.user.id}`);
 
+        if (!result.downloadUrl) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Download URL is missing from export result',
+          });
+        }
+
         // Calculer l'expiration (1h à partir de maintenant)
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 1);
 
         return {
-          downloadUrl: result.downloadUrl!,
+          downloadUrl: result.downloadUrl,
           expiresAt,
         };
       } catch (error) {

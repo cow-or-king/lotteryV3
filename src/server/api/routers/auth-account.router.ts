@@ -41,7 +41,6 @@ export const authAccountRouter = createTRPCRouter({
     const authResult = await supabaseAuthService.signUp(input.email, input.password);
 
     if (!authResult.success) {
-      console.error('[AUTH] Erreur Supabase signUp:', authResult.error);
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: authResult.error.message,
@@ -54,19 +53,21 @@ export const authAccountRouter = createTRPCRouter({
     if (process.env.NODE_ENV === 'development') {
       try {
         const { createClient } = await import('@supabase/supabase-js');
-        const supabaseAdmin = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          { auth: { autoRefreshToken: false, persistSession: false } },
-        );
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceRoleKey) {
+          throw new Error('Missing Supabase configuration for auto-confirm');
+        }
+
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
 
         await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
           email_confirm: true,
         });
-
-        console.log(`[DEV] Email auto-confirmé pour: ${input.email}`);
-      } catch (err) {
-        console.error('[DEV] Erreur lors de la confirmation automatique:', err);
+      } catch (_err) {
         // On continue quand même, l'utilisateur pourra confirmer manuellement
       }
     }

@@ -10,8 +10,16 @@ import { sessionService } from '@/infrastructure/auth/session.service';
 import { brandUserId } from '@/lib/types/branded.type';
 import { PrismaGameUserRepository } from '@/infrastructure/repositories/prisma-gameuser.repository';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Validate environment variables at module load
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing Supabase configuration: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set',
+  );
+}
+
+// Type-safe constants after validation
+const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * GET handler pour Magic Link callback
@@ -27,7 +35,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Si erreur dans l'URL
     if (error) {
-      console.error('Auth callback error:', error, errorDescription);
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, request.url),
       );
@@ -50,7 +57,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError || !data.session) {
-      console.error('Failed to exchange code:', exchangeError);
       return NextResponse.redirect(
         new URL(
           `/login?error=${encodeURIComponent(exchangeError?.message || 'session_error')}`,
@@ -77,7 +83,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       if (!gameUserResult.success) {
-        console.error('Failed to create/update GameUser:', gameUserResult.error);
         return NextResponse.redirect(
           new URL(`/c/${campaignId}?error=game_user_creation_failed`, request.url),
         );
@@ -112,15 +117,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
       );
 
-      console.log('✅ GameUser créé/mis à jour:', gameUserResult.data.id);
-      console.log('✅ Cookies game créés, PAS de cookies admin');
       return response;
     }
 
     // Auth Admin : utiliser le système de session existant
     const userIdResult = brandUserId(user.id);
     if (!userIdResult.success) {
-      console.error('Invalid user ID from Supabase:', userIdResult.error);
       return NextResponse.redirect(new URL('/login?error=invalid_user_id', request.url));
     }
 
@@ -134,13 +136,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const sessionResult = await sessionService.createSession(tokens, userIdResult.data);
 
     if (!sessionResult.success) {
-      console.error('Failed to create session:', sessionResult.error);
       return NextResponse.redirect(new URL('/login?error=session_failed', request.url));
     }
 
     return NextResponse.redirect(new URL('/dashboard', request.url));
-  } catch (err) {
-    console.error('Auth callback GET error:', err);
+  } catch (_err) {
     return NextResponse.redirect(new URL('/login?error=unexpected_error', request.url));
   }
 }
@@ -169,7 +169,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error || !data.session) {
-      console.error('Failed to exchange code:', error);
       return NextResponse.json({ error: 'Failed to authenticate with code' }, { status: 401 });
     }
 
@@ -199,7 +198,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Auth Admin : utiliser le système de session existant
     const userIdResult = brandUserId(user.id);
     if (!userIdResult.success) {
-      console.error('Invalid user ID from Supabase:', userIdResult.error);
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 500 });
     }
 
@@ -214,7 +212,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const sessionResult = await sessionService.createSession(tokens, userIdResult.data);
 
     if (!sessionResult.success) {
-      console.error('Failed to create session:', sessionResult.error);
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
     }
 
@@ -226,8 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         email: user.email,
       },
     });
-  } catch (err) {
-    console.error('Auth callback error:', err);
+  } catch (_err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

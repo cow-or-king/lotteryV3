@@ -25,8 +25,7 @@ export async function GET() {
 
     // Rediriger vers Google OAuth
     return NextResponse.redirect(authUrl);
-  } catch (error) {
-    console.error('Error generating auth URL:', error);
+  } catch (_error) {
     return NextResponse.json({ error: 'Failed to generate authorization URL' }, { status: 500 });
   }
 }

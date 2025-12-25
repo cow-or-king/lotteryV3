@@ -230,7 +230,11 @@ export function generateRandomBiColors(): { primary: string; secondary: string }
  * Récupère le design par défaut
  */
 export function getDefaultWheelDesign(): WheelDesignConfig {
-  return DEFAULT_WHEEL_DESIGNS.multicolor!;
+  const multicolor = DEFAULT_WHEEL_DESIGNS.multicolor;
+  if (!multicolor) {
+    throw new Error('Default wheel design not found');
+  }
+  return multicolor;
 }
 
 // =====================
@@ -279,5 +283,9 @@ export const DEFAULT_WHEEL_MINI_DESIGNS: Record<string, WheelMiniDesignConfig> =
 };
 
 export function getDefaultWheelMiniDesign(): WheelMiniDesignConfig {
-  return DEFAULT_WHEEL_MINI_DESIGNS.fast!;
+  const fast = DEFAULT_WHEEL_MINI_DESIGNS.fast;
+  if (!fast) {
+    throw new Error('Default wheel mini design not found');
+  }
+  return fast;
 }

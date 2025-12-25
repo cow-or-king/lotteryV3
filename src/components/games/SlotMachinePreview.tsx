@@ -102,7 +102,10 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
       newFinalSymbols.push(randomSymbol?.icon || '🍒');
 
       // Place final symbol at calculated center position
-      newReels[i]![centerPosition] = randomSymbol?.icon || '🍒';
+      const reel = newReels[i];
+      if (reel) {
+        reel[centerPosition] = randomSymbol?.icon || '🍒';
+      }
     }
 
     setReelSymbols(newReels);
@@ -141,8 +144,7 @@ export function SlotMachinePreview({ design, interactive = true }: SlotMachinePr
     if (bestMatch && bestMatch.count >= 2) {
       // Find matching win pattern from design
       const matchingPattern = design.winPatterns.find(
-        (pattern) =>
-          pattern.symbol === bestMatch!.symbol && pattern.matchCount === bestMatch!.count,
+        (pattern) => pattern.symbol === bestMatch.symbol && pattern.matchCount === bestMatch.count,
       );
 
       if (matchingPattern) {

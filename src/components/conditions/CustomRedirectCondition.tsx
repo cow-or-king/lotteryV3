@@ -56,7 +56,7 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mb-4 shadow-lg">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-purple-500 to-indigo-600 rounded-full mb-4 shadow-lg">
           <span className="text-3xl">{condition.iconEmoji || '🔗'}</span>
         </div>
         <h1 className="text-4xl font-bold text-gray-800 mb-3">
@@ -71,7 +71,7 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
           <div className="flex-shrink-0">
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${
-                hasClicked ? 'bg-green-500' : 'bg-gradient-to-br from-purple-500 to-indigo-600'
+                hasClicked ? 'bg-green-500' : 'bg-linear-to-br from-purple-500 to-indigo-600'
               }`}
             >
               {hasClicked ? '✓' : '🔗'}
@@ -90,7 +90,7 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
             {!hasClicked ? (
               <button
                 onClick={handleClick}
-                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-lg rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all"
+                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-linear-to-r from-purple-500 to-indigo-600 text-white font-bold text-lg rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all"
               >
                 <span>{buttonText}</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

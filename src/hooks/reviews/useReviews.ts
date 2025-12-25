@@ -16,13 +16,13 @@ export function useReviews({ storeId }: UseReviewsParams) {
 
   // Query pour les statistiques
   const { data: stats, isLoading: statsLoading } = api.review.getStats.useQuery(
-    { storeId: storeId! },
+    { storeId: storeId ?? '' },
     { enabled: !!storeId },
   );
 
   // Query pour la liste des reviews
   const { data: reviewsData, isLoading: reviewsLoading } = api.review.listByStore.useQuery(
-    { storeId: storeId!, limit: 20, offset: 0 },
+    { storeId: storeId ?? '', limit: 20, offset: 0 },
     { enabled: !!storeId },
   );
 

@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     const { tokens } = await oauth2Client.getToken(code);
 
     if (!tokens.refresh_token) {
-      console.warn('No refresh token received. User may have already authorized this app.');
       return NextResponse.redirect(
         new URL(
           '/admin?error=no_refresh_token&message=Please revoke access and try again',
@@ -42,15 +41,6 @@ export async function GET(request: NextRequest) {
         ),
       );
     }
-
-    console.warn('='.repeat(80));
-    console.warn('✅ GOOGLE OAUTH SUCCESS');
-    console.warn('='.repeat(80));
-    console.warn('Refresh Token:', tokens.refresh_token);
-    console.warn('');
-    console.warn('⚠️  IMPORTANT: Copy this refresh token and store it encrypted in your database');
-    console.warn('   It will be used to fetch reviews from Google My Business');
-    console.warn('='.repeat(80));
 
     // TODO: Stocker le refresh_token chiffré dans la BDD
     // const encryptedToken = await encryptionService.encrypt(tokens.refresh_token);
@@ -63,8 +53,7 @@ export async function GET(request: NextRequest) {
         request.url,
       ),
     );
-  } catch (error) {
-    console.error('Error exchanging code for tokens:', error);
+  } catch (_error) {
     return NextResponse.redirect(new URL('/admin?error=token_exchange_failed', request.url));
   }
 }

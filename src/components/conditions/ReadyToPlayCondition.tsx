@@ -31,7 +31,7 @@ export function ReadyToPlayCondition({
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500"
+            className="bg-linear-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500"
             style={{ width: '100%' }}
           />
         </div>
@@ -41,7 +41,7 @@ export function ReadyToPlayCondition({
       <div className="text-center space-y-6">
         {/* Success icon */}
         <div className="relative inline-block">
-          <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+          <div className="w-24 h-24 bg-linear-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
             <CheckCircle2 className="w-12 h-12 text-white" />
           </div>
           <div className="absolute -top-2 -right-2">
@@ -74,7 +74,7 @@ export function ReadyToPlayCondition({
 
           <button
             onClick={onPlay}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg"
+            className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg"
           >
             <span className="flex items-center justify-center gap-2">
               <Sparkles className="w-6 h-6" />

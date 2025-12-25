@@ -55,7 +55,6 @@ export async function middleware(request: NextRequest) {
     if (hasOAuthParams) {
       // Rediriger vers /auth/callback en préservant tous les params
       url.pathname = '/auth/callback';
-      console.log('🔄 Redirection OAuth détectée:', pathname, '→', url.pathname);
       return NextResponse.redirect(url);
     }
   }

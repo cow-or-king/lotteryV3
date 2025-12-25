@@ -75,8 +75,11 @@ export default function GameConfigForm({
 
   const updateSegment = (index: number, updates: Partial<WheelSegment>) => {
     const newSegments = [...segments];
-    newSegments[index] = { ...newSegments[index]!, ...updates };
-    setSegments(newSegments);
+    const existingSegment = newSegments[index];
+    if (existingSegment) {
+      newSegments[index] = { ...existingSegment, ...updates };
+      setSegments(newSegments);
+    }
   };
 
   const addSegment = () => {

@@ -86,8 +86,7 @@ export const wheelDesignRouter = createTRPCRouter({
       });
 
       return design;
-    } catch (error) {
-      console.error('Error creating wheel design:', error);
+    } catch (_error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la sauvegarde du design',
@@ -175,8 +174,7 @@ export const wheelDesignRouter = createTRPCRouter({
         });
 
         return updated;
-      } catch (error) {
-        console.error('Error updating wheel design:', error);
+      } catch (_error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Erreur lors de la mise à jour du design',
@@ -195,8 +193,7 @@ export const wheelDesignRouter = createTRPCRouter({
       });
 
       return designs;
-    } catch (error) {
-      console.error('Error listing wheel designs:', error);
+    } catch (_error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la récupération des designs',
@@ -229,11 +226,10 @@ export const wheelDesignRouter = createTRPCRouter({
       }
 
       return design;
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
+    } catch (_error) {
+      if (_error instanceof TRPCError) {
+        throw _error;
       }
-      console.error('Error getting wheel design:', error);
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la récupération du design',
@@ -271,8 +267,7 @@ export const wheelDesignRouter = createTRPCRouter({
       });
 
       return { success: true };
-    } catch (error) {
-      console.error('Error deleting wheel design:', error);
+    } catch (_error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la suppression du design',

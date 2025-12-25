@@ -48,8 +48,7 @@ export function useWheelMiniDesignForm() {
       toast.success('Roue rapide créée avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
-      console.error('Error creating wheel mini:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la création de la roue rapide');
     },
   });
@@ -61,8 +60,7 @@ export function useWheelMiniDesignForm() {
       toast.success('Roue rapide mise à jour avec succès');
       router.push('/dashboard/games');
     },
-    onError: (error) => {
-      console.error('Error updating wheel mini:', error);
+    onError: (_error) => {
       toast.error('Erreur lors de la mise à jour de la roue rapide');
     },
   });

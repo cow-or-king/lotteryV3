@@ -72,8 +72,12 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
     }
     const newConditions = [...conditions];
     const temp = newConditions[index];
-    newConditions[index] = newConditions[index - 1]!;
-    newConditions[index - 1] = temp!;
+    const prev = newConditions[index - 1];
+    if (!temp || !prev) {
+      return;
+    }
+    newConditions[index] = prev;
+    newConditions[index - 1] = temp;
     onChange(newConditions);
   };
 
@@ -84,8 +88,12 @@ export function ConditionBuilder({ conditions, onChange, googleReviewUrl }: Cond
     }
     const newConditions = [...conditions];
     const temp = newConditions[index];
-    newConditions[index] = newConditions[index + 1]!;
-    newConditions[index + 1] = temp!;
+    const next = newConditions[index + 1];
+    if (!temp || !next) {
+      return;
+    }
+    newConditions[index] = next;
+    newConditions[index + 1] = temp;
     onChange(newConditions);
   };
 

@@ -136,17 +136,21 @@ export function useStores() {
 
     if (formData.logoFile) {
       try {
+        const logoFile = formData.logoFile;
+        if (!logoFile) {
+          throw new Error('Logo file is missing');
+        }
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = reject;
-          reader.readAsDataURL(formData.logoFile!);
+          reader.readAsDataURL(logoFile);
         });
         logoFileData = await base64Promise;
-        logoFileName = formData.logoFile.name;
-        logoFileType = formData.logoFile.type;
-      } catch (error) {
-        console.error('Erreur conversion base64:', error);
+        logoFileName = logoFile.name;
+        logoFileType = logoFile.type;
+      } catch (_error) {
+        // Error converting to base64, continue without logo
       }
     }
 
