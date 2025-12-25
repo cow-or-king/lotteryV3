@@ -31,39 +31,46 @@ export function useWheelMiniDesignForm() {
   useEffect(() => {
     if (existingGame && existingGame.type === 'WHEEL_MINI') {
       // Parser la config depuis JSON
-      const parsedConfig =
-        typeof existingGame.config === 'string'
-          ? JSON.parse(existingGame.config)
-          : existingGame.config;
+      // Type assertion to avoid deep instantiation issues
+      const config = (existingGame as { config: unknown }).config;
+      const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
 
       setDesign(parsedConfig as WheelMiniDesignConfig);
       setDesignName(existingGame.name);
     }
   }, [existingGame]);
 
-  // Mutations
-  const createGame = api.game.saveWheelMiniDesign.useMutation({
+  // Mutations - Extract options to avoid type instantiation depth issues
+  type MutationOptions = {
+    onSuccess: () => void;
+    onError: (error: unknown) => void;
+  };
+
+  const createGameOptions: MutationOptions = {
     onSuccess: () => {
-      utils.game.list.invalidate();
+      void utils.game.list.invalidate();
       toast.success('Roue rapide créée avec succès');
       router.push('/dashboard/games');
     },
     onError: (_error) => {
       toast.error('Erreur lors de la création de la roue rapide');
     },
-  });
+  };
 
-  const updateGame = api.game.update.useMutation({
+  const updateGameOptions: MutationOptions = {
     onSuccess: () => {
-      utils.game.list.invalidate();
-      utils.game.getById.invalidate();
+      void utils.game.list.invalidate();
+      void utils.game.getById.invalidate();
       toast.success('Roue rapide mise à jour avec succès');
       router.push('/dashboard/games');
     },
     onError: (_error) => {
       toast.error('Erreur lors de la mise à jour de la roue rapide');
     },
-  });
+  };
+
+  const createGame = api.game.saveWheelMiniDesign.useMutation(createGameOptions);
+  const updateGame = api.game.update.useMutation(updateGameOptions);
 
   // Handlers
   const handleSaveDesign = () => {

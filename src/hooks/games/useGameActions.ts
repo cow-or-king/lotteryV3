@@ -12,7 +12,13 @@ export function useGameActions() {
   const { toast } = useToast();
   const { confirm } = useConfirm();
 
-  const deleteWheelDesign = api.wheelDesign.delete.useMutation({
+  // Extract mutation options to avoid type instantiation depth issues
+  type MutationOptions = {
+    onSuccess: () => void;
+    onError: (error: { message?: string }) => void;
+  };
+
+  const deleteWheelOptions: MutationOptions = {
     onSuccess: () => {
       void utils.wheelDesign.list.invalidate();
       toast({
@@ -28,9 +34,9 @@ export function useGameActions() {
         variant: 'error',
       });
     },
-  });
+  };
 
-  const deleteGame = api.game.delete.useMutation({
+  const deleteGameOptions: MutationOptions = {
     onSuccess: () => {
       void utils.game.list.invalidate();
       toast({
@@ -46,7 +52,10 @@ export function useGameActions() {
         variant: 'error',
       });
     },
-  });
+  };
+
+  const deleteWheelDesign = api.wheelDesign.delete.useMutation(deleteWheelOptions);
+  const deleteGame = api.game.delete.useMutation(deleteGameOptions);
 
   const handleDeleteWheel = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
