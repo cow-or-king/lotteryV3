@@ -47,7 +47,9 @@ async function hasReachedMaxParticipants(
   campaignId: string,
   maxParticipants: number | null,
 ): Promise<boolean> {
-  if (!maxParticipants) return false;
+  if (!maxParticipants) {
+    return false;
+  }
 
   const participantCount = await prisma.participant.count({
     where: { campaignId },

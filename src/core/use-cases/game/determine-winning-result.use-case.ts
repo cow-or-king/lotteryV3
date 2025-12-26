@@ -30,7 +30,9 @@ function findPrizeIndex(prizes: Prize[], wonPrizeId: string): number {
 }
 
 function getWinningSegmentId(gameConfig: GameConfig, prizeIndex: number): string | null {
-  if (!gameConfig.segments) return null;
+  if (!gameConfig.segments) {
+    return null;
+  }
 
   if (prizeIndex !== -1 && prizeIndex < gameConfig.segments.length) {
     const segment = gameConfig.segments[prizeIndex];
@@ -56,7 +58,9 @@ function getWinningCombination(
     (pattern) => pattern.prizeIndex === prizeIndex,
   );
 
-  if (matchingPatterns.length === 0) return null;
+  if (matchingPatterns.length === 0) {
+    return null;
+  }
 
   const randomPattern = getRandomPattern(matchingPatterns);
   return randomPattern?.symbols ?? null;

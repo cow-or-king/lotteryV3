@@ -40,7 +40,9 @@ function createAuthClient(): SupabaseClient {
  * Extrait le nom d'utilisateur depuis les métadonnées
  */
 function extractUserName(userMetadata: Record<string, unknown> | undefined): string {
-  if (!userMetadata) return 'Joueur';
+  if (!userMetadata) {
+    return 'Joueur';
+  }
   const givenName = userMetadata.given_name;
   const name = userMetadata.name;
   return typeof givenName === 'string' ? givenName : typeof name === 'string' ? name : 'Joueur';
@@ -50,7 +52,9 @@ function extractUserName(userMetadata: Record<string, unknown> | undefined): str
  * Extrait l'URL de l'avatar depuis les métadonnées
  */
 function extractAvatarUrl(userMetadata: Record<string, unknown> | undefined): string | undefined {
-  if (!userMetadata) return undefined;
+  if (!userMetadata) {
+    return undefined;
+  }
   const avatarUrl = userMetadata.avatar_url;
   return typeof avatarUrl === 'string' ? avatarUrl : undefined;
 }
@@ -242,7 +246,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         user: {
           id: user.id,
           email: user.email,
-          name: user.user_metadata?.given_name || user.user_metadata?.name || 'Joueur',
+          name: extractUserName(user.user_metadata),
         },
         session: {
           access_token: session.access_token,

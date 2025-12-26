@@ -21,18 +21,26 @@ import {
 } from '@/lib/types/game';
 
 /**
+ * Type for wheel design data without database fields (id, userId, createdAt, updatedAt)
+ */
+type WheelDesignData = Omit<
+  WheelDesignConfig,
+  'id' | 'userId' | 'createdAt' | 'updatedAt' | 'isDefault'
+>;
+
+/**
  * Helper pour extraire les données du design et éviter les erreurs de type inference
  * Type instantiation excessively deep and possibly infinite
  */
-function extractDesignData(design: WheelDesignConfig) {
+function extractDesignData(design: WheelDesignConfig): WheelDesignData {
   const {
     id: _id,
     userId: _userId,
     createdAt: _createdAt,
     updatedAt: _updatedAt,
+    isDefault: _isDefault,
     ...designData
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = design as any;
+  } = design;
   return designData;
 }
 
@@ -53,37 +61,43 @@ export function useWheelDesignForm() {
 
   useEffect(() => {
     if (existingDesign) {
+      // Cast to Record to avoid TRPC deep instantiation type issues
+      type DbDesignRecord = Record<string, string | number | boolean | null | object>;
+      const designRecord = existingDesign as unknown as DbDesignRecord;
+
       // Parser les segments depuis JSON si nécessaire
-      // Type assertion to avoid deep instantiation issues
-      const segments = (existingDesign as { segments: unknown }).segments;
-      const parsedSegments = typeof segments === 'string' ? JSON.parse(segments) : segments;
+      const rawSegments = designRecord.segments as string | WheelSegmentDesign[] | object;
+      const parsedSegments: WheelSegmentDesign[] =
+        typeof rawSegments === 'string'
+          ? (JSON.parse(rawSegments) as WheelSegmentDesign[])
+          : (rawSegments as WheelSegmentDesign[]);
 
       // Extract only WheelDesignConfig properties, excluding database fields
       setDesign({
-        segments: parsedSegments as WheelSegmentDesign[],
-        primaryColor: existingDesign.primaryColor ?? undefined,
-        secondaryColor: existingDesign.secondaryColor ?? undefined,
-        backgroundColor: existingDesign.backgroundColor,
-        segmentBorderColor: existingDesign.segmentBorderColor,
-        segmentBorderWidth: existingDesign.segmentBorderWidth,
-        showSegmentText: existingDesign.showSegmentText,
-        textSize: existingDesign.textSize,
-        textFont: existingDesign.textFont,
-        textRotation: existingDesign.textRotation,
-        centerCircleSize: existingDesign.centerCircleSize,
-        centerCircleColor: existingDesign.centerCircleColor,
-        centerLogoUrl: existingDesign.centerLogoUrl || null,
-        centerLogoSize: existingDesign.centerLogoSize,
-        pointerColor: existingDesign.pointerColor,
-        pointerStyle: existingDesign.pointerStyle as 'arrow' | 'triangle' | 'circle',
-        animationSpeed: existingDesign.animationSpeed as 'slow' | 'normal' | 'fast',
-        spinDuration: existingDesign.spinDuration,
-        enableSound: existingDesign.enableSound,
-        colorMode: existingDesign.colorMode as ColorMode,
-        numberOfSegments: existingDesign.numberOfSegments,
-        name: existingDesign.name,
+        segments: parsedSegments,
+        primaryColor: (designRecord.primaryColor as string | null) ?? undefined,
+        secondaryColor: (designRecord.secondaryColor as string | null) ?? undefined,
+        backgroundColor: designRecord.backgroundColor as string,
+        segmentBorderColor: designRecord.segmentBorderColor as string,
+        segmentBorderWidth: designRecord.segmentBorderWidth as number,
+        showSegmentText: designRecord.showSegmentText as boolean,
+        textSize: designRecord.textSize as number,
+        textFont: designRecord.textFont as string,
+        textRotation: designRecord.textRotation as number,
+        centerCircleSize: designRecord.centerCircleSize as number,
+        centerCircleColor: designRecord.centerCircleColor as string,
+        centerLogoUrl: (designRecord.centerLogoUrl as string | null) || null,
+        centerLogoSize: designRecord.centerLogoSize as number,
+        pointerColor: designRecord.pointerColor as string,
+        pointerStyle: designRecord.pointerStyle as 'arrow' | 'triangle' | 'circle',
+        animationSpeed: designRecord.animationSpeed as 'slow' | 'normal' | 'fast',
+        spinDuration: designRecord.spinDuration as number,
+        enableSound: designRecord.enableSound as boolean,
+        colorMode: designRecord.colorMode as ColorMode,
+        numberOfSegments: designRecord.numberOfSegments as number,
+        name: designRecord.name as string,
       });
-      setDesignName(existingDesign.name);
+      setDesignName(designRecord.name as string);
     }
   }, [existingDesign]);
 
@@ -121,9 +135,9 @@ export function useWheelDesignForm() {
 
   // Handlers
   const handleSaveDesign = () => {
-    const designData = extractDesignData(design);
+    const designData: WheelDesignData = extractDesignData(design);
 
-    const dataToSave = {
+    const dataToSave: WheelDesignData = {
       ...designData,
       name: designName,
     };

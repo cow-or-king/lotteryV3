@@ -70,7 +70,10 @@ export default function SlotMachineGame({
 
     // Créer une longue séquence (50 symboles pour un spin fluide)
     for (let i = 0; i < 50; i++) {
-      sequence.push(symbolIcons[Math.floor(Math.random() * symbolIcons.length)]!);
+      const randomSymbol = symbolIcons[Math.floor(Math.random() * symbolIcons.length)];
+      if (randomSymbol) {
+        sequence.push(randomSymbol);
+      }
     }
 
     // Si on a un symbole cible, le placer à la fin

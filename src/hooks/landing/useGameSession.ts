@@ -9,6 +9,10 @@ interface UseGameSessionProps {
   enabled: boolean;
 }
 
+interface GameSessionData {
+  campaignId?: string;
+}
+
 export function useGameSession({ campaignId, enabled }: UseGameSessionProps) {
   const router = useRouter();
 
@@ -32,8 +36,13 @@ export function useGameSession({ campaignId, enabled }: UseGameSessionProps) {
     // Si session existe et correspond à cette campagne, rediriger vers le jeu
     if (gameSession && gameUser) {
       try {
-        const session = JSON.parse(decodeURIComponent(gameSession));
-        if (session.campaignId === campaignId) {
+        const session: unknown = JSON.parse(decodeURIComponent(gameSession));
+        if (
+          session &&
+          typeof session === 'object' &&
+          'campaignId' in session &&
+          (session as GameSessionData).campaignId === campaignId
+        ) {
           router.push(`/game/${campaignId}`);
           return;
         }

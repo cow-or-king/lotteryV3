@@ -32,8 +32,9 @@ export function useWheelMiniDesignForm() {
     if (existingGame && existingGame.type === 'WHEEL_MINI') {
       // Parser la config depuis JSON
       // Type assertion to avoid deep instantiation issues
-      const config = (existingGame as { config: unknown }).config;
-      const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
+      const gameWithConfig = existingGame as { config: unknown };
+      const config = gameWithConfig.config;
+      const parsedConfig: unknown = typeof config === 'string' ? JSON.parse(config) : config;
 
       setDesign(parsedConfig as WheelMiniDesignConfig);
       setDesignName(existingGame.name);

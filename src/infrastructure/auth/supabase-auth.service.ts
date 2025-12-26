@@ -34,7 +34,7 @@ export class SupabaseAuthService implements IAuthProvider {
   private supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    this.supabase = createClient<never>(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: false, // On gère les sessions côté serveur
         autoRefreshToken: false,

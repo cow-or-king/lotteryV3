@@ -18,6 +18,12 @@ import {
 } from '@/components/prizes';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
+interface Brand {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
 export default function PrizesPage() {
   const [activeTab, setActiveTab] = useState<'templates' | 'sets'>('templates');
 
@@ -29,14 +35,14 @@ export default function PrizesPage() {
     if (!storesList) {
       return [];
     }
-    const brandMap = new Map();
+    const brandMap = new Map<string, Brand>();
     storesList.forEach(
       (store: { brandId: string; brandName: string; brandLogoUrl: string | null }) => {
         if (!brandMap.has(store.brandId)) {
           brandMap.set(store.brandId, {
             id: store.brandId,
             name: store.brandName,
-            logoUrl: store.brandLogoUrl,
+            logoUrl: store.brandLogoUrl || '',
           });
         }
       },

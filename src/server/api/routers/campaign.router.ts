@@ -12,6 +12,7 @@ import { PrismaCampaignRepository } from '@/infrastructure/repositories/prisma-c
 import { PrismaStoreRepository } from '@/infrastructure/repositories/prisma-store.repository';
 import { PrismaQRCodeRepository } from '@/infrastructure/repositories/prisma-qrcode.repository';
 import { TRPCError } from '@trpc/server';
+import { Prisma } from '@/generated/prisma';
 
 // Schemas Zod pour validation
 const PrizeConfigSchema = z.object({
@@ -136,8 +137,7 @@ export const campaignRouter = createTRPCRouter({
         data: {
           name: `${input.name} - ${template.name}`,
           type: template.type as 'WHEEL' | 'WHEEL_MINI' | 'SLOT_MACHINE',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          config: gameConfig as any,
+          config: gameConfig as Prisma.InputJsonValue,
           primaryColor: template.primaryColor,
           secondaryColor: template.secondaryColor,
           vibrationEnabled: true,

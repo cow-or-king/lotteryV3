@@ -51,7 +51,10 @@ export function useGamePlayState(campaignId: string) {
     const userCookie = getCookie('cb-game-user');
     if (userCookie) {
       try {
-        const userData = JSON.parse(decodeURIComponent(userCookie));
+        const userData = JSON.parse(decodeURIComponent(userCookie)) as {
+          name?: string;
+          email?: string;
+        };
         setMockUser({
           name: userData.name || 'Joueur',
           email: userData.email || '',

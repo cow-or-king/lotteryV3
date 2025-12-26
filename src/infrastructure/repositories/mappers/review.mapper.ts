@@ -5,7 +5,12 @@
  */
 
 import { Review as PrismaReview } from '@/generated/prisma';
-import { ReviewEntity, ReviewProps, CreateReviewProps } from '@/core/entities/review.entity';
+import {
+  ReviewEntity,
+  ReviewProps,
+  CreateReviewProps,
+  AISuggestion,
+} from '@/core/entities/review.entity';
 import { ReviewId, StoreId, CampaignId, ParticipantId, UserId } from '@/lib/types/branded.type';
 import { ReviewStatus, ReviewSentiment } from '@/core/entities/review.entity';
 
@@ -37,11 +42,11 @@ export function toDomainProps(prismaReview: PrismaReview): ReviewProps {
     status: prismaReview.status as ReviewStatus,
     sentiment: prismaReview.sentiment as ReviewSentiment | null,
     aiSuggestion: prismaReview.aiSuggestion
-      ? JSON.parse(
+      ? (JSON.parse(
           typeof prismaReview.aiSuggestion === 'string'
             ? prismaReview.aiSuggestion
             : JSON.stringify(prismaReview.aiSuggestion),
-        )
+        ) as AISuggestion)
       : null,
     aiSentiment: prismaReview.aiSentiment,
     createdAt: prismaReview.createdAt,

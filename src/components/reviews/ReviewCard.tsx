@@ -26,7 +26,7 @@ export function ReviewCard({ review, onRespond }: ReviewCardProps) {
               {review.authorName}
             </p>
             <div className="flex items-center gap-1 mt-1">
-              {[...Array(5)].map((_, i) => (
+              {Array.from({ length: 5 }, (_, i) => (
                 <Star
                   key={i}
                   className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${

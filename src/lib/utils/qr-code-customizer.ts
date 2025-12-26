@@ -262,9 +262,13 @@ export async function customizeStoreQRCode(
       return validationError;
     }
 
-    // TypeScript knows qrCode.storeDefault exists after validation
-    const storeId = qrCode!.storeDefault!.id;
-    const targetUrl = qrCode!.url;
+    // After validation, qrCode and storeDefault are guaranteed to exist
+    if (!qrCode || !qrCode.storeDefault) {
+      return { success: false, error: 'QR Code ou Store invalide' };
+    }
+
+    const storeId = qrCode.storeDefault.id;
+    const targetUrl = qrCode.url;
 
     logger.info(`Customizing QR Code ${qrCodeId} for store ${storeId}`, {
       style,
@@ -277,7 +281,7 @@ export async function customizeStoreQRCode(
     // 3. Récupérer le logo du Store si disponible
     const { logoUrl, logoSizePixels } = await getLogoDetails(
       logoSize,
-      qrCode!.storeDefault!.brand.logoUrl,
+      qrCode.storeDefault.brand.logoUrl,
     );
 
     // 4. Générer SVG (vectoriel pour impression)
@@ -319,7 +323,7 @@ export async function customizeStoreQRCode(
         logoSize: logoSizePixels,
         errorCorrectionLevel,
         logoUrl,
-        logoStoragePath: qrCode!.storeDefault!.brand.logoStoragePath,
+        logoStoragePath: qrCode.storeDefault.brand.logoStoragePath,
       },
       customizedAt,
     );

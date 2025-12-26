@@ -94,8 +94,8 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
   const step2TitleClasses = getStep2TitleClasses(countdown);
 
   useEffect(() => {
-    if (showTimer) {
-      const timer = setTimeout(() => setCountdown(countdown! - 1), 1000);
+    if (showTimer && countdown !== null) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
     return undefined;

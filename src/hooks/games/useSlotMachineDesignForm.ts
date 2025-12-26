@@ -38,13 +38,9 @@ export function useSlotMachineDesignForm() {
   useEffect(() => {
     if (existingGame && existingGame.type === 'SLOT_MACHINE') {
       // Parser la config depuis JSON
-      // Helper function to extract config and avoid type inference issues
-      const extractConfig = (game: typeof existingGame): unknown => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (game as any).config;
-      };
-
-      const config = extractConfig(existingGame);
+      // Type assertion to access config property safely
+      const gameWithConfig = existingGame as { config: unknown };
+      const config = gameWithConfig.config;
       const parsedConfig: unknown = typeof config === 'string' ? JSON.parse(config) : config;
 
       setDesign(parsedConfig as SlotMachineDesignConfig);
