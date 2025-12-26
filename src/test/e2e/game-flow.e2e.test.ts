@@ -12,7 +12,7 @@ import type { inferProcedureInput } from '@trpc/server';
 describe('E2E: Critical Game Flow', () => {
   let campaignId: string;
   let storeId: string;
-  let brandId: string;
+  let gameCreatorUserId: string;
   const testPlayerEmail = `e2e-test-${Date.now()}@test.com`;
   const testPlayerName = 'E2E Test Player';
 
@@ -23,17 +23,22 @@ describe('E2E: Critical Game Flow', () => {
       console.warn('No brand found, skipping E2E test setup');
       return;
     }
-    brandId = existingBrand.id;
+
+    // Get a user to be the game creator
+    const existingUser = await prisma.user.findFirst();
+    if (!existingUser) {
+      console.warn('No user found, skipping E2E test setup');
+      return;
+    }
+    gameCreatorUserId = existingUser.id;
 
     const store = await prisma.store.create({
       data: {
         name: 'E2E Test Store',
-        address: '123 Test St',
-        city: 'TestCity',
-        postalCode: '12345',
-        country: 'France',
+        slug: `e2e-test-${Date.now()}`,
         brandId: existingBrand.id,
         googlePlaceId: `test-place-${Date.now()}`,
+        googleBusinessUrl: `https://g.page/test-${Date.now()}`,
       },
     });
     storeId = store.id;
@@ -47,7 +52,6 @@ describe('E2E: Critical Game Flow', () => {
         isActive: true,
         startDate: new Date(),
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        shortCode: `e2e${Date.now()}`,
       },
     });
     campaignId = campaign.id;
@@ -55,8 +59,10 @@ describe('E2E: Critical Game Flow', () => {
     // Create game
     await prisma.game.create({
       data: {
+        name: 'E2E Test Game',
         campaignId: campaign.id,
         type: 'WHEEL',
+        createdBy: gameCreatorUserId,
         config: {
           segments: [
             { id: 'seg1', label: 'Prize 1', color: '#FF0000' },
@@ -126,7 +132,12 @@ describe('E2E: Critical Game Flow', () => {
   });
 
   it('should complete full game flow: conditions → play → win', async () => {
-    const caller = appRouter.createCaller({ session: null, prisma });
+    const caller = appRouter.createCaller({
+      prisma,
+      userId: null,
+      accessToken: null,
+      refreshToken: null,
+    });
 
     // Step 1: Get campaign and verify conditions exist
     const campaign = await caller.game.getCampaignPublic({ id: campaignId });
@@ -134,9 +145,9 @@ describe('E2E: Critical Game Flow', () => {
     expect(campaign.isActive).toBe(true);
 
     // Step 2: Check conditions progress (should have 1 condition)
-    const conditionsProgress = await caller.game.getConditionsProgress({
+    const conditionsProgress = await caller.condition.getProgress({
       campaignId,
-      playerEmail: testPlayerEmail,
+      participantEmail: testPlayerEmail,
     });
     expect(conditionsProgress.conditions.length).toBe(1);
     expect(conditionsProgress.canPlay).toBe(false);
@@ -144,20 +155,21 @@ describe('E2E: Critical Game Flow', () => {
 
     // Step 3: Complete the Google Review condition
     const condition = conditionsProgress.conditions[0];
-    if (!condition) throw new Error('No condition found');
+    if (!condition) {
+      throw new Error('No condition found');
+    }
 
-    const completeResult = await caller.game.completeCondition({
+    const completeResult = await caller.condition.completeCondition({
       campaignId,
       conditionId: condition.id,
-      playerEmail: testPlayerEmail,
-      playerName: testPlayerName,
+      participantEmail: testPlayerEmail,
     });
     expect(completeResult.success).toBe(true);
 
     // Step 4: Verify can now play
-    const updatedProgress = await caller.game.getConditionsProgress({
+    const updatedProgress = await caller.condition.getProgress({
       campaignId,
-      playerEmail: testPlayerEmail,
+      participantEmail: testPlayerEmail,
     });
     expect(updatedProgress.canPlay).toBe(true);
 
@@ -215,7 +227,12 @@ describe('E2E: Critical Game Flow', () => {
   });
 
   it('should handle campaign not found', async () => {
-    const caller = appRouter.createCaller({ session: null, prisma });
+    const caller = appRouter.createCaller({
+      prisma,
+      userId: null,
+      accessToken: null,
+      refreshToken: null,
+    });
 
     await expect(caller.game.getCampaignPublic({ id: 'non-existent-id' })).rejects.toThrow(
       'Campagne introuvable',
@@ -223,7 +240,12 @@ describe('E2E: Critical Game Flow', () => {
   });
 
   it('should prevent playing without completing conditions', async () => {
-    const caller = appRouter.createCaller({ session: null, prisma });
+    const caller = appRouter.createCaller({
+      prisma,
+      userId: null,
+      accessToken: null,
+      refreshToken: null,
+    });
 
     type PlayGameInput = inferProcedureInput<typeof appRouter.game.play>;
     const playInput: PlayGameInput = {

@@ -22,12 +22,49 @@ interface DashboardTopBarProps {
   userLoading: boolean;
 }
 
+// Helper functions to reduce complexity
+function getUserDisplayName(user: User | undefined | null): string {
+  const userName = user?.name;
+  if (userName) {
+    return userName;
+  }
+  const userEmail = user?.email;
+  if (userEmail) {
+    return userEmail.split('@')[0] || 'Utilisateur';
+  }
+  return 'Utilisateur';
+}
+
+function getUserEmail(user: User | undefined | null): string {
+  return user?.email || '';
+}
+
+function getUserPlan(user: User | undefined | null): string {
+  return user?.subscription?.plan || 'FREE';
+}
+
+function getUserStoresLimit(user: User | undefined | null): number {
+  return user?.subscription?.storesLimit || 1;
+}
+
+function formatStoresText(limit: number): string {
+  return `${limit} store${limit > 1 ? 's' : ''}`;
+}
+
 export function DashboardTopBar({
   isSidebarOpen,
   toggleSidebar,
   user,
   userLoading,
 }: DashboardTopBarProps) {
+  // Compute display values
+  const displayName = userLoading ? '...' : getUserDisplayName(user);
+  const displayEmail = userLoading ? '...' : getUserEmail(user);
+  const displayPlan = userLoading ? '...' : getUserPlan(user);
+  const storesLimit = getUserStoresLimit(user);
+  const displayStores = userLoading ? '...' : formatStoresText(storesLimit);
+  const toggleIcon = isSidebarOpen ? '✕' : '☰';
+
   return (
     <div className="flex items-center gap-3 mb-8 relative">
       {/* User Info Card with integrated toggle button */}
@@ -37,7 +74,7 @@ export function DashboardTopBar({
           onClick={toggleSidebar}
           className="w-10 h-10 bg-white/60 backdrop-blur-md border border-purple-600/20 rounded-lg text-gray-600 cursor-pointer flex items-center justify-center text-lg transition-all shrink-0 hover:bg-purple-600/15 hover:border-purple-600/30 hover:text-purple-600 hover:scale-105"
         >
-          {isSidebarOpen ? '✕' : '☰'}
+          {toggleIcon}
         </button>
 
         {/* User Avatar */}
@@ -48,10 +85,10 @@ export function DashboardTopBar({
         {/* Colonne gauche: Nom et Email */}
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
           <p className="m-0 text-xs sm:text-sm md:text-base font-semibold text-gray-800 overflow-hidden text-ellipsis whitespace-nowrap">
-            {userLoading ? '...' : user?.name || user?.email?.split('@')[0] || 'Utilisateur'}
+            {displayName}
           </p>
           <p className="m-0 text-[10px] sm:text-xs text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap">
-            {userLoading ? '...' : user?.email || ''}
+            {displayEmail}
           </p>
         </div>
 
@@ -59,14 +96,12 @@ export function DashboardTopBar({
         <div className="flex flex-col gap-1.5 items-end shrink-0">
           {/* Plan Badge */}
           <div className="py-1 px-3 bg-purple-600/15 border border-purple-600/30 rounded-lg text-[10px] sm:text-xs text-purple-600 font-semibold text-center">
-            {userLoading ? '...' : user?.subscription?.plan || 'FREE'}
+            {displayPlan}
           </div>
 
           {/* Store Limit */}
           <div className="text-[9px] sm:text-[10px] text-gray-600 whitespace-nowrap text-center">
-            {userLoading
-              ? '...'
-              : `${user?.subscription?.storesLimit || 1} store${(user?.subscription?.storesLimit || 1) > 1 ? 's' : ''}`}
+            {displayStores}
           </div>
         </div>
       </div>
