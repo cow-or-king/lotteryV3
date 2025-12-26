@@ -31,6 +31,53 @@ interface GameConfigFormProps {
   isLoading?: boolean;
 }
 
+// Helper functions extracted outside component
+function calculateTotalProbability(segments: WheelSegment[]): number {
+  return segments.reduce((sum, seg) => sum + seg.probability, 0);
+}
+
+function isProbabilityValid(totalProbability: number): boolean {
+  return Math.abs(totalProbability - 100) < 0.01;
+}
+
+function getSegmentValueLabel(prizeType: string): string {
+  return prizeType === 'DISCOUNT' ? 'Pourcentage' : 'Valeur';
+}
+
+function getSegmentValuePlaceholder(prizeType: string): string {
+  return prizeType === 'DISCOUNT' ? '10' : 'Café offert';
+}
+
+function isPrizeValueDisabled(prizeType: string): boolean {
+  return prizeType === 'NOTHING';
+}
+
+function canRemoveSegment(segmentsLength: number): boolean {
+  return segmentsLength > 2;
+}
+
+function getProbabilityStatusClass(isValid: boolean): string {
+  return isValid ? 'text-green-600' : 'text-red-600';
+}
+
+function getProbabilityStatusMessage(total: number, isValid: boolean): string {
+  return `Total des probabilités: ${total.toFixed(1)}%${isValid ? ' ✓' : ' (doit être 100%)'}`;
+}
+
+function generateRandomColor(): string {
+  return '#' + Math.floor(Math.random() * 16777215).toString(16);
+}
+
+function createNewSegment(): WheelSegment {
+  return {
+    id: `segment-${Date.now()}`,
+    label: 'Nouveau segment',
+    color: generateRandomColor(),
+    probability: 0,
+    prize: { type: 'NOTHING', value: '' },
+  };
+}
+
 export default function GameConfigForm({
   initialValues,
   onSubmit,
@@ -47,14 +94,18 @@ export default function GameConfigForm({
     return initialValues?.config.segments || defaultConfig.segments || [];
   });
 
-  // Validation du total des probabilités
-  const totalProbability = segments.reduce((sum, seg) => sum + seg.probability, 0);
-  const isProbabilityValid = Math.abs(totalProbability - 100) < 0.01;
+  // Pre-compute boolean flags
+  const totalProbability = calculateTotalProbability(segments);
+  const isValid = isProbabilityValid(totalProbability);
+  const canAddRemoveSegments = canRemoveSegment(segments.length);
+  const probabilityStatusClass = getProbabilityStatusClass(isValid);
+  const probabilityStatusMessage = getProbabilityStatusMessage(totalProbability, isValid);
+  const showCancelButton = Boolean(onCancel);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isProbabilityValid) {
+    if (!isValid) {
       toast.error('La somme des probabilités doit égaler 100%');
       return;
     }
@@ -83,18 +134,11 @@ export default function GameConfigForm({
   };
 
   const addSegment = () => {
-    const newSegment: WheelSegment = {
-      id: `segment-${Date.now()}`,
-      label: 'Nouveau segment',
-      color: '#' + Math.floor(Math.random() * 16777215).toString(16),
-      probability: 0,
-      prize: { type: 'NOTHING', value: '' },
-    };
-    setSegments([...segments, newSegment]);
+    setSegments([...segments, createNewSegment()]);
   };
 
   const removeSegment = (index: number) => {
-    if (segments.length <= 2) {
+    if (!canAddRemoveSegments) {
       toast.warning('Un jeu doit avoir au moins 2 segments');
       return;
     }
@@ -203,10 +247,7 @@ export default function GameConfigForm({
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Segments de la roue</h2>
-            <p className={`text-sm mt-1 ${isProbabilityValid ? 'text-green-600' : 'text-red-600'}`}>
-              Total des probabilités: {totalProbability.toFixed(1)}%
-              {isProbabilityValid ? ' ✓' : ' (doit être 100%)'}
-            </p>
+            <p className={`text-sm mt-1 ${probabilityStatusClass}`}>{probabilityStatusMessage}</p>
           </div>
           <button
             type="button"
@@ -218,112 +259,122 @@ export default function GameConfigForm({
         </div>
 
         <div className="space-y-4">
-          {segments.map((segment, index) => (
-            <div
-              key={segment.id}
-              className="bg-white/40 rounded-xl p-6 border-2 border-gray-200 hover:border-purple-300 transition-colors"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                {/* Couleur */}
-                <div className="md:col-span-1">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">Couleur</label>
-                  <input
-                    type="color"
-                    value={segment.color}
-                    onChange={(e) => updateSegment(index, { color: e.target.value })}
-                    className="h-10 w-full rounded-lg cursor-pointer border-2 border-gray-200"
-                  />
-                </div>
+          {segments.map((segment, index) => {
+            const valueLabel = getSegmentValueLabel(segment.prize.type);
+            const valuePlaceholder = getSegmentValuePlaceholder(segment.prize.type);
+            const isValueDisabled = isPrizeValueDisabled(segment.prize.type);
 
-                {/* Label */}
-                <div className="md:col-span-4">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">Libellé</label>
-                  <input
-                    type="text"
-                    value={segment.label}
-                    onChange={(e) => updateSegment(index, { label: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
-                  />
-                </div>
+            return (
+              <div
+                key={segment.id}
+                className="bg-white/40 rounded-xl p-6 border-2 border-gray-200 hover:border-purple-300 transition-colors"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                  {/* Couleur */}
+                  <div className="md:col-span-1">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">
+                      Couleur
+                    </label>
+                    <input
+                      type="color"
+                      value={segment.color}
+                      onChange={(e) => updateSegment(index, { color: e.target.value })}
+                      className="h-10 w-full rounded-lg cursor-pointer border-2 border-gray-200"
+                    />
+                  </div>
 
-                {/* Type de prix */}
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">
-                    Type de prix
-                  </label>
-                  <select
-                    value={segment.prize.type}
-                    onChange={(e) =>
-                      updateSegment(index, {
-                        prize: {
-                          type: e.target.value as 'PRIZE' | 'DISCOUNT' | 'NOTHING',
-                          value: segment.prize.value,
-                        },
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
-                  >
-                    <option value="PRIZE">Prix</option>
-                    <option value="DISCOUNT">Réduction</option>
-                    <option value="NOTHING">Rien</option>
-                  </select>
-                </div>
+                  {/* Label */}
+                  <div className="md:col-span-4">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">
+                      Libellé
+                    </label>
+                    <input
+                      type="text"
+                      value={segment.label}
+                      onChange={(e) => updateSegment(index, { label: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
+                    />
+                  </div>
 
-                {/* Valeur */}
-                <div className="md:col-span-3">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">
-                    {segment.prize.type === 'DISCOUNT' ? 'Pourcentage' : 'Valeur'}
-                  </label>
-                  <input
-                    type="text"
-                    value={segment.prize.value}
-                    onChange={(e) =>
-                      updateSegment(index, {
-                        prize: { type: segment.prize.type, value: e.target.value },
-                      })
-                    }
-                    disabled={segment.prize.type === 'NOTHING'}
-                    placeholder={segment.prize.type === 'DISCOUNT' ? '10' : 'Café offert'}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder:text-gray-500"
-                  />
-                </div>
+                  {/* Type de prix */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">
+                      Type de prix
+                    </label>
+                    <select
+                      value={segment.prize.type}
+                      onChange={(e) =>
+                        updateSegment(index, {
+                          prize: {
+                            type: e.target.value as 'PRIZE' | 'DISCOUNT' | 'NOTHING',
+                            value: segment.prize.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
+                    >
+                      <option value="PRIZE">Prix</option>
+                      <option value="DISCOUNT">Réduction</option>
+                      <option value="NOTHING">Rien</option>
+                    </select>
+                  </div>
 
-                {/* Probabilité */}
-                <div className="md:col-span-1">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">%</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={segment.probability}
-                    onChange={(e) =>
-                      updateSegment(index, { probability: parseFloat(e.target.value) || 0 })
-                    }
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
-                  />
-                </div>
+                  {/* Valeur */}
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">
+                      {valueLabel}
+                    </label>
+                    <input
+                      type="text"
+                      value={segment.prize.value}
+                      onChange={(e) =>
+                        updateSegment(index, {
+                          prize: { type: segment.prize.type, value: e.target.value },
+                        })
+                      }
+                      disabled={isValueDisabled}
+                      placeholder={valuePlaceholder}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder:text-gray-500"
+                    />
+                  </div>
 
-                {/* Supprimer */}
-                <div className="md:col-span-1 flex items-end">
-                  <button
-                    type="button"
-                    onClick={() => removeSegment(index)}
-                    className="w-full h-10 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold"
-                    disabled={segments.length <= 2}
-                  >
-                    🗑️
-                  </button>
+                  {/* Probabilité */}
+                  <div className="md:col-span-1">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">%</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={segment.probability}
+                      onChange={(e) =>
+                        updateSegment(index, { probability: parseFloat(e.target.value) || 0 })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all outline-none text-sm text-gray-900"
+                    />
+                  </div>
+
+                  {/* Supprimer */}
+                  <div className="md:col-span-1 flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => removeSegment(index)}
+                      className="w-full h-10 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold"
+                      disabled={!canAddRemoveSegments}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-4">
-        {onCancel && (
+        {showCancelButton && (
           <button
             type="button"
             onClick={onCancel}
@@ -335,7 +386,7 @@ export default function GameConfigForm({
         )}
         <button
           type="submit"
-          disabled={isLoading || !isProbabilityValid}
+          disabled={isLoading || !isValid}
           className="px-8 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {isLoading ? 'Enregistrement...' : 'Enregistrer le jeu'}

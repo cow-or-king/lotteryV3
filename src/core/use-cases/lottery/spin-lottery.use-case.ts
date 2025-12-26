@@ -11,6 +11,8 @@ import { ICampaignRepository } from '@/core/repositories/campaign.repository.int
 import { IPrizeRepository } from '@/core/repositories/prize.repository.interface';
 import { IParticipantRepository } from '@/core/repositories/participant.repository.interface';
 import { IWinnerRepository } from '@/core/repositories/winner.repository.interface';
+import { CampaignEntity } from '@/core/entities/campaign.entity';
+import { PrizeEntity } from '@/core/entities/prize.entity';
 
 // DTO pour l'input
 export interface SpinLotteryInput {
@@ -70,6 +72,64 @@ export class LotteryDrawError extends Error {
   }
 }
 
+// ========================================
+// Module-level helper functions
+// ========================================
+
+/**
+ * Validates email and returns Email value object
+ */
+function validateEmail(emailString: string): Result<Email> {
+  return Email.create(emailString);
+}
+
+/**
+ * Validates that campaign exists and is running
+ */
+function validateCampaign(
+  campaign: CampaignEntity | null,
+  campaignId: CampaignId,
+): Result<CampaignEntity> {
+  if (!campaign) {
+    return Result.fail(new CampaignNotFoundError(campaignId));
+  }
+  if (!campaign.isRunning()) {
+    return Result.fail(new CampaignNotActiveError());
+  }
+  return Result.ok(campaign);
+}
+
+/**
+ * Validates that prize is available
+ */
+function validatePrize(prize: PrizeEntity | null): Result<PrizeEntity> {
+  if (!prize) {
+    return Result.fail(new NoPrizesAvailableError());
+  }
+  if (!prize.isAvailable()) {
+    return Result.fail(new NoPrizesAvailableError());
+  }
+  return Result.ok(prize);
+}
+
+/**
+ * Calculates wheel spin duration based on prize value
+ */
+function calculateWheelSpinDuration(prizeValue: number | undefined): number {
+  const baseSpinDuration = 3000; // 3 seconds minimum
+  const valueBonus = prizeValue ? prizeValue * 10 : 0;
+  return Math.min(baseSpinDuration + valueBonus, 8000); // Max 8 seconds
+}
+
+/**
+ * Creates expiration date (30 days from now)
+ */
+function createExpirationDate(): Date {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  return expiresAt;
+}
+
 /**
  * Use Case: Spin Lottery
  */
@@ -83,7 +143,7 @@ export class SpinLotteryUseCase {
 
   async execute(input: SpinLotteryInput): Promise<Result<SpinLotteryOutput>> {
     // 1. Valider l'email
-    const emailResult = Email.create(input.email);
+    const emailResult = validateEmail(input.email);
     if (!emailResult.success) {
       return Result.fail(emailResult.error);
     }
@@ -91,12 +151,9 @@ export class SpinLotteryUseCase {
 
     // 2. Vérifier que la campagne existe et est active
     const campaign = await this.campaignRepository.findById(input.campaignId);
-    if (!campaign) {
-      return Result.fail(new CampaignNotFoundError(input.campaignId));
-    }
-
-    if (!campaign.isRunning()) {
-      return Result.fail(new CampaignNotActiveError());
+    const campaignValidation = validateCampaign(campaign, input.campaignId);
+    if (!campaignValidation.success) {
+      return Result.fail(campaignValidation.error);
     }
 
     // 3. Vérifier que le participant n'a pas déjà joué
@@ -104,7 +161,6 @@ export class SpinLotteryUseCase {
       email,
       input.campaignId,
     );
-
     if (hasParticipated) {
       return Result.fail(new AlreadyParticipatedError());
     }
@@ -118,74 +174,55 @@ export class SpinLotteryUseCase {
       ipAddress: input.ipAddress,
       userAgent: input.userAgent,
     });
-
     if (!participantResult.success) {
       return Result.fail(new LotteryDrawError('Failed to register participant'));
     }
-
     const participant = participantResult.data;
 
     // 5. Sélectionner un prix basé sur les probabilités
     const selectedPrize = await this.prizeRepository.selectPrizeByProbability(input.campaignId);
-    if (!selectedPrize) {
-      return Result.fail(new NoPrizesAvailableError());
+    const prizeValidation = validatePrize(selectedPrize);
+    if (!prizeValidation.success) {
+      return Result.fail(prizeValidation.error);
     }
+    const prize = prizeValidation.data;
 
-    // 6. Vérifier que le prix est disponible
-    if (!selectedPrize.isAvailable()) {
-      return Result.fail(new NoPrizesAvailableError());
-    }
-
-    // 7. Transaction: Attribuer le prix
+    // 6. Transaction: Attribuer le prix
     try {
-      // Marquer le participant comme ayant joué
       const markPlayedResult = await this.participantRepository.markAsPlayed(
         participant.id,
         new Date(),
       );
-
       if (!markPlayedResult.success) {
         return Result.fail(new LotteryDrawError('Failed to mark participant as played'));
       }
 
-      // Décrémenter le stock du prix (atomique)
-      const decrementResult = await this.prizeRepository.decrementStock(selectedPrize.id);
+      const decrementResult = await this.prizeRepository.decrementStock(prize.id);
       if (!decrementResult.success) {
         return Result.fail(new LotteryDrawError('Failed to decrement prize stock'));
       }
 
-      // Créer le gagnant avec code de réclamation
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // Expire dans 30 jours
-
       const winnerResult = await this.winnerRepository.create({
-        prizeId: selectedPrize.id,
+        prizeId: prize.id,
         participantEmail: email,
         participantName: input.name,
-        expiresAt,
+        expiresAt: createExpirationDate(),
       });
 
       if (!winnerResult.success) {
-        // Rollback: restaurer le stock
-        await this.prizeRepository.incrementStock(selectedPrize.id);
+        await this.prizeRepository.incrementStock(prize.id);
         return Result.fail(new LotteryDrawError('Failed to create winner record'));
       }
 
       const winner = winnerResult.data;
+      const wheelSpinDuration = calculateWheelSpinDuration(prize.value?.getAmount());
 
-      // 8. Calculer la durée de rotation de la roue
-      // Plus le prix a de valeur, plus la roue tourne longtemps
-      const baseSpinDuration = 3000; // 3 secondes minimum
-      const valueBonus = selectedPrize.value ? selectedPrize.value.getAmount() * 10 : 0;
-      const wheelSpinDuration = Math.min(baseSpinDuration + valueBonus, 8000); // Max 8 secondes
-
-      // 9. Retourner le résultat
       return Result.ok({
         winnerId: winner.id,
-        prizeId: selectedPrize.id,
-        prizeName: selectedPrize.name,
-        prizeDescription: selectedPrize.description,
-        prizeValue: selectedPrize.value?.getAmount() ?? null,
+        prizeId: prize.id,
+        prizeName: prize.name,
+        prizeDescription: prize.description,
+        prizeValue: prize.value?.getAmount() ?? null,
         claimCode: winner.claimCode.getValue(),
         expiresAt: winner.expiresAt,
         wheelSpinDuration,

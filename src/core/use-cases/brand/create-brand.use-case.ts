@@ -23,53 +23,119 @@ export interface CreateBrandOutput {
   brand: BrandEntity;
 }
 
+// ============================================================================
+// HELPER FUNCTIONS (Outside class to reduce execute() complexity)
+// ============================================================================
+
+/**
+ * Validates brand name
+ */
+function validateBrandName(name: string): Result<void> {
+  if (!name || name.trim().length === 0) {
+    return fail(new Error('Brand name is required'));
+  }
+
+  if (name.trim().length < 2) {
+    return fail(new Error('Brand name must be at least 2 characters long'));
+  }
+
+  if (name.trim().length > 100) {
+    return fail(new Error('Brand name must be at most 100 characters long'));
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Validates logo URL
+ */
+function validateLogoUrl(logoUrl: string): Result<void> {
+  if (!logoUrl || logoUrl.trim().length === 0) {
+    return fail(new Error('Logo URL is required'));
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Validates owner ID
+ */
+function validateOwnerId(ownerId: string): Result<void> {
+  if (!ownerId || ownerId.trim().length === 0) {
+    return fail(new Error('Owner ID is required'));
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Validates hex color format
+ */
+function validateHexColor(color: string | undefined, colorName: string): Result<void> {
+  if (!color) {
+    return ok(undefined);
+  }
+
+  const hexColorRegex = /^#[0-9A-F]{6}$/i;
+  if (!hexColorRegex.test(color)) {
+    return fail(new Error(`${colorName} must be a valid hex color (e.g., #5B21B6)`));
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Builds brand data with defaults
+ */
+function buildBrandData(input: CreateBrandInput) {
+  return {
+    name: input.name.trim(),
+    logoUrl: input.logoUrl.trim(),
+    ownerId: input.ownerId,
+    primaryColor: input.primaryColor || '#5B21B6',
+    secondaryColor: input.secondaryColor || '#FACC15',
+    font: input.font || 'inter',
+    isPaid: input.isPaid || false,
+  };
+}
+
 export class CreateBrandUseCase {
   constructor(private readonly brandRepository: BrandRepository) {}
 
   async execute(input: CreateBrandInput): Promise<Result<CreateBrandOutput>> {
-    // Validation du nom
-    if (!input.name || input.name.trim().length === 0) {
-      return fail(new Error('Brand name is required'));
+    // 1. Validation du nom
+    const nameValidation = validateBrandName(input.name);
+    if (!nameValidation.success) {
+      return nameValidation;
     }
 
-    if (input.name.trim().length < 2) {
-      return fail(new Error('Brand name must be at least 2 characters long'));
+    // 2. Validation de l'URL du logo
+    const logoValidation = validateLogoUrl(input.logoUrl);
+    if (!logoValidation.success) {
+      return logoValidation;
     }
 
-    if (input.name.trim().length > 100) {
-      return fail(new Error('Brand name must be at most 100 characters long'));
+    // 3. Validation de l'owner ID
+    const ownerValidation = validateOwnerId(input.ownerId);
+    if (!ownerValidation.success) {
+      return ownerValidation;
     }
 
-    // Validation de l'URL du logo
-    if (!input.logoUrl || input.logoUrl.trim().length === 0) {
-      return fail(new Error('Logo URL is required'));
+    // 4. Validation de la couleur primaire
+    const primaryColorValidation = validateHexColor(input.primaryColor, 'Primary color');
+    if (!primaryColorValidation.success) {
+      return primaryColorValidation;
     }
 
-    // Validation de l'owner ID
-    if (!input.ownerId || input.ownerId.trim().length === 0) {
-      return fail(new Error('Owner ID is required'));
+    // 5. Validation de la couleur secondaire
+    const secondaryColorValidation = validateHexColor(input.secondaryColor, 'Secondary color');
+    if (!secondaryColorValidation.success) {
+      return secondaryColorValidation;
     }
 
-    // Validation des couleurs si fournies
-    const hexColorRegex = /^#[0-9A-F]{6}$/i;
-    if (input.primaryColor && !hexColorRegex.test(input.primaryColor)) {
-      return fail(new Error('Primary color must be a valid hex color (e.g., #5B21B6)'));
-    }
-
-    if (input.secondaryColor && !hexColorRegex.test(input.secondaryColor)) {
-      return fail(new Error('Secondary color must be a valid hex color (e.g., #FACC15)'));
-    }
-
-    // Créer via repository
-    const brandResult = await this.brandRepository.create({
-      name: input.name.trim(),
-      logoUrl: input.logoUrl.trim(),
-      ownerId: input.ownerId,
-      primaryColor: input.primaryColor || '#5B21B6',
-      secondaryColor: input.secondaryColor || '#FACC15',
-      font: input.font || 'inter',
-      isPaid: input.isPaid || false,
-    });
+    // 6. Créer via repository
+    const brandData = buildBrandData(input);
+    const brandResult = await this.brandRepository.create(brandData);
 
     if (!brandResult.success) {
       return fail(brandResult.error);

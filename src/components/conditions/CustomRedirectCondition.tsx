@@ -17,14 +17,50 @@ interface CustomRedirectConditionProps {
   totalSteps: number;
 }
 
+// Helper functions extracted outside component
+function getRandomDelay(): number {
+  return Math.floor(Math.random() * 8) + 8;
+}
+
+function shouldOpenRedirect(url: string): boolean {
+  return url !== '' && url !== '#';
+}
+
+function getStatusBadgeStyles(hasClicked: boolean): string {
+  return hasClicked ? 'bg-green-500' : 'bg-linear-to-br from-purple-500 to-indigo-600';
+}
+
+function getStatusIcon(hasClicked: boolean): string {
+  return hasClicked ? '✓' : '🔗';
+}
+
+function getStatusMessage(hasClicked: boolean, instructionText: string): string {
+  return hasClicked ? 'Action complétée ! Vous pouvez maintenant continuer.' : instructionText;
+}
+
+function getVerificationMessage(countdown: number | null): string {
+  const isCountdownActive = countdown !== null && countdown > 0;
+  return isCountdownActive ? 'Vérification en cours...' : 'Action complétée !';
+}
+
+function extractConfig(condition: CampaignConditionData) {
+  const config = condition.config as CustomRedirectConfig | null;
+  return {
+    redirectUrl: config?.redirectUrl || condition.redirectUrl || '#',
+    buttonText: config?.buttonText || 'Continuer',
+    instructionText: config?.instructionText || 'Cliquez pour continuer',
+  };
+}
+
+function openRedirectInNewTab(url: string): void {
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 export function CustomRedirectCondition({ condition, onComplete }: CustomRedirectConditionProps) {
   const [hasClicked, setHasClicked] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
-  const config = condition.config as CustomRedirectConfig | null;
-  const redirectUrl = config?.redirectUrl || condition.redirectUrl || '#';
-  const buttonText = config?.buttonText || 'Continuer';
-  const instructionText = config?.instructionText || 'Cliquez pour continuer';
+  const { redirectUrl, buttonText, instructionText } = extractConfig(condition);
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -37,32 +73,37 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
   const handleClick = () => {
     setHasClicked(true);
 
-    // Timer aléatoire entre 8 et 15 secondes
-    const randomDelay = Math.floor(Math.random() * 8) + 8;
+    const randomDelay = getRandomDelay();
     setCountdown(randomDelay);
 
-    // Ouvrir l'URL dans un nouvel onglet
-    if (redirectUrl && redirectUrl !== '#') {
-      window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+    if (shouldOpenRedirect(redirectUrl)) {
+      openRedirectInNewTab(redirectUrl);
     }
 
-    // Auto-complete après le countdown
     setTimeout(() => {
       onComplete();
     }, randomDelay * 1000);
   };
+
+  // Pre-compute display values
+  const iconEmoji = condition.iconEmoji || '🔗';
+  const title = condition.title || 'Action personnalisée';
+  const description = condition.description || instructionText;
+  const actionTitle = condition.title || 'Action requise';
+  const badgeStyles = getStatusBadgeStyles(hasClicked);
+  const statusIcon = getStatusIcon(hasClicked);
+  const statusMessage = getStatusMessage(hasClicked, instructionText);
+  const verificationMessage = getVerificationMessage(countdown);
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-purple-500 to-indigo-600 rounded-full mb-4 shadow-lg">
-          <span className="text-3xl">{condition.iconEmoji || '🔗'}</span>
+          <span className="text-3xl">{iconEmoji}</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-3">
-          {condition.title || 'Action personnalisée'}
-        </h1>
-        <p className="text-xl text-gray-700">{condition.description || instructionText}</p>
+        <h1 className="text-4xl font-bold text-gray-800 mb-3">{title}</h1>
+        <p className="text-xl text-gray-700">{description}</p>
       </div>
 
       {/* Action Card */}
@@ -70,22 +111,14 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${
-                hasClicked ? 'bg-green-500' : 'bg-linear-to-br from-purple-500 to-indigo-600'
-              }`}
+              className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${badgeStyles}`}
             >
-              {hasClicked ? '✓' : '🔗'}
+              {statusIcon}
             </div>
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              {condition.title || 'Action requise'}
-            </h3>
-            <p className="text-gray-700 mb-4">
-              {hasClicked
-                ? 'Action complétée ! Vous pouvez maintenant continuer.'
-                : instructionText}
-            </p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">{actionTitle}</h3>
+            <p className="text-gray-700 mb-4">{statusMessage}</p>
 
             {!hasClicked ? (
               <button
@@ -112,11 +145,7 @@ export function CustomRedirectCondition({ condition, onComplete }: CustomRedirec
                       clipRule="evenodd"
                     ></path>
                   </svg>
-                  <span className="font-semibold">
-                    {countdown !== null && countdown > 0
-                      ? `Vérification en cours...`
-                      : 'Action complétée !'}
-                  </span>
+                  <span className="font-semibold">{verificationMessage}</span>
                 </div>
               </div>
             )}

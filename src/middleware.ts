@@ -32,6 +32,106 @@ const REFRESH_TOKEN_COOKIE = 'cb-refresh-token';
 const GAME_SESSION_COOKIE = 'cb-game-session';
 
 /**
+ * Helper: Vérifie si la requête contient des paramètres OAuth
+ */
+function hasOAuthParameters(url: URL, hash: string): boolean {
+  return (
+    url.searchParams.has('access_token') ||
+    url.searchParams.has('error') ||
+    url.searchParams.has('code') ||
+    hash.includes('access_token') ||
+    hash.includes('error')
+  );
+}
+
+/**
+ * Helper: Vérifie si la route est protégée
+ */
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
+ * Helper: Vérifie si la route est publique uniquement
+ */
+function isPublicOnlyRoute(pathname: string): boolean {
+  return PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
+ * Helper: Extrait les cookies d'authentification
+ */
+function getAuthCookies(request: NextRequest): {
+  hasAdminAuth: boolean;
+  hasGameAuth: boolean;
+} {
+  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+  const gameSession = request.cookies.get(GAME_SESSION_COOKIE)?.value;
+
+  return {
+    hasAdminAuth: !!(accessToken && refreshToken),
+    hasGameAuth: !!gameSession,
+  };
+}
+
+/**
+ * Helper: Gère la redirection OAuth mal configurée
+ */
+function handleOAuthRedirect(request: NextRequest, hash: string): NextResponse | null {
+  const { pathname } = request.nextUrl;
+
+  if (pathname !== '/dashboard') {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  if (!hasOAuthParameters(url, hash)) {
+    return null;
+  }
+
+  // Rediriger vers /auth/callback en préservant tous les params
+  url.pathname = '/auth/callback';
+  return NextResponse.redirect(url);
+}
+
+/**
+ * Helper: Gère les routes protégées
+ */
+function handleProtectedRoute(
+  pathname: string,
+  hasAdminAuth: boolean,
+  request: NextRequest,
+): NextResponse | null {
+  if (!isProtectedRoute(pathname) || hasAdminAuth) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  url.pathname = '/login';
+  url.searchParams.set('from', pathname);
+  return NextResponse.redirect(url);
+}
+
+/**
+ * Helper: Gère les routes publiques uniquement
+ */
+function handlePublicOnlyRoute(
+  pathname: string,
+  hasAdminAuth: boolean,
+  hasGameAuth: boolean,
+  request: NextRequest,
+): NextResponse | null {
+  if (!isPublicOnlyRoute(pathname) || !hasAdminAuth || hasGameAuth) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  url.pathname = '/dashboard';
+  return NextResponse.redirect(url);
+}
+
+/**
  * Middleware de protection des routes
  * IMPORTANT: Sépare complètement l'auth admin (dashboard) et l'auth jeu (play)
  * Ne vérifie que la présence des cookies, pas leur validité
@@ -41,58 +141,29 @@ export async function middleware(request: NextRequest) {
   const { pathname, hash } = request.nextUrl;
 
   // IMPORTANT: Intercepter les redirections OAuth mal configurées
-  // Si on arrive sur /dashboard avec access_token ou error dans l'URL/hash
-  // => Supabase a redirigé vers /dashboard au lieu de /auth/callback
-  if (pathname === '/dashboard') {
-    const url = request.nextUrl.clone();
-    const hasOAuthParams =
-      url.searchParams.has('access_token') ||
-      url.searchParams.has('error') ||
-      url.searchParams.has('code') ||
-      hash.includes('access_token') ||
-      hash.includes('error');
-
-    if (hasOAuthParams) {
-      // Rediriger vers /auth/callback en préservant tous les params
-      url.pathname = '/auth/callback';
-      return NextResponse.redirect(url);
-    }
+  const oauthRedirect = handleOAuthRedirect(request, hash);
+  if (oauthRedirect) {
+    return oauthRedirect;
   }
 
-  // Vérifier si la route est protégée
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
-
-  // Vérifier si la route est publique uniquement
-  const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
-
-  // IMPORTANT: Séparer les cookies admin et game
-  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
-  const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
-  const gameSession = request.cookies.get(GAME_SESSION_COOKIE)?.value;
-
-  const hasAdminAuth = !!(accessToken && refreshToken);
-  const hasGameAuth = !!gameSession;
-
-  // Redirection pour les routes protégées (ADMIN UNIQUEMENT)
-  if (isProtectedRoute && !hasAdminAuth) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // Redirection pour les routes publiques uniquement (ADMIN UNIQUEMENT)
-  // Si on a une session game, on ne redirige PAS vers dashboard
-  if (isPublicOnlyRoute && hasAdminAuth && !hasGameAuth) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
-
-  // Callback d'authentification
+  // Callback d'authentification - laisser passer
   if (pathname === '/auth/callback') {
-    // Accepter les callbacks avec ou sans code (implicit flow vs PKCE flow)
     return NextResponse.next();
+  }
+
+  // Extraire les informations d'authentification
+  const { hasAdminAuth, hasGameAuth } = getAuthCookies(request);
+
+  // Vérifier les routes protégées
+  const protectedRedirect = handleProtectedRoute(pathname, hasAdminAuth, request);
+  if (protectedRedirect) {
+    return protectedRedirect;
+  }
+
+  // Vérifier les routes publiques uniquement
+  const publicOnlyRedirect = handlePublicOnlyRoute(pathname, hasAdminAuth, hasGameAuth, request);
+  if (publicOnlyRedirect) {
+    return publicOnlyRedirect;
   }
 
   return NextResponse.next();

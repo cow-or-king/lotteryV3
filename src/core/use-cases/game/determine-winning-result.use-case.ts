@@ -17,6 +17,55 @@ export interface DetermineWinningResultOutput {
   winningCombination: [string, string, string] | null;
 }
 
+type GameConfig = {
+  segments?: Array<{ id: string; label: string; prize?: { prizeIndex: number } }>;
+  winningPatterns?: Array<{ symbols: [string, string, string]; prizeIndex: number }>;
+};
+
+type Prize = { id: string };
+
+// Module-level helpers
+function findPrizeIndex(prizes: Prize[], wonPrizeId: string): number {
+  return prizes.findIndex((p) => p.id === wonPrizeId);
+}
+
+function getWinningSegmentId(gameConfig: GameConfig, prizeIndex: number): string | null {
+  if (!gameConfig.segments) return null;
+
+  if (prizeIndex !== -1 && prizeIndex < gameConfig.segments.length) {
+    const segment = gameConfig.segments[prizeIndex];
+    return segment?.id ?? null;
+  }
+
+  return null;
+}
+
+function getRandomPattern<T>(patterns: T[]): T | undefined {
+  return patterns[Math.floor(Math.random() * patterns.length)];
+}
+
+function getWinningCombination(
+  gameConfig: GameConfig,
+  prizeIndex: number,
+): [string, string, string] | null {
+  if (!gameConfig.winningPatterns || gameConfig.winningPatterns.length === 0) {
+    return null;
+  }
+
+  const matchingPatterns = gameConfig.winningPatterns.filter(
+    (pattern) => pattern.prizeIndex === prizeIndex,
+  );
+
+  if (matchingPatterns.length === 0) return null;
+
+  const randomPattern = getRandomPattern(matchingPatterns);
+  return randomPattern?.symbols ?? null;
+}
+
+function isWheelGame(gameType: string): boolean {
+  return gameType === 'WHEEL' || gameType === 'WHEEL_MINI';
+}
+
 export class DetermineWinningResultUseCase {
   execute(input: DetermineWinningResultInput): Result<DetermineWinningResultOutput> {
     const { campaign, wonPrizeId } = input;
@@ -28,47 +77,17 @@ export class DetermineWinningResultUseCase {
       return Result.ok({ winningSegmentId, winningCombination });
     }
 
-    const gameConfig = campaign.game.config as {
-      segments?: Array<{ id: string; label: string; prize?: { prizeIndex: number } }>;
-      winningPatterns?: Array<{ symbols: [string, string, string]; prizeIndex: number }>;
-    };
+    const gameConfig = campaign.game.config as GameConfig;
+    const prizeIndex = findPrizeIndex(campaign.prizes, wonPrizeId);
 
     // Pour la roue (WHEEL ou WHEEL_MINI)
-    if (campaign.game.type === 'WHEEL' || campaign.game.type === 'WHEEL_MINI') {
-      if (gameConfig.segments) {
-        // Trouver l'INDEX du prize gagné dans la liste des prizes
-        const prizeIndex = campaign.prizes.findIndex((p) => p.id === wonPrizeId);
-
-        // Utiliser cet index pour trouver le segment correspondant
-        if (prizeIndex !== -1 && prizeIndex < gameConfig.segments.length) {
-          const segment = gameConfig.segments[prizeIndex];
-          if (segment) {
-            winningSegmentId = segment.id;
-          }
-        }
-      }
+    if (isWheelGame(campaign.game.type)) {
+      winningSegmentId = getWinningSegmentId(gameConfig, prizeIndex);
     }
 
     // Pour la slot machine
     if (campaign.game.type === 'SLOT_MACHINE') {
-      if (gameConfig.winningPatterns && gameConfig.winningPatterns.length > 0) {
-        // Trouver l'INDEX du prize gagné
-        const prizeIndex = campaign.prizes.findIndex((p) => p.id === wonPrizeId);
-
-        // Trouver tous les patterns pour ce prize
-        const matchingPatterns = gameConfig.winningPatterns.filter(
-          (pattern) => pattern.prizeIndex === prizeIndex,
-        );
-
-        if (matchingPatterns.length > 0) {
-          // Choisir un pattern aléatoire
-          const randomPattern =
-            matchingPatterns[Math.floor(Math.random() * matchingPatterns.length)];
-          if (randomPattern) {
-            winningCombination = randomPattern.symbols;
-          }
-        }
-      }
+      winningCombination = getWinningCombination(gameConfig, prizeIndex);
     }
 
     return Result.ok({ winningSegmentId, winningCombination });

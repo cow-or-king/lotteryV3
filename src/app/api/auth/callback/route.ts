@@ -5,7 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { sessionService } from '@/infrastructure/auth/session.service';
 import { brandUserId } from '@/lib/types/branded.type';
 import { PrismaGameUserRepository } from '@/infrastructure/repositories/prisma-gameuser.repository';
@@ -21,6 +22,135 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
 const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// ========== HELPER FUNCTIONS ==========
+
+/**
+ * Crée un client Supabase configuré pour l'authentification
+ */
+function createAuthClient(): SupabaseClient {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
+/**
+ * Extrait le nom d'utilisateur depuis les métadonnées
+ */
+function extractUserName(userMetadata: Record<string, unknown> | undefined): string {
+  if (!userMetadata) return 'Joueur';
+  const givenName = userMetadata.given_name;
+  const name = userMetadata.name;
+  return typeof givenName === 'string' ? givenName : typeof name === 'string' ? name : 'Joueur';
+}
+
+/**
+ * Extrait l'URL de l'avatar depuis les métadonnées
+ */
+function extractAvatarUrl(userMetadata: Record<string, unknown> | undefined): string | undefined {
+  if (!userMetadata) return undefined;
+  const avatarUrl = userMetadata.avatar_url;
+  return typeof avatarUrl === 'string' ? avatarUrl : undefined;
+}
+
+/**
+ * Crée un GameUser et retourne la réponse de redirection
+ */
+async function handleGameAuth(
+  user: User,
+  session: Session,
+  campaignId: string,
+  requestUrl: string,
+): Promise<NextResponse> {
+  const gameUserRepo = new PrismaGameUserRepository();
+  const gameUserResult = await gameUserRepo.upsert({
+    supabaseId: user.id,
+    email: user.email ?? '',
+    name: extractUserName(user.user_metadata),
+    avatarUrl: extractAvatarUrl(user.user_metadata),
+    provider: 'google',
+  });
+
+  if (!gameUserResult.success) {
+    return NextResponse.redirect(
+      new URL(`/c/${campaignId}?error=game_user_creation_failed`, requestUrl),
+    );
+  }
+
+  const response = NextResponse.redirect(new URL(`/play/${campaignId}`, requestUrl));
+  setGameCookies(response, session, gameUserResult.data);
+  return response;
+}
+
+/**
+ * Configure les cookies pour l'authentification jeu
+ */
+function setGameCookies(
+  response: NextResponse,
+  session: Session,
+  gameUser: { id: string; email: string; name: string | null },
+): void {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieMaxAge = 60 * 60 * 24 * 7; // 7 jours
+
+  response.cookies.set('cb-game-session', session.access_token, {
+    httpOnly: false,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: cookieMaxAge,
+    path: '/',
+  });
+
+  response.cookies.set(
+    'cb-game-user',
+    JSON.stringify({
+      id: gameUser.id,
+      email: gameUser.email,
+      name: gameUser.name,
+    }),
+    {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: cookieMaxAge,
+      path: '/',
+    },
+  );
+}
+
+/**
+ * Crée une session admin et retourne la réponse de redirection
+ */
+async function handleAdminAuth(
+  user: User,
+  session: Session,
+  requestUrl: string,
+): Promise<NextResponse> {
+  const userIdResult = brandUserId(user.id);
+  if (!userIdResult.success) {
+    return NextResponse.redirect(new URL('/login?error=invalid_user_id', requestUrl));
+  }
+
+  const tokens = {
+    accessToken: session.access_token,
+    refreshToken: session.refresh_token,
+    expiresIn: session.expires_in ?? 3600,
+    expiresAt: session.expires_at ?? Date.now() / 1000 + 3600,
+  };
+
+  const sessionResult = await sessionService.createSession(tokens, userIdResult.data);
+
+  if (!sessionResult.success) {
+    return NextResponse.redirect(new URL('/login?error=session_failed', requestUrl));
+  }
+
+  return NextResponse.redirect(new URL('/dashboard', requestUrl));
+}
+
+// ========== MAIN HANDLER ==========
+
 /**
  * GET handler pour Magic Link callback
  * Supabase redirige vers cette route avec ?code=XXX
@@ -33,27 +163,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const errorDescription = searchParams.get('error_description');
     const campaignId = searchParams.get('campaignId');
 
-    // Si erreur dans l'URL
+    // Early returns pour les erreurs
     if (error) {
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, request.url),
       );
     }
 
-    // Si pas de code, rediriger vers login
     if (!code) {
       return NextResponse.redirect(new URL('/login?error=no_code', request.url));
     }
 
-    // Créer un client Supabase pour échanger le code
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-
     // Échanger le code contre une session
+    const supabase = createAuthClient();
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError || !data.session) {
@@ -67,79 +189,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const { session, user } = data;
 
-    // Si campaignId présent = Auth Jeu (Google depuis /c/[shortCode])
-    // Sinon = Auth Admin (login email/password)
-    const isGameAuth = !!campaignId;
-
-    if (isGameAuth) {
-      // Pour le jeu, créer/mettre à jour le GameUser dans la BD
-      const gameUserRepo = new PrismaGameUserRepository();
-      const gameUserResult = await gameUserRepo.upsert({
-        supabaseId: user.id,
-        email: user.email ?? '',
-        name: user.user_metadata?.given_name || user.user_metadata?.name || 'Joueur',
-        avatarUrl: user.user_metadata?.avatar_url,
-        provider: 'google',
-      });
-
-      if (!gameUserResult.success) {
-        return NextResponse.redirect(
-          new URL(`/c/${campaignId}?error=game_user_creation_failed`, request.url),
-        );
-      }
-
-      const response = NextResponse.redirect(new URL(`/play/${campaignId}`, request.url));
-
-      // IMPORTANT: Pour l'auth jeu, on ne crée PAS de cookies admin
-      // On crée UNIQUEMENT des cookies game
-      response.cookies.set('cb-game-session', session.access_token, {
-        httpOnly: false, // Doit être accessible côté client
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 jours
-        path: '/',
-      });
-
-      // Stocker aussi les infos utilisateur pour affichage
-      response.cookies.set(
-        'cb-game-user',
-        JSON.stringify({
-          id: gameUserResult.data.id,
-          email: gameUserResult.data.email,
-          name: gameUserResult.data.name,
-        }),
-        {
-          httpOnly: false, // Accessible côté client pour affichage
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-          path: '/',
-        },
-      );
-
-      return response;
+    // Déléguer le traitement selon le type d'auth
+    if (campaignId) {
+      return await handleGameAuth(user, session, campaignId, request.url);
     }
 
-    // Auth Admin : utiliser le système de session existant
-    const userIdResult = brandUserId(user.id);
-    if (!userIdResult.success) {
-      return NextResponse.redirect(new URL('/login?error=invalid_user_id', request.url));
-    }
-
-    const tokens = {
-      accessToken: session.access_token,
-      refreshToken: session.refresh_token,
-      expiresIn: session.expires_in ?? 3600,
-      expiresAt: session.expires_at ?? Date.now() / 1000 + 3600,
-    };
-
-    const sessionResult = await sessionService.createSession(tokens, userIdResult.data);
-
-    if (!sessionResult.success) {
-      return NextResponse.redirect(new URL('/login?error=session_failed', request.url));
-    }
-
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return await handleAdminAuth(user, session, request.url);
   } catch (_err) {
     return NextResponse.redirect(new URL('/login?error=unexpected_error', request.url));
   }

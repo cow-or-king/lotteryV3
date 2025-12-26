@@ -37,6 +37,184 @@ interface CustomizeQRCodeResult {
 }
 
 /**
+ * Interface pour le QR Code récupéré
+ */
+interface FetchedQRCode {
+  id: string;
+  url: string;
+  createdBy: string;
+  storeDefault: {
+    id: string;
+    qrCodeCustomized: boolean;
+    qrCodeCustomizedAt: Date | null;
+    brand: {
+      ownerId: string;
+      logoUrl: string | null;
+      logoStoragePath: string | null;
+    };
+  } | null;
+}
+
+/**
+ * Interface pour les URLs uploadées
+ */
+interface UploadedUrls {
+  svgUrl: string;
+  pngUrl: string;
+}
+
+/**
+ * Valide les permissions et l'état du QR Code
+ */
+function validateQRCodeAccess(
+  qrCode: FetchedQRCode | null,
+  userId: string,
+): CustomizeQRCodeResult | null {
+  if (!qrCode) {
+    return { success: false, error: 'QR Code non trouvé' };
+  }
+
+  if (qrCode.createdBy !== userId) {
+    return { success: false, error: "Vous n'avez pas accès à ce QR Code" };
+  }
+
+  if (!qrCode.storeDefault) {
+    return { success: false, error: "Ce QR Code n'est pas le QR Code par défaut d'un Store" };
+  }
+
+  if (qrCode.storeDefault.qrCodeCustomized) {
+    return {
+      success: false,
+      error: `QR Code déjà personnalisé le ${qrCode.storeDefault.qrCodeCustomizedAt?.toLocaleDateString('fr-FR')}`,
+    };
+  }
+
+  if (qrCode.storeDefault.brand.ownerId !== userId) {
+    return { success: false, error: "Vous n'avez pas accès à ce commerce" };
+  }
+
+  return null; // No validation error
+}
+
+/**
+ * Récupère le logo et sa taille en pixels si disponible
+ */
+async function getLogoDetails(
+  logoSize: LogoSize | null,
+  brandLogoUrl: string | null,
+): Promise<{ logoUrl: string | null; logoSizePixels: number | null }> {
+  if (!logoSize || !brandLogoUrl) {
+    return { logoUrl: null, logoSizePixels: null };
+  }
+
+  const { LOGO_SIZE_TO_PIXELS } = await import('@/lib/types/qr-code.types');
+  return {
+    logoUrl: brandLogoUrl,
+    logoSizePixels: LOGO_SIZE_TO_PIXELS[logoSize],
+  };
+}
+
+/**
+ * Upload un fichier vers Supabase Storage
+ */
+async function uploadToStorage(
+  path: string,
+  data: Buffer,
+  contentType: string,
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabaseAdmin.storage.from('qr-codes').upload(path, data, {
+    contentType,
+    upsert: false,
+  });
+
+  if (error) {
+    logger.error(`Upload error for ${path}:`, error);
+    return { success: false, error: `Échec upload ${contentType}` };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Upload SVG et PNG vers Supabase Storage
+ */
+async function uploadQRCodeFiles(
+  qrCodeId: string,
+  svgData: string,
+  pngBuffer: Buffer,
+): Promise<{ success: boolean; urls?: UploadedUrls; error?: string }> {
+  const timestamp = Date.now();
+  const svgPath = `qr-codes/${qrCodeId}/custom-${timestamp}.svg`;
+  const pngPath = `qr-codes/${qrCodeId}/custom-${timestamp}.png`;
+
+  // Upload SVG
+  const svgResult = await uploadToStorage(svgPath, Buffer.from(svgData), 'image/svg+xml');
+  if (!svgResult.success) {
+    return { success: false, error: svgResult.error };
+  }
+
+  // Upload PNG
+  const pngResult = await uploadToStorage(pngPath, pngBuffer, 'image/png');
+  if (!pngResult.success) {
+    // Cleanup SVG
+    await supabaseAdmin.storage.from('qr-codes').remove([svgPath]);
+    return { success: false, error: pngResult.error };
+  }
+
+  // Get public URLs
+  const { data: svgUrlData } = supabaseAdmin.storage.from('qr-codes').getPublicUrl(svgPath);
+  const { data: pngUrlData } = supabaseAdmin.storage.from('qr-codes').getPublicUrl(pngPath);
+
+  return {
+    success: true,
+    urls: {
+      svgUrl: svgUrlData.publicUrl,
+      pngUrl: pngUrlData.publicUrl,
+    },
+  };
+}
+
+/**
+ * Met à jour le QR Code et le Store dans une transaction
+ */
+async function updateQRCodeAndStore(
+  qrCodeId: string,
+  storeId: string,
+  params: {
+    style: QRCodeStyle;
+    foregroundColor: string;
+    backgroundColor: string;
+    logoSize: number | null;
+    errorCorrectionLevel: ErrorCorrectionLevel;
+    logoUrl: string | null;
+    logoStoragePath: string | null;
+  },
+  customizedAt: Date,
+): Promise<void> {
+  await prisma.$transaction([
+    prisma.qRCode.update({
+      where: { id: qrCodeId },
+      data: {
+        style: params.style,
+        foregroundColor: params.foregroundColor,
+        backgroundColor: params.backgroundColor,
+        logoSize: params.logoSize,
+        errorCorrectionLevel: params.errorCorrectionLevel,
+        logoUrl: params.logoUrl,
+        logoStoragePath: params.logoStoragePath,
+      },
+    }),
+    prisma.store.update({
+      where: { id: storeId },
+      data: {
+        qrCodeCustomized: true,
+        qrCodeCustomizedAt: customizedAt,
+      },
+    }),
+  ]);
+}
+
+/**
  * Personnalise un QR Code par défaut de Store
  * - Vérifie que le QR Code n'est pas déjà personnalisé
  * - Génère SVG + PNG HD (2048x2048)
@@ -78,34 +256,15 @@ export async function customizeStoreQRCode(
       },
     });
 
-    if (!qrCode) {
-      return { success: false, error: 'QR Code non trouvé' };
+    // 2. Valider les permissions et l'état
+    const validationError = validateQRCodeAccess(qrCode as FetchedQRCode | null, userId);
+    if (validationError) {
+      return validationError;
     }
 
-    // 2. Vérifier ownership
-    if (qrCode.createdBy !== userId) {
-      return { success: false, error: "Vous n'avez pas accès à ce QR Code" };
-    }
-
-    // 3. Vérifier que le Store existe et n'est pas déjà personnalisé
-    if (!qrCode.storeDefault) {
-      return { success: false, error: "Ce QR Code n'est pas le QR Code par défaut d'un Store" };
-    }
-
-    if (qrCode.storeDefault.qrCodeCustomized) {
-      return {
-        success: false,
-        error: `QR Code déjà personnalisé le ${qrCode.storeDefault.qrCodeCustomizedAt?.toLocaleDateString('fr-FR')}`,
-      };
-    }
-
-    // 4. Vérifier ownership du Store
-    if (qrCode.storeDefault.brand.ownerId !== userId) {
-      return { success: false, error: "Vous n'avez pas accès à ce commerce" };
-    }
-
-    const storeId = qrCode.storeDefault.id;
-    const targetUrl = qrCode.url;
+    // TypeScript knows qrCode.storeDefault exists after validation
+    const storeId = qrCode!.storeDefault!.id;
+    const targetUrl = qrCode!.url;
 
     logger.info(`Customizing QR Code ${qrCodeId} for store ${storeId}`, {
       style,
@@ -115,18 +274,13 @@ export async function customizeStoreQRCode(
       errorCorrectionLevel,
     });
 
-    // 5. Récupérer le logo du Store si logoSize est défini
-    let logoUrl: string | null = null;
-    let logoSizePixels: number | null = null;
+    // 3. Récupérer le logo du Store si disponible
+    const { logoUrl, logoSizePixels } = await getLogoDetails(
+      logoSize,
+      qrCode!.storeDefault!.brand.logoUrl,
+    );
 
-    if (logoSize && qrCode.storeDefault?.brand.logoUrl) {
-      logoUrl = qrCode.storeDefault.brand.logoUrl;
-      // Import dynamique pour éviter les erreurs TypeScript
-      const { LOGO_SIZE_TO_PIXELS } = await import('@/lib/types/qr-code.types');
-      logoSizePixels = LOGO_SIZE_TO_PIXELS[logoSize];
-    }
-
-    // 6. Générer SVG (vectoriel pour impression)
+    // 4. Générer SVG (vectoriel pour impression)
     const svgData = await generateQRCodeSVG({
       url: targetUrl,
       foregroundColor,
@@ -136,7 +290,7 @@ export async function customizeStoreQRCode(
       width: 2048,
     });
 
-    // 7. Générer PNG HD (2048x2048 pour haute résolution)
+    // 5. Générer PNG HD (2048x2048 pour haute résolution)
     const pngBuffer = await generateQRCodePNG({
       url: targetUrl,
       foregroundColor,
@@ -146,79 +300,36 @@ export async function customizeStoreQRCode(
       width: 2048,
     });
 
-    // 8. Upload vers Supabase Storage
-    const timestamp = Date.now();
-    const svgPath = `qr-codes/${qrCodeId}/custom-${timestamp}.svg`;
-    const pngPath = `qr-codes/${qrCodeId}/custom-${timestamp}.png`;
-
-    // Upload SVG
-    const { error: svgUploadError } = await supabaseAdmin.storage
-      .from('qr-codes')
-      .upload(svgPath, Buffer.from(svgData), {
-        contentType: 'image/svg+xml',
-        upsert: false,
-      });
-
-    if (svgUploadError) {
-      logger.error('SVG upload error:', svgUploadError);
-      return { success: false, error: 'Échec upload SVG' };
+    // 6. Upload vers Supabase Storage
+    const uploadResult = await uploadQRCodeFiles(qrCodeId, svgData, pngBuffer);
+    if (!uploadResult.success || !uploadResult.urls) {
+      return { success: false, error: uploadResult.error };
     }
-
-    // Upload PNG
-    const { error: pngUploadError } = await supabaseAdmin.storage
-      .from('qr-codes')
-      .upload(pngPath, pngBuffer, {
-        contentType: 'image/png',
-        upsert: false,
-      });
-
-    if (pngUploadError) {
-      logger.error('PNG upload error:', pngUploadError);
-      // Cleanup SVG
-      await supabaseAdmin.storage.from('qr-codes').remove([svgPath]);
-      return { success: false, error: 'Échec upload PNG' };
-    }
-
-    // 9. Récupérer les URLs publiques
-    const { data: svgUrlData } = supabaseAdmin.storage.from('qr-codes').getPublicUrl(svgPath);
-    const { data: pngUrlData } = supabaseAdmin.storage.from('qr-codes').getPublicUrl(pngPath);
 
     const customizedAt = new Date();
 
-    // 10. Mettre à jour le QRCode + Store dans une transaction
-    await prisma.$transaction([
-      // Update QRCode
-      prisma.qRCode.update({
-        where: { id: qrCodeId },
-        data: {
-          style,
-          foregroundColor,
-          backgroundColor,
-          logoSize: logoSizePixels,
-          errorCorrectionLevel,
-          logoUrl, // Ajouter le logo du Store si défini
-          logoStoragePath: qrCode.storeDefault?.brand.logoStoragePath, // Référencer le storage path
-        },
-      }),
-      // Update Store (verrouillage)
-      prisma.store.update({
-        where: { id: storeId },
-        data: {
-          qrCodeCustomized: true,
-          qrCodeCustomizedAt: customizedAt,
-        },
-      }),
-    ]);
+    // 7. Mettre à jour le QRCode + Store dans une transaction
+    await updateQRCodeAndStore(
+      qrCodeId,
+      storeId,
+      {
+        style,
+        foregroundColor,
+        backgroundColor,
+        logoSize: logoSizePixels,
+        errorCorrectionLevel,
+        logoUrl,
+        logoStoragePath: qrCode!.storeDefault!.brand.logoStoragePath,
+      },
+      customizedAt,
+    );
 
-    logger.info(`QR Code ${qrCodeId} customized successfully`, {
-      svgUrl: svgUrlData.publicUrl,
-      pngUrl: pngUrlData.publicUrl,
-    });
+    logger.info(`QR Code ${qrCodeId} customized successfully`, uploadResult.urls);
 
     return {
       success: true,
-      svgUrl: svgUrlData.publicUrl,
-      pngUrl: pngUrlData.publicUrl,
+      svgUrl: uploadResult.urls.svgUrl,
+      pngUrl: uploadResult.urls.pngUrl,
       customizedAt,
     };
   } catch (error) {

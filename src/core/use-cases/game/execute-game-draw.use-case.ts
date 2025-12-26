@@ -28,6 +28,44 @@ export interface ExecuteGameDrawOutput {
   claimCode: string | null;
 }
 
+interface Prize {
+  id: string;
+  name: string;
+  description: string | null;
+  value: number | null;
+  color: string;
+}
+
+// Module-level helpers
+function preparePlayedConditions(
+  existingConditions: string[],
+  nextConditionId: string | null,
+): string[] {
+  return nextConditionId ? [...existingConditions, nextConditionId] : existingConditions;
+}
+
+function calculateExpiryDate(expiryDays: number): Date {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + expiryDays);
+  return expiresAt;
+}
+
+function buildDrawOutput(
+  participant: Participant,
+  wonPrize: Prize | null,
+  claimCode: string | null,
+): ExecuteGameDrawOutput {
+  return {
+    participant,
+    wonPrizeId: wonPrize?.id || null,
+    wonPrizeName: wonPrize?.name || null,
+    wonPrizeDescription: wonPrize?.description || null,
+    wonPrizeValue: wonPrize?.value || null,
+    wonPrizeColor: wonPrize?.color || null,
+    claimCode,
+  };
+}
+
 export class ExecuteGameDrawUseCase {
   async execute(input: ExecuteGameDrawInput): Promise<Result<ExecuteGameDrawOutput>> {
     const { campaign, playerEmail, playerName, nextPlayableConditionId, playableConditionType } =
@@ -36,6 +74,34 @@ export class ExecuteGameDrawUseCase {
     // Effectuer le tirage au sort
     const wonPrize = selectPrize(campaign.prizes);
 
+    // Créer ou mettre à jour le participant
+    const participant = await this.upsertParticipant(
+      campaign,
+      playerEmail,
+      playerName,
+      nextPlayableConditionId,
+    );
+
+    // Enregistrer au niveau STORE
+    await this.recordStorePlayedGame(
+      playableConditionType,
+      playerEmail,
+      campaign.storeId,
+      campaign.id,
+    );
+
+    // Traiter le lot gagné
+    const claimCode = await this.processPrizeWin(wonPrize, playerEmail, playerName, campaign);
+
+    return Result.ok(buildDrawOutput(participant, wonPrize, claimCode));
+  }
+
+  private async upsertParticipant(
+    campaign: CampaignForPlay,
+    playerEmail: string,
+    playerName: string,
+    nextPlayableConditionId: string | null,
+  ): Promise<Participant> {
     // Récupérer la participation existante pour les playedConditions
     const existingParticipation = await prisma.participant.findFirst({
       where: {
@@ -46,12 +112,12 @@ export class ExecuteGameDrawUseCase {
 
     // Préparer les playedConditions à mettre à jour
     const existingPlayedConditions = (existingParticipation?.playedConditions as string[]) || [];
-    const updatedPlayedConditions = nextPlayableConditionId
-      ? [...existingPlayedConditions, nextPlayableConditionId]
-      : existingPlayedConditions;
+    const updatedPlayedConditions = preparePlayedConditions(
+      existingPlayedConditions,
+      nextPlayableConditionId,
+    );
 
-    // Créer ou mettre à jour le participant
-    const participant = await prisma.participant.upsert({
+    return prisma.participant.upsert({
       where: {
         email_campaignId: {
           email: playerEmail,
@@ -78,59 +144,62 @@ export class ExecuteGameDrawUseCase {
         playedConditions: updatedPlayedConditions,
       },
     });
+  }
 
-    // NOUVEAU: Enregistrer au niveau STORE qu'un jeu a été joué pour ce TYPE de condition
-    if (playableConditionType) {
-      await prisma.$executeRaw`
-        INSERT INTO store_played_games (id, email, store_id, condition_type, campaign_id, played_at)
-        VALUES (gen_random_uuid()::text, ${playerEmail}, ${campaign.storeId}, ${playableConditionType}::"ConditionType", ${campaign.id}, NOW())
-        ON CONFLICT (email, store_id, condition_type)
-        DO UPDATE SET played_at = NOW(), campaign_id = ${campaign.id}
-      `;
+  private async recordStorePlayedGame(
+    playableConditionType: string | null,
+    playerEmail: string,
+    storeId: string,
+    campaignId: string,
+  ): Promise<void> {
+    if (!playableConditionType) {
+      return;
     }
 
-    // Générer le code de réclamation si un lot a été gagné
-    let claimCode: string | null = null;
+    await prisma.$executeRaw`
+      INSERT INTO store_played_games (id, email, store_id, condition_type, campaign_id, played_at)
+      VALUES (gen_random_uuid()::text, ${playerEmail}, ${storeId}, ${playableConditionType}::"ConditionType", ${campaignId}, NOW())
+      ON CONFLICT (email, store_id, condition_type)
+      DO UPDATE SET played_at = NOW(), campaign_id = ${campaignId}
+    `;
+  }
 
-    if (wonPrize) {
-      claimCode = generateClaimCode();
-
-      // Calculer la date d'expiration
-      const expiryDays = campaign.prizeClaimExpiryDays || 30;
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiryDays);
-
-      // Créer une entrée Winner
-      await prisma.winner.create({
-        data: {
-          prizeId: wonPrize.id,
-          participantEmail: playerEmail,
-          participantName: playerName,
-          claimCode,
-          expiresAt,
-          status: 'PENDING',
-        },
-      });
-
-      // Décrémenter la quantité restante
-      await prisma.prize.update({
-        where: { id: wonPrize.id },
-        data: {
-          remaining: {
-            decrement: 1,
-          },
-        },
-      });
+  private async processPrizeWin(
+    wonPrize: Prize | null,
+    playerEmail: string,
+    playerName: string,
+    campaign: CampaignForPlay,
+  ): Promise<string | null> {
+    if (!wonPrize) {
+      return null;
     }
 
-    return Result.ok({
-      participant,
-      wonPrizeId: wonPrize?.id || null,
-      wonPrizeName: wonPrize?.name || null,
-      wonPrizeDescription: wonPrize?.description || null,
-      wonPrizeValue: wonPrize?.value || null,
-      wonPrizeColor: wonPrize?.color || null,
-      claimCode,
+    const claimCode = generateClaimCode();
+    const expiryDays = campaign.prizeClaimExpiryDays || 30;
+    const expiresAt = calculateExpiryDate(expiryDays);
+
+    // Créer une entrée Winner
+    await prisma.winner.create({
+      data: {
+        prizeId: wonPrize.id,
+        participantEmail: playerEmail,
+        participantName: playerName,
+        claimCode,
+        expiresAt,
+        status: 'PENDING',
+      },
     });
+
+    // Décrémenter la quantité restante
+    await prisma.prize.update({
+      where: { id: wonPrize.id },
+      data: {
+        remaining: {
+          decrement: 1,
+        },
+      },
+    });
+
+    return claimCode;
   }
 }

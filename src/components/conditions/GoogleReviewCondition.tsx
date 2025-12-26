@@ -17,26 +17,89 @@ interface GoogleReviewConditionProps {
   totalSteps: number;
 }
 
-export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewConditionProps) {
-  const config = condition.config as GoogleReviewConfig | null;
-  // Nettoyer l'URL : supprimer le tiret final s'il existe
+// Helper functions
+function cleanGoogleReviewUrl(url: string): string {
+  return url.endsWith('-') ? url.slice(0, -1) : url;
+}
+
+function getReviewUrl(
+  config: GoogleReviewConfig | null,
+  redirectUrl: string | null | undefined,
+): string {
   const rawUrl =
     config?.googleReviewUrl ||
-    condition.redirectUrl ||
+    redirectUrl ||
     'https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID';
-  const googleReviewUrl = rawUrl.endsWith('-') ? rawUrl.slice(0, -1) : rawUrl;
+  return cleanGoogleReviewUrl(rawUrl);
+}
+
+function generateRandomDelay(): number {
+  return Math.floor(Math.random() * 11) + 15;
+}
+
+function shouldShowTimer(isWaiting: boolean, countdown: number | null): boolean {
+  return isWaiting && countdown !== null && countdown > 0;
+}
+
+function isCountdownComplete(countdown: number | null): boolean {
+  return countdown === 0;
+}
+
+function getStep1Classes(hasClickedReview: boolean): string {
+  return hasClickedReview
+    ? 'bg-white/40 border border-white/30'
+    : 'bg-white/70 border-2 border-purple-600';
+}
+
+function getStep1BadgeClasses(hasClickedReview: boolean): string {
+  return hasClickedReview ? 'bg-green-500' : 'bg-linear-to-br from-purple-600 to-pink-600';
+}
+
+function getStep1Message(hasClickedReview: boolean): string {
+  return hasClickedReview
+    ? "Merci d'avoir publié votre avis. Vous allez pouvoir accéder au jeu de la chance !"
+    : 'Cliquez pour ouvrir Google Avis dans un nouvel onglet.';
+}
+
+function getStep2Classes(countdown: number | null): string {
+  return countdown === 0
+    ? 'bg-white/70 border-2 border-green-500'
+    : 'bg-white/40 border border-white/30';
+}
+
+function getStep2BadgeClasses(countdown: number | null): string {
+  return countdown === 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500';
+}
+
+function getStep2TitleClasses(countdown: number | null): string {
+  return countdown === 0 ? 'text-gray-800' : 'text-gray-500';
+}
+
+export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewConditionProps) {
+  const config = condition.config as GoogleReviewConfig | null;
+  const googleReviewUrl = getReviewUrl(config, condition.redirectUrl);
   const [showPopup, setShowPopup] = useState(false);
   const [hasClickedReview, setHasClickedReview] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  // Pre-computed flags
+  const showTimer = shouldShowTimer(isWaiting, countdown);
+  const isComplete = isCountdownComplete(countdown);
+  const step1Classes = getStep1Classes(hasClickedReview);
+  const step1BadgeClasses = getStep1BadgeClasses(hasClickedReview);
+  const step1Message = getStep1Message(hasClickedReview);
+  const step2Classes = getStep2Classes(countdown);
+  const step2BadgeClasses = getStep2BadgeClasses(countdown);
+  const step2TitleClasses = getStep2TitleClasses(countdown);
+
   useEffect(() => {
-    if (isWaiting && countdown !== null && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    if (showTimer) {
+      const timer = setTimeout(() => setCountdown(countdown! - 1), 1000);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [isWaiting, countdown]);
+  }, [isWaiting, countdown, showTimer]);
 
   const handleReviewClick = () => {
     setShowPopup(true);
@@ -47,11 +110,9 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
     setHasClickedReview(true);
     setIsWaiting(true);
 
-    // Timer aléatoire entre 15 et 25 secondes
-    const randomDelay = Math.floor(Math.random() * 11) + 15;
+    const randomDelay = generateRandomDelay();
     setCountdown(randomDelay);
 
-    // Ouvrir le lien Google Avis dans un nouvel onglet
     window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -84,18 +145,12 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
       <div className="space-y-6">
         {/* Step 1 - Active */}
         <div
-          className={`backdrop-blur-xl rounded-2xl p-6 shadow-lg transition-all ${
-            hasClickedReview
-              ? 'bg-white/40 border border-white/30'
-              : 'bg-white/70 border-2 border-purple-600'
-          }`}
+          className={`backdrop-blur-xl rounded-2xl p-6 shadow-lg transition-all ${step1Classes}`}
         >
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${
-                  hasClickedReview ? 'bg-green-500' : 'bg-linear-to-br from-purple-600 to-pink-600'
-                }`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg ${step1BadgeClasses}`}
               >
                 {hasClickedReview ? '✓' : '1'}
               </div>
@@ -104,11 +159,7 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
               <h3 className="text-xl font-bold text-gray-800 mb-2">
                 Partagez votre expérience sur Google
               </h3>
-              <p className="text-gray-700 mb-4">
-                {hasClickedReview
-                  ? "Merci d'avoir publié votre avis. Vous allez pouvoir accéder au jeu de la chance !"
-                  : 'Cliquez pour ouvrir Google Avis dans un nouvel onglet.'}
-              </p>
+              <p className="text-gray-700 mb-4">{step1Message}</p>
 
               {!hasClickedReview && (
                 <button
@@ -164,31 +215,21 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
 
         {/* Step 2 - Waiting */}
         <div
-          className={`backdrop-blur-xl rounded-2xl p-6 shadow-lg transition-all ${
-            countdown === 0
-              ? 'bg-white/70 border-2 border-green-500'
-              : 'bg-white/40 border border-white/30'
-          }`}
+          className={`backdrop-blur-xl rounded-2xl p-6 shadow-lg transition-all ${step2Classes}`}
         >
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                  countdown === 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'
-                }`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${step2BadgeClasses}`}
               >
-                {countdown === 0 ? '✓' : '2'}
+                {isComplete ? '✓' : '2'}
               </div>
             </div>
             <div className="flex-1">
-              <h3
-                className={`text-xl font-bold mb-2 ${
-                  countdown === 0 ? 'text-gray-800' : 'text-gray-500'
-                }`}
-              >
+              <h3 className={`text-xl font-bold mb-2 ${step2TitleClasses}`}>
                 Tournez la roue et gagnez
               </h3>
-              {countdown === 0 ? (
+              {isComplete ? (
                 <>
                   <p className="text-green-600 font-semibold mb-4">
                     🎉 Accès débloqué ! Vous pouvez maintenant jouer
@@ -227,7 +268,7 @@ export function GoogleReviewCondition({ condition, onComplete }: GoogleReviewCon
       </div>
 
       {/* Timer Info */}
-      {isWaiting && countdown !== null && countdown > 0 && (
+      {showTimer && (
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full text-gray-700 text-sm shadow-lg">
             <svg

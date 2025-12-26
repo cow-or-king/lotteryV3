@@ -50,6 +50,84 @@ export interface PrizeProps {
   readonly updatedAt: Date;
 }
 
+// Module-level validation helpers
+function validateName(name: string | undefined): Result<string> {
+  if (!name || name.trim().length < 2) {
+    return Result.fail(new InvalidPrizeDataError('Prize name must be at least 2 characters'));
+  }
+
+  if (name.length > 100) {
+    return Result.fail(new InvalidPrizeDataError('Prize name must be less than 100 characters'));
+  }
+
+  return Result.ok(name.trim());
+}
+
+function validateDescription(description: string | undefined): Result<string | null> {
+  if (description && description.length > 500) {
+    return Result.fail(new InvalidPrizeDataError('Description must be less than 500 characters'));
+  }
+
+  return Result.ok(description?.trim() ?? null);
+}
+
+function validateMonetaryValue(value: number | undefined): Result<Money | null> {
+  if (value === undefined) {
+    return Result.ok(null);
+  }
+
+  const moneyResult = Money.create(value, 'EUR');
+  if (!moneyResult.success) {
+    return Result.fail(new InvalidPrizeDataError('Invalid monetary value'));
+  }
+
+  return Result.ok(moneyResult.data);
+}
+
+function validateHexColor(color: string): Result<string> {
+  const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  if (!hexRegex.test(color)) {
+    return Result.fail(new InvalidPrizeDataError('Color must be a valid hex color'));
+  }
+
+  return Result.ok(color.toUpperCase());
+}
+
+function validateProbability(probability: number): Result<number> {
+  if (probability < 0 || probability > 1) {
+    return Result.fail(new InvalidPrizeDataError('Probability must be between 0 and 1'));
+  }
+
+  return Result.ok(probability);
+}
+
+function validateQuantity(quantity: number): Result<number> {
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    return Result.fail(new InvalidPrizeDataError('Quantity must be a positive integer'));
+  }
+
+  if (quantity > 10000) {
+    return Result.fail(new InvalidPrizeDataError('Quantity cannot exceed 10000'));
+  }
+
+  return Result.ok(quantity);
+}
+
+// Helper function to build updated props
+function buildUpdatedPrizeProps(
+  currentProps: PrizeProps,
+  updates: { name?: string; description?: string | null; color?: string; value?: Money | null },
+): PrizeProps {
+  return {
+    ...currentProps,
+    name: updates.name !== undefined ? updates.name : currentProps.name,
+    description: updates.description !== undefined ? updates.description : currentProps.description,
+    color: updates.color !== undefined ? updates.color : currentProps.color,
+    value: updates.value !== undefined ? updates.value : currentProps.value,
+    updatedAt: new Date(),
+  };
+}
+
 /**
  * Prize Entity
  */
@@ -58,47 +136,40 @@ export class PrizeEntity {
 
   // Factory Methods
   static create(props: CreatePrizeProps): Result<PrizeEntity> {
-    // Validation du nom
-    if (!props.name || props.name.trim().length < 2) {
-      return Result.fail(new InvalidPrizeDataError('Prize name must be at least 2 characters'));
+    // Validate name
+    const nameResult = validateName(props.name);
+    if (!nameResult.success) {
+      return nameResult;
     }
 
-    if (props.name.length > 100) {
-      return Result.fail(new InvalidPrizeDataError('Prize name must be less than 100 characters'));
+    // Validate description
+    const descriptionResult = validateDescription(props.description);
+    if (!descriptionResult.success) {
+      return descriptionResult;
     }
 
-    // Validation de la description
-    if (props.description && props.description.length > 500) {
-      return Result.fail(new InvalidPrizeDataError('Description must be less than 500 characters'));
+    // Validate monetary value
+    const valueResult = validateMonetaryValue(props.value);
+    if (!valueResult.success) {
+      return valueResult;
     }
 
-    // Validation de la valeur monétaire
-    let value: Money | null = null;
-    if (props.value !== undefined) {
-      const moneyResult = Money.create(props.value, 'EUR');
-      if (!moneyResult.success) {
-        return Result.fail(new InvalidPrizeDataError('Invalid monetary value'));
-      }
-      value = moneyResult.data;
+    // Validate color
+    const colorResult = validateHexColor(props.color);
+    if (!colorResult.success) {
+      return colorResult;
     }
 
-    // Validation de la couleur (format hex)
-    if (!this.isValidHexColor(props.color)) {
-      return Result.fail(new InvalidPrizeDataError('Color must be a valid hex color'));
+    // Validate probability
+    const probabilityResult = validateProbability(props.probability);
+    if (!probabilityResult.success) {
+      return probabilityResult;
     }
 
-    // Validation de la probabilité
-    if (props.probability < 0 || props.probability > 1) {
-      return Result.fail(new InvalidPrizeDataError('Probability must be between 0 and 1'));
-    }
-
-    // Validation de la quantité
-    if (!Number.isInteger(props.quantity) || props.quantity < 1) {
-      return Result.fail(new InvalidPrizeDataError('Quantity must be a positive integer'));
-    }
-
-    if (props.quantity > 10000) {
-      return Result.fail(new InvalidPrizeDataError('Quantity cannot exceed 10000'));
+    // Validate quantity
+    const quantityResult = validateQuantity(props.quantity);
+    if (!quantityResult.success) {
+      return quantityResult;
     }
 
     const now = new Date();
@@ -106,14 +177,14 @@ export class PrizeEntity {
 
     const prize = new PrizeEntity({
       id: prizeId,
-      name: props.name.trim(),
-      description: props.description?.trim() ?? null,
+      name: nameResult.data,
+      description: descriptionResult.data,
       campaignId: props.campaignId,
-      value,
-      color: props.color.toUpperCase(),
-      probability: props.probability,
-      quantity: props.quantity,
-      remaining: props.quantity, // Initially, remaining equals quantity
+      value: valueResult.data,
+      color: colorResult.data,
+      probability: probabilityResult.data,
+      quantity: quantityResult.data,
+      remaining: quantityResult.data, // Initially, remaining equals quantity
       winnersCount: 0,
       createdAt: now,
       updatedAt: now,
@@ -276,51 +347,56 @@ export class PrizeEntity {
   updateDetails(
     updates: Partial<{ name: string; description: string; color: string; value: number }>,
   ): Result<PrizeEntity> {
-    // Validation du nom
+    const validatedUpdates: {
+      name?: string;
+      description?: string | null;
+      color?: string;
+      value?: Money | null;
+    } = {};
+
+    // Validate name if provided
     if (updates.name !== undefined) {
-      if (updates.name.trim().length < 2 || updates.name.length > 100) {
-        return Result.fail(new InvalidPrizeDataError('Invalid prize name'));
+      const nameResult = validateName(updates.name);
+      if (!nameResult.success) {
+        return nameResult;
       }
+      validatedUpdates.name = nameResult.data;
     }
 
-    // Validation de la description
-    if (updates.description !== undefined && updates.description.length > 500) {
-      return Result.fail(new InvalidPrizeDataError('Description too long'));
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      const descriptionResult = validateDescription(updates.description);
+      if (!descriptionResult.success) {
+        return descriptionResult;
+      }
+      validatedUpdates.description = descriptionResult.data;
     }
 
-    // Validation de la couleur
-    if (updates.color !== undefined && !PrizeEntity.isValidHexColor(updates.color)) {
-      return Result.fail(new InvalidPrizeDataError('Invalid color format'));
+    // Validate color if provided
+    if (updates.color !== undefined) {
+      const colorResult = validateHexColor(updates.color);
+      if (!colorResult.success) {
+        return colorResult;
+      }
+      validatedUpdates.color = colorResult.data;
     }
 
-    // Validation de la valeur
-    let newValue = this.props.value;
+    // Validate value if provided
     if (updates.value !== undefined) {
-      const moneyResult = Money.create(updates.value, 'EUR');
-      if (!moneyResult.success) {
-        return Result.fail(new InvalidPrizeDataError('Invalid monetary value'));
+      const valueResult = validateMonetaryValue(updates.value);
+      if (!valueResult.success) {
+        return valueResult;
       }
-      newValue = moneyResult.data;
+      validatedUpdates.value = valueResult.data;
     }
 
-    const updatedPrize = new PrizeEntity({
-      ...this.props,
-      name: updates.name?.trim() ?? this.props.name,
-      description: updates.description?.trim() ?? this.props.description,
-      color: updates.color?.toUpperCase() ?? this.props.color,
-      value: newValue,
-      updatedAt: new Date(),
-    });
+    const updatedProps = buildUpdatedPrizeProps(this.props, validatedUpdates);
+    const updatedPrize = new PrizeEntity(updatedProps);
 
     return Result.ok(updatedPrize);
   }
 
   // Private Helpers
-  private static isValidHexColor(color: string): boolean {
-    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    return hexRegex.test(color);
-  }
-
   private static generatePrizeId(): PrizeId {
     return `prize_${Date.now()}_${Math.random().toString(36).substring(2, 9)}` as PrizeId;
   }
