@@ -2,34 +2,14 @@
  * Validate Campaign For Play Use Case
  * Vérifie qu'une campagne existe et est active pour le jeu
  * IMPORTANT: ZERO any types, Result Pattern
+ * Architecture Hexagonale: Use Case ne dépend PAS de l'infrastructure
  */
 
 import { Result } from '@/lib/types/result.type';
-import { prisma } from '@/infrastructure/database/prisma-client';
-import type { Campaign, Game, Prize } from '@/generated/prisma';
+import type { CampaignForPlay } from '@/core/ports/campaign.repository';
 
-// Define Condition type locally since it's not exported from Prisma
-type Condition = {
-  id: string;
-  type: string;
-  order: number;
-  title: string;
-  description: string | null;
-  redirectUrl: string | null;
-  iconEmoji: string | null;
-  config: unknown;
-  isRequired: boolean;
-  enablesGame: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  campaignId: string;
-};
-
-export type CampaignForPlay = Campaign & {
-  game: Game | null;
-  prizes: Prize[];
-  conditions: Condition[];
-};
+// Re-export CampaignForPlay from repository for backwards compatibility
+export type { CampaignForPlay };
 
 export interface ValidateCampaignForPlayInput {
   campaignId: string;
@@ -39,27 +19,21 @@ export interface ValidateCampaignForPlayOutput {
   campaign: CampaignForPlay;
 }
 
+/**
+ * Interface pour le repository Campaign (injection de dépendance)
+ */
+interface CampaignRepositoryForPlay {
+  findByIdForPlay(id: string): Promise<CampaignForPlay | null>;
+}
+
 export class ValidateCampaignForPlayUseCase {
+  constructor(private campaignRepo: CampaignRepositoryForPlay) {}
+
   async execute(
     input: ValidateCampaignForPlayInput,
   ): Promise<Result<ValidateCampaignForPlayOutput>> {
-    // Charger la campagne avec ses relations
-    const campaign = await prisma.campaign.findUnique({
-      where: { id: input.campaignId },
-      include: {
-        game: true,
-        prizes: {
-          where: {
-            remaining: {
-              gt: 0,
-            },
-          },
-        },
-        conditions: {
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
+    // Charger la campagne avec ses relations via le repository
+    const campaign = await this.campaignRepo.findByIdForPlay(input.campaignId);
 
     if (!campaign) {
       return Result.fail(new Error('Campagne introuvable'));

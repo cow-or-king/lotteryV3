@@ -9,6 +9,20 @@ import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, superAdminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 
+// Import Use Cases
+import { ListPricingPlansUseCase } from '@/core/use-cases/pricing/list-pricing-plans.use-case';
+import { GetPricingPlanBySlugUseCase } from '@/core/use-cases/pricing/get-pricing-plan-by-slug.use-case';
+import { CreatePricingPlanUseCase } from '@/core/use-cases/pricing/create-pricing-plan.use-case';
+import { UpdatePricingPlanUseCase } from '@/core/use-cases/pricing/update-pricing-plan.use-case';
+import { DeletePricingPlanUseCase } from '@/core/use-cases/pricing/delete-pricing-plan.use-case';
+import { TogglePricingPlanActiveUseCase } from '@/core/use-cases/pricing/toggle-pricing-plan-active.use-case';
+
+// Import Repository
+import { PrismaPricingPlanRepository } from '@/infrastructure/repositories/prisma-pricing-plan.repository';
+
+// Import branded types
+import type { PricingPlanId } from '@/lib/types/branded.type';
+
 // Zod Schemas pour validation
 const PricingFeatureSchema = z.object({
   text: z.string().min(1).max(200),
@@ -75,24 +89,20 @@ export const pricingRouter = createTRPCRouter({
    * Liste tous les plans tarifaires actifs
    * Retourne les plans triés par displayOrder
    */
-  list: publicProcedure.query(async ({ ctx }) => {
-    const plans = await ctx.prisma.pricingPlan.findMany({
-      where: {
-        isActive: true,
-      },
-      include: {
-        features: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
-      orderBy: {
-        displayOrder: 'asc',
-      },
-    });
+  list: publicProcedure.query(async () => {
+    const pricingPlanRepo = new PrismaPricingPlanRepository();
+    const useCase = new ListPricingPlansUseCase(pricingPlanRepo);
 
-    return plans;
+    const result = await useCase.execute({});
+
+    if (!result.success) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: result.error.message,
+      });
+    }
+
+    return result.data.plans;
   }),
 
   /**
@@ -105,36 +115,20 @@ export const pricingRouter = createTRPCRouter({
         slug: z.string(),
       }),
     )
-    .query(async ({ input, ctx }) => {
-      const plan = await ctx.prisma.pricingPlan.findUnique({
-        where: {
-          slug: input.slug,
-        },
-        include: {
-          features: {
-            orderBy: {
-              displayOrder: 'asc',
-            },
-          },
-        },
-      });
+    .query(async ({ input }) => {
+      const pricingPlanRepo = new PrismaPricingPlanRepository();
+      const useCase = new GetPricingPlanBySlugUseCase(pricingPlanRepo);
 
-      if (!plan) {
+      const result = await useCase.execute({ slug: input.slug });
+
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Plan tarifaire introuvable',
+          message: result.error.message,
         });
       }
 
-      // Vérifier que le plan est actif
-      if (!plan.isActive) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: "Ce plan tarifaire n'est pas actif",
-        });
-      }
-
-      return plan;
+      return result.data.plan;
     }),
 
   /**
@@ -145,140 +139,71 @@ export const pricingRouter = createTRPCRouter({
    * Liste tous les plans tarifaires (y compris inactifs)
    * Accessible uniquement par les super-admins
    */
-  getAll: superAdminProcedure.query(async ({ ctx }) => {
-    const plans = await ctx.prisma.pricingPlan.findMany({
-      include: {
-        features: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
-      orderBy: {
-        displayOrder: 'asc',
-      },
-    });
+  getAll: superAdminProcedure.query(async () => {
+    const pricingPlanRepo = new PrismaPricingPlanRepository();
 
-    return plans;
+    const result = await pricingPlanRepo.findAll();
+
+    if (!result.success) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: result.error.message,
+      });
+    }
+
+    return result.data;
   }),
 
   /**
    * Crée un nouveau plan tarifaire
    * Accessible uniquement par les super-admins
    */
-  create: superAdminProcedure.input(CreatePricingPlanSchema).mutation(async ({ input, ctx }) => {
-    // Vérifier que le slug n'existe pas déjà
-    const existingPlan = await ctx.prisma.pricingPlan.findUnique({
-      where: {
-        slug: input.slug,
-      },
-    });
+  create: superAdminProcedure.input(CreatePricingPlanSchema).mutation(async ({ input }) => {
+    const pricingPlanRepo = new PrismaPricingPlanRepository();
+    const useCase = new CreatePricingPlanUseCase(pricingPlanRepo);
 
-    if (existingPlan) {
+    const result = await useCase.execute(input);
+
+    if (!result.success) {
       throw new TRPCError({
         code: 'CONFLICT',
-        message: 'Un plan tarifaire avec ce slug existe déjà',
+        message: result.error.message,
       });
     }
 
-    // Créer le plan avec ses fonctionnalités
-    const plan = await ctx.prisma.pricingPlan.create({
-      data: {
-        name: input.name,
-        slug: input.slug,
-        description: input.description,
-        monthlyPrice: input.monthlyPrice,
-        annualPrice: input.annualPrice,
-        currency: input.currency,
-        isActive: input.isActive,
-        isPopular: input.isPopular,
-        displayOrder: input.displayOrder,
-        ctaText: input.ctaText,
-        ctaHref: input.ctaHref,
-        badgeText: input.badgeText,
-        features: {
-          create: input.features.map((feature) => ({
-            text: feature.text,
-            isIncluded: feature.isIncluded,
-            isEmphasized: feature.isEmphasized,
-            displayOrder: feature.displayOrder,
-          })),
-        },
-      },
-      include: {
-        features: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
-    });
-
-    return plan;
+    return result.data.plan;
   }),
 
   /**
    * Met à jour un plan tarifaire existant
    * Accessible uniquement par les super-admins
    */
-  update: superAdminProcedure.input(UpdatePricingPlanSchema).mutation(async ({ input, ctx }) => {
-    const { id, features, ...updateData } = input;
+  update: superAdminProcedure.input(UpdatePricingPlanSchema).mutation(async ({ input }) => {
+    const pricingPlanRepo = new PrismaPricingPlanRepository();
+    const useCase = new UpdatePricingPlanUseCase(pricingPlanRepo);
 
-    // Vérifier que le plan existe
-    const existingPlan = await ctx.prisma.pricingPlan.findUnique({
-      where: { id },
+    const { id, ...updateData } = input;
+    const result = await useCase.execute({
+      id: id as PricingPlanId,
+      ...updateData,
     });
 
-    if (!existingPlan) {
+    if (!result.success) {
+      const errorMessage = result.error.message;
+      // Determine appropriate error code based on error message
+      const code = errorMessage.includes('introuvable')
+        ? 'NOT_FOUND'
+        : errorMessage.includes('existe déjà')
+          ? 'CONFLICT'
+          : 'BAD_REQUEST';
+
       throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Plan tarifaire introuvable',
+        code,
+        message: errorMessage,
       });
     }
 
-    // Si le slug change, vérifier qu'il n'est pas déjà utilisé
-    if (updateData.slug && updateData.slug !== existingPlan.slug) {
-      const slugExists = await ctx.prisma.pricingPlan.findUnique({
-        where: {
-          slug: updateData.slug,
-        },
-      });
-
-      if (slugExists) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'Un plan tarifaire avec ce slug existe déjà',
-        });
-      }
-    }
-
-    // Mettre à jour le plan
-    const plan = await ctx.prisma.pricingPlan.update({
-      where: { id },
-      data: {
-        ...updateData,
-        ...(features && {
-          features: {
-            deleteMany: {}, // Supprimer toutes les anciennes features
-            create: features.map((feature) => ({
-              text: feature.text,
-              isIncluded: feature.isIncluded,
-              isEmphasized: feature.isEmphasized,
-              displayOrder: feature.displayOrder,
-            })),
-          },
-        }),
-      },
-      include: {
-        features: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
-    });
-
-    return plan;
+    return result.data.plan;
   }),
 
   /**
@@ -291,25 +216,20 @@ export const pricingRouter = createTRPCRouter({
         id: z.string().cuid(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      // Vérifier que le plan existe
-      const existingPlan = await ctx.prisma.pricingPlan.findUnique({
-        where: { id: input.id },
-      });
+    .mutation(async ({ input }) => {
+      const pricingPlanRepo = new PrismaPricingPlanRepository();
+      const useCase = new DeletePricingPlanUseCase(pricingPlanRepo);
 
-      if (!existingPlan) {
+      const result = await useCase.execute({ id: input.id as PricingPlanId });
+
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Plan tarifaire introuvable',
+          message: result.error.message,
         });
       }
 
-      // Supprimer le plan (les features seront supprimées en cascade)
-      await ctx.prisma.pricingPlan.delete({
-        where: { id: input.id },
-      });
-
-      return { success: true };
+      return result.data;
     }),
 
   /**
@@ -327,16 +247,24 @@ export const pricingRouter = createTRPCRouter({
         ),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      // Mettre à jour l'ordre de chaque plan
-      await Promise.all(
-        input.planOrders.map((planOrder) =>
-          ctx.prisma.pricingPlan.update({
-            where: { id: planOrder.id },
-            data: { displayOrder: planOrder.displayOrder },
-          }),
-        ),
+    .mutation(async ({ input }) => {
+      const pricingPlanRepo = new PrismaPricingPlanRepository();
+
+      // Update display order for each plan using repository method
+      const updatePromises = input.planOrders.map((planOrder) =>
+        pricingPlanRepo.updateDisplayOrder(planOrder.id as PricingPlanId, planOrder.displayOrder),
       );
+
+      const results = await Promise.all(updatePromises);
+
+      // Check if any update failed
+      const failedResult = results.find((result) => !result.success);
+      if (failedResult) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: failedResult.error.message,
+        });
+      }
 
       return { success: true };
     }),
@@ -352,25 +280,22 @@ export const pricingRouter = createTRPCRouter({
         isActive: z.boolean(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      // Vérifier que le plan existe
-      const existingPlan = await ctx.prisma.pricingPlan.findUnique({
-        where: { id: input.id },
+    .mutation(async ({ input }) => {
+      const pricingPlanRepo = new PrismaPricingPlanRepository();
+      const useCase = new TogglePricingPlanActiveUseCase(pricingPlanRepo);
+
+      const result = await useCase.execute({
+        id: input.id as PricingPlanId,
+        isActive: input.isActive,
       });
 
-      if (!existingPlan) {
+      if (!result.success) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Plan tarifaire introuvable',
+          message: result.error.message,
         });
       }
 
-      // Mettre à jour le statut
-      const plan = await ctx.prisma.pricingPlan.update({
-        where: { id: input.id },
-        data: { isActive: input.isActive },
-      });
-
-      return plan;
+      return result.data.plan;
     }),
 });

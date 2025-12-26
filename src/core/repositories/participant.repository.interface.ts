@@ -7,6 +7,7 @@
 import { Result } from '@/lib/types/result.type';
 import { ParticipantId, CampaignId } from '@/lib/types/branded.type';
 import { Email } from '@/core/value-objects/email.vo';
+import type { Participant } from '@/generated/prisma';
 
 export interface ParticipantData {
   readonly id: ParticipantId;
@@ -31,6 +32,56 @@ export interface CreateParticipantData {
   readonly campaignId: CampaignId;
   readonly ipAddress?: string;
   readonly userAgent?: string;
+}
+
+/**
+ * Données complètes d'un participant (pour use cases Game)
+ * Inclut les fields JSON (completedConditions, playedConditions)
+ */
+export interface ParticipantWithConditions {
+  readonly id: string;
+  readonly campaignId: string;
+  readonly email: string;
+  readonly name: string;
+  readonly hasPlayed: boolean;
+  readonly playCount: number;
+  readonly playedAt: Date | null;
+  readonly completedConditions: string[];
+  readonly playedConditions: string[];
+  readonly currentConditionOrder: number | null;
+}
+
+/**
+ * Store Played Game Record
+ */
+export interface StorePlayedGameRecord {
+  readonly conditionType: string;
+}
+
+/**
+ * Upsert Participant Input
+ */
+export interface UpsertParticipantInput {
+  readonly email: string;
+  readonly campaignId: string;
+  readonly createData: {
+    readonly campaignId: string;
+    readonly email: string;
+    readonly name: string;
+    readonly hasPlayed?: boolean;
+    readonly playCount?: number;
+    readonly completedConditions?: string[];
+    readonly playedConditions?: string[];
+    readonly currentConditionOrder?: number;
+  };
+  readonly updateData: {
+    readonly hasPlayed?: boolean;
+    readonly playCount?: number;
+    readonly playedAt?: Date;
+    readonly completedConditions?: string[];
+    readonly playedConditions?: string[];
+    readonly currentConditionOrder?: number;
+  };
 }
 
 export interface IParticipantRepository {
@@ -112,4 +163,33 @@ export interface IParticipantRepository {
    * Export des participants pour analyse
    */
   exportByCampaign(campaignId: CampaignId): Promise<ParticipantData[]>;
+
+  /**
+   * Trouve un participant par email et campagne (avec conditions)
+   * Version étendue avec completedConditions et playedConditions
+   */
+  findByEmailAndCampaignWithConditions(
+    email: string,
+    campaignId: string,
+  ): Promise<ParticipantWithConditions | null>;
+
+  /**
+   * Récupère les types de jeux joués au niveau du commerce
+   */
+  getStorePlayedGameTypes(email: string, storeId: string): Promise<StorePlayedGameRecord[]>;
+
+  /**
+   * Crée ou met à jour un participant (upsert)
+   */
+  upsert(input: UpsertParticipantInput): Promise<Participant>;
+
+  /**
+   * Enregistre un jeu joué au niveau du commerce
+   */
+  recordStorePlayedGame(
+    email: string,
+    storeId: string,
+    conditionType: string,
+    campaignId: string,
+  ): Promise<void>;
 }

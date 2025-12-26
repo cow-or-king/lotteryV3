@@ -10,6 +10,30 @@
 
 import { Result } from '@/lib/types/result.type';
 import { PricingPlanId, PricingFeatureId } from '@/lib/types/branded.type';
+import {
+  validateName,
+  validateNameUpdate,
+  validateSlug,
+  validateSlugUpdate,
+  validateDescription,
+  validateDescriptionUpdate,
+  validatePrice,
+  validatePriceUpdate,
+  validateCurrency,
+  validateCurrencyUpdate,
+  validateDisplayOrder,
+  validateDisplayOrderUpdate,
+  validateCtaText,
+  validateCtaTextUpdate,
+  validateCtaHref,
+  validateCtaHrefUpdate,
+  validateBadgeText,
+  validateBadgeTextUpdate,
+} from './pricing-plan/pricing-plan.validators';
+import type {
+  PricingFeature,
+  UpdatePricingFeatureProps,
+} from './pricing-plan/pricing-feature.value-object';
 
 // Domain Errors
 export class InvalidPricingPlanDataError extends Error {
@@ -26,22 +50,13 @@ export class PricingPlanOperationError extends Error {
   }
 }
 
+// Re-export for backward compatibility
+export type {
+  PricingFeature,
+  UpdatePricingFeatureProps,
+} from './pricing-plan/pricing-feature.value-object';
+
 // Value Objects
-export interface PricingFeature {
-  readonly id: PricingFeatureId;
-  readonly text: string;
-  readonly isIncluded: boolean;
-  readonly isEmphasized: boolean;
-  readonly displayOrder: number;
-}
-
-export interface UpdatePricingFeatureProps {
-  text?: string;
-  isIncluded?: boolean;
-  isEmphasized?: boolean;
-  displayOrder?: number;
-}
-
 export interface CreatePricingPlanProps {
   readonly name: string;
   readonly slug: string;
@@ -91,180 +106,7 @@ export interface UpdatePricingPlanProps {
   badgeText?: string | null;
 }
 
-// Helper functions for validation - shared between create and update
-function validateName(name: string | undefined): Result<string> {
-  if (!name || name.trim().length < 2) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Pricing plan name must be at least 2 characters'),
-    );
-  }
-
-  if (name.length > 100) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Pricing plan name must be less than 100 characters'),
-    );
-  }
-
-  return Result.ok(name.trim());
-}
-
-function validateNameUpdate(name: string): Result<string> {
-  return validateName(name);
-}
-
-function validateSlug(slug: string | undefined): Result<string> {
-  if (!slug || slug.trim().length < 2) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Pricing plan slug must be at least 2 characters'),
-    );
-  }
-
-  if (slug.length > 50) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Pricing plan slug must be less than 50 characters'),
-    );
-  }
-
-  // Slug must be lowercase, alphanumeric + hyphens only
-  const slugRegex = /^[a-z0-9-]+$/;
-  if (!slugRegex.test(slug)) {
-    return Result.fail(
-      new InvalidPricingPlanDataError(
-        'Pricing plan slug must be lowercase, alphanumeric and hyphens only',
-      ),
-    );
-  }
-
-  return Result.ok(slug.trim());
-}
-
-function validateSlugUpdate(slug: string): Result<string> {
-  return validateSlug(slug);
-}
-
-function validateDescription(description: string | undefined): Result<string> {
-  if (!description || description.trim().length < 2) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Description must be at least 2 characters'),
-    );
-  }
-
-  if (description.length > 500) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Description must be less than 500 characters'),
-    );
-  }
-
-  return Result.ok(description.trim());
-}
-
-function validateDescriptionUpdate(description: string): Result<string> {
-  return validateDescription(description);
-}
-
-function validatePrice(price: number | undefined | null): Result<number | null> {
-  if (price === undefined || price === null) {
-    return Result.ok(null);
-  }
-
-  if (price < 0) {
-    return Result.fail(new InvalidPricingPlanDataError('Price must be positive or zero'));
-  }
-
-  return Result.ok(price);
-}
-
-function validatePriceUpdate(price: number | null): Result<number | null> {
-  return validatePrice(price);
-}
-
-function validateCurrency(currency: string | undefined): Result<string> {
-  const defaultCurrency = 'EUR';
-  const curr = currency || defaultCurrency;
-
-  // Currency must be 3 uppercase letters
-  const currencyRegex = /^[A-Z]{3}$/;
-  if (!currencyRegex.test(curr)) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Currency must be 3 uppercase letters (EUR, USD, GBP)'),
-    );
-  }
-
-  return Result.ok(curr);
-}
-
-function validateCurrencyUpdate(currency: string): Result<string> {
-  return validateCurrency(currency);
-}
-
-function validateDisplayOrder(displayOrder: number | undefined): Result<number> {
-  const order = displayOrder ?? 0;
-
-  if (order < 0) {
-    return Result.fail(new InvalidPricingPlanDataError('Display order must be positive or zero'));
-  }
-
-  return Result.ok(order);
-}
-
-function validateDisplayOrderUpdate(displayOrder: number): Result<number> {
-  if (displayOrder < 0) {
-    return Result.fail(new InvalidPricingPlanDataError('Display order must be positive or zero'));
-  }
-
-  return Result.ok(displayOrder);
-}
-
-function validateCtaText(ctaText: string | undefined): Result<string> {
-  const text = ctaText || "Commencer l'essai";
-
-  if (text.length > 100) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('CTA text must be less than 100 characters'),
-    );
-  }
-
-  return Result.ok(text);
-}
-
-function validateCtaTextUpdate(ctaText: string): Result<string> {
-  return validateCtaText(ctaText);
-}
-
-function validateCtaHref(ctaHref: string | undefined): Result<string> {
-  const href = ctaHref || '/login';
-
-  if (href.length > 500) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('CTA href must be less than 500 characters'),
-    );
-  }
-
-  return Result.ok(href);
-}
-
-function validateCtaHrefUpdate(ctaHref: string): Result<string> {
-  return validateCtaHref(ctaHref);
-}
-
-function validateBadgeText(badgeText: string | undefined | null): Result<string | null> {
-  if (!badgeText) {
-    return Result.ok(null);
-  }
-
-  if (badgeText.length > 50) {
-    return Result.fail(
-      new InvalidPricingPlanDataError('Badge text must be less than 50 characters'),
-    );
-  }
-
-  return Result.ok(badgeText.trim());
-}
-
-function validateBadgeTextUpdate(badgeText: string | null): Result<string | null> {
-  return validateBadgeText(badgeText);
-}
-
+// Helper function to build updated props
 function buildUpdatedProps(
   currentProps: PricingPlanProps,
   updates: UpdatePricingPlanProps,

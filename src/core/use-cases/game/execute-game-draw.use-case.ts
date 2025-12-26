@@ -2,13 +2,14 @@
  * Execute Game Draw Use Case
  * Effectue le tirage au sort et met à jour le participant
  * IMPORTANT: ZERO any types, Result Pattern
+ * Architecture Hexagonale: Use Case ne dépend PAS de l'infrastructure
  */
 
 import { Result } from '@/lib/types/result.type';
-import { prisma } from '@/infrastructure/database/prisma-client';
 import { generateClaimCode, selectPrize } from '@/server/api/routers/game/game-utils';
 import type { CampaignForPlay } from './validate-campaign-for-play.use-case';
 import type { Participant } from '@/generated/prisma';
+import type { IParticipantRepository } from '@/core/repositories/participant.repository.interface';
 
 export interface ExecuteGameDrawInput {
   campaign: CampaignForPlay;
@@ -34,6 +35,24 @@ interface Prize {
   description: string | null;
   value: number | null;
   color: string;
+}
+
+/**
+ * Repository interfaces pour les dépendances (injection)
+ */
+interface WinnerRepository {
+  create(data: {
+    prizeId: string;
+    participantEmail: string;
+    participantName: string;
+    claimCode: string;
+    expiresAt: Date;
+    status: string;
+  }): Promise<void>;
+}
+
+interface PrizeRepository {
+  decrementRemaining(prizeId: string): Promise<void>;
 }
 
 // Module-level helpers
@@ -67,6 +86,12 @@ function buildDrawOutput(
 }
 
 export class ExecuteGameDrawUseCase {
+  constructor(
+    private participantRepo: IParticipantRepository,
+    private winnerRepo: WinnerRepository,
+    private prizeRepo: PrizeRepository,
+  ) {}
+
   async execute(input: ExecuteGameDrawInput): Promise<Result<ExecuteGameDrawOutput>> {
     const { campaign, playerEmail, playerName, nextPlayableConditionId, playableConditionType } =
       input;
@@ -103,43 +128,34 @@ export class ExecuteGameDrawUseCase {
     nextPlayableConditionId: string | null,
   ): Promise<Participant> {
     // Récupérer la participation existante pour les playedConditions
-    const existingParticipation = await prisma.participant.findFirst({
-      where: {
-        campaignId: campaign.id,
-        email: playerEmail,
-      },
-    });
+    const existingParticipation = await this.participantRepo.findByEmailAndCampaignWithConditions(
+      playerEmail,
+      campaign.id,
+    );
 
     // Préparer les playedConditions à mettre à jour
-    const existingPlayedConditions = (existingParticipation?.playedConditions as string[]) || [];
+    const existingPlayedConditions = existingParticipation?.playedConditions || [];
     const updatedPlayedConditions = preparePlayedConditions(
       existingPlayedConditions,
       nextPlayableConditionId,
     );
 
-    return prisma.participant.upsert({
-      where: {
-        email_campaignId: {
-          email: playerEmail,
-          campaignId: campaign.id,
-        },
-      },
-      create: {
+    return this.participantRepo.upsert({
+      email: playerEmail,
+      campaignId: campaign.id,
+      createData: {
         campaignId: campaign.id,
         email: playerEmail,
         name: playerName,
         hasPlayed: true,
         playCount: 1,
-        playedAt: new Date(),
         completedConditions: [],
         playedConditions: nextPlayableConditionId ? [nextPlayableConditionId] : [],
         currentConditionOrder: campaign.conditions.length,
       },
-      update: {
+      updateData: {
         hasPlayed: true,
-        playCount: {
-          increment: 1,
-        },
+        playCount: 1,
         playedAt: new Date(),
         playedConditions: updatedPlayedConditions,
       },
@@ -156,12 +172,12 @@ export class ExecuteGameDrawUseCase {
       return;
     }
 
-    await prisma.$executeRaw`
-      INSERT INTO store_played_games (id, email, store_id, condition_type, campaign_id, played_at)
-      VALUES (gen_random_uuid()::text, ${playerEmail}, ${storeId}, ${playableConditionType}::"ConditionType", ${campaignId}, NOW())
-      ON CONFLICT (email, store_id, condition_type)
-      DO UPDATE SET played_at = NOW(), campaign_id = ${campaignId}
-    `;
+    await this.participantRepo.recordStorePlayedGame(
+      playerEmail,
+      storeId,
+      playableConditionType,
+      campaignId,
+    );
   }
 
   private async processPrizeWin(
@@ -179,26 +195,17 @@ export class ExecuteGameDrawUseCase {
     const expiresAt = calculateExpiryDate(expiryDays);
 
     // Créer une entrée Winner
-    await prisma.winner.create({
-      data: {
-        prizeId: wonPrize.id,
-        participantEmail: playerEmail,
-        participantName: playerName,
-        claimCode,
-        expiresAt,
-        status: 'PENDING',
-      },
+    await this.winnerRepo.create({
+      prizeId: wonPrize.id,
+      participantEmail: playerEmail,
+      participantName: playerName,
+      claimCode,
+      expiresAt,
+      status: 'PENDING',
     });
 
     // Décrémenter la quantité restante
-    await prisma.prize.update({
-      where: { id: wonPrize.id },
-      data: {
-        remaining: {
-          decrement: 1,
-        },
-      },
-    });
+    await this.prizeRepo.decrementRemaining(wonPrize.id);
 
     return claimCode;
   }

@@ -2,10 +2,11 @@
  * Check Play Eligibility Use Case
  * Vérifie si un joueur peut participer au jeu (délais, conditions, etc.)
  * IMPORTANT: ZERO any types, Result Pattern
+ * Architecture Hexagonale: Use Case ne dépend PAS de l'infrastructure
  */
 
 import { Result } from '@/lib/types/result.type';
-import { prisma } from '@/infrastructure/database/prisma-client';
+import type { IParticipantRepository } from '@/core/repositories/participant.repository.interface';
 import type { CampaignForPlay } from './validate-campaign-for-play.use-case';
 
 export interface CheckPlayEligibilityInput {
@@ -46,14 +47,13 @@ function hasReachedMinDaysBetweenPlays(
 async function hasReachedMaxParticipants(
   campaignId: string,
   maxParticipants: number | null,
+  participantRepo: IParticipantRepository,
 ): Promise<boolean> {
   if (!maxParticipants) {
     return false;
   }
 
-  const participantCount = await prisma.participant.count({
-    where: { campaignId },
-  });
+  const participantCount = await participantRepo.countByCampaign(campaignId as never);
 
   return participantCount >= maxParticipants;
 }
@@ -98,15 +98,15 @@ function getPlayableConditions(
 }
 
 export class CheckPlayEligibilityUseCase {
+  constructor(private participantRepo: IParticipantRepository) {}
+
   async execute(input: CheckPlayEligibilityInput): Promise<Result<CheckPlayEligibilityOutput>> {
     const { campaign, playerEmail } = input;
 
-    const existingParticipation = await prisma.participant.findFirst({
-      where: {
-        campaignId: campaign.id,
-        email: playerEmail,
-      },
-    });
+    const existingParticipation = await this.participantRepo.findByEmailAndCampaignWithConditions(
+      playerEmail,
+      campaign.id,
+    );
 
     // Early return: Check minimum days between plays
     const daysCheck = hasReachedMinDaysBetweenPlays(
@@ -122,7 +122,9 @@ export class CheckPlayEligibilityUseCase {
     }
 
     // Early return: Check max participants
-    if (await hasReachedMaxParticipants(campaign.id, campaign.maxParticipants)) {
+    if (
+      await hasReachedMaxParticipants(campaign.id, campaign.maxParticipants, this.participantRepo)
+    ) {
       return Result.fail(new Error('Le nombre maximum de participants a été atteint'));
     }
 
@@ -146,24 +148,24 @@ export class CheckPlayEligibilityUseCase {
   private async checkConditionBasedEligibility(
     campaign: CampaignForPlay,
     playerEmail: string,
-    existingParticipation: Awaited<ReturnType<typeof prisma.participant.findFirst>>,
+    existingParticipation: Awaited<
+      ReturnType<typeof this.participantRepo.findByEmailAndCampaignWithConditions>
+    >,
   ): Promise<Result<CheckPlayEligibilityOutput>> {
     // Early return: No participant record
     if (!existingParticipation) {
       return Result.fail(new Error('Vous devez compléter au moins une condition avant de jouer'));
     }
 
-    const completedConditions = (existingParticipation.completedConditions as string[]) || [];
-    const playedConditions = (existingParticipation.playedConditions as string[]) || [];
+    const completedConditions = existingParticipation.completedConditions || [];
+    const playedConditions = existingParticipation.playedConditions || [];
 
     // Get store-level played game types
-    const storePlayedGames = await prisma.$queryRaw<Array<{ condition_type: string }>>`
-      SELECT condition_type
-      FROM store_played_games
-      WHERE email = ${playerEmail}
-        AND store_id = ${campaign.storeId}
-    `;
-    const storePlayedTypes = new Set(storePlayedGames.map((g) => g.condition_type));
+    const storePlayedGames = await this.participantRepo.getStorePlayedGameTypes(
+      playerEmail,
+      campaign.storeId,
+    );
+    const storePlayedTypes = new Set(storePlayedGames.map((g) => g.conditionType));
 
     const completedGameEnabledConditions = getCompletedGameEnabledConditions(
       completedConditions,

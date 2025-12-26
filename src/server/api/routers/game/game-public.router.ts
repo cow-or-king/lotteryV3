@@ -12,6 +12,10 @@ import { ValidateCampaignForPlayUseCase } from '@/core/use-cases/game/validate-c
 import { CheckPlayEligibilityUseCase } from '@/core/use-cases/game/check-play-eligibility.use-case';
 import { ExecuteGameDrawUseCase } from '@/core/use-cases/game/execute-game-draw.use-case';
 import { DetermineWinningResultUseCase } from '@/core/use-cases/game/determine-winning-result.use-case';
+import { PrismaParticipantRepository } from '@/infrastructure/repositories/prisma-participant.repository';
+import { PrismaCampaignRepository } from '@/infrastructure/repositories/prisma-campaign.repository';
+import { SimpleWinnerRepository } from '@/infrastructure/repositories/simple-winner.repository';
+import { SimplePrizeRepository } from '@/infrastructure/repositories/simple-prize.repository';
 
 export const gamePublicRouter = createTRPCRouter({
   /**
@@ -20,8 +24,14 @@ export const gamePublicRouter = createTRPCRouter({
    * Refactorisé en use cases pour réduire la complexité
    */
   play: publicProcedure.input(playGameSchema).mutation(async ({ input }) => {
+    // Instantiate repositories
+    const campaignRepo = new PrismaCampaignRepository();
+    const participantRepo = new PrismaParticipantRepository();
+    const winnerRepo = new SimpleWinnerRepository();
+    const prizeRepo = new SimplePrizeRepository();
+
     // 1. Valider la campagne
-    const validateCampaignUseCase = new ValidateCampaignForPlayUseCase();
+    const validateCampaignUseCase = new ValidateCampaignForPlayUseCase(campaignRepo);
     const campaignResult = await validateCampaignUseCase.execute({
       campaignId: input.campaignId,
     });
@@ -36,7 +46,7 @@ export const gamePublicRouter = createTRPCRouter({
     const { campaign } = campaignResult.data;
 
     // 2. Vérifier l'éligibilité du joueur
-    const checkEligibilityUseCase = new CheckPlayEligibilityUseCase();
+    const checkEligibilityUseCase = new CheckPlayEligibilityUseCase(participantRepo);
     const eligibilityResult = await checkEligibilityUseCase.execute({
       campaign,
       playerEmail: input.playerEmail,
@@ -52,7 +62,7 @@ export const gamePublicRouter = createTRPCRouter({
     const { nextPlayableConditionId, playableConditionType } = eligibilityResult.data;
 
     // 3. Exécuter le tirage au sort
-    const executeDrawUseCase = new ExecuteGameDrawUseCase();
+    const executeDrawUseCase = new ExecuteGameDrawUseCase(participantRepo, winnerRepo, prizeRepo);
     const drawResult = await executeDrawUseCase.execute({
       campaign,
       playerEmail: input.playerEmail,

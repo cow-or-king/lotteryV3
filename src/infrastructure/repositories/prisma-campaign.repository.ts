@@ -268,4 +268,27 @@ export class PrismaCampaignRepository implements CampaignRepository {
       where: { id },
     });
   }
+
+  /**
+   * Trouve une campagne avec toutes les relations nécessaires pour le jeu
+   * Utilisé par validate-campaign-for-play.use-case.ts
+   */
+  async findByIdForPlay(id: string) {
+    return await prisma.campaign.findUnique({
+      where: { id },
+      include: {
+        game: true,
+        prizes: {
+          where: {
+            remaining: {
+              gt: 0,
+            },
+          },
+        },
+        conditions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+  }
 }

@@ -5,21 +5,21 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ValidateCampaignForPlayUseCase } from '../validate-campaign-for-play.use-case';
-import { prisma } from '@/infrastructure/database/prisma-client';
+import type { CampaignForPlay } from '@/core/ports/campaign.repository';
 
-vi.mock('@/infrastructure/database/prisma-client', () => ({
-  prisma: {
-    campaign: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
+interface MockCampaignRepo {
+  findByIdForPlay(id: string): Promise<CampaignForPlay | null>;
+}
 
 describe('ValidateCampaignForPlayUseCase', () => {
   let useCase: ValidateCampaignForPlayUseCase;
+  let mockCampaignRepo: MockCampaignRepo;
 
   beforeEach(() => {
-    useCase = new ValidateCampaignForPlayUseCase();
+    mockCampaignRepo = {
+      findByIdForPlay: vi.fn(),
+    };
+    useCase = new ValidateCampaignForPlayUseCase(mockCampaignRepo);
     vi.clearAllMocks();
   });
 
@@ -29,12 +29,15 @@ describe('ValidateCampaignForPlayUseCase', () => {
       name: 'Test Campaign',
       isActive: true,
       storeId: 'store_123',
+      maxParticipants: null,
+      minDaysBetweenPlays: null,
+      prizeClaimExpiryDays: 30,
       game: { id: 'game_123', type: 'WHEEL', config: {} },
       prizes: [{ id: 'prize_123', name: 'Prize 1', remaining: 5 }],
       conditions: [],
-    };
+    } as unknown as CampaignForPlay;
 
-    vi.mocked(prisma.campaign.findUnique).mockResolvedValue(mockCampaign as never);
+    vi.mocked(mockCampaignRepo.findByIdForPlay).mockResolvedValue(mockCampaign);
 
     const result = await useCase.execute({ campaignId: 'camp_123' });
 
@@ -46,7 +49,7 @@ describe('ValidateCampaignForPlayUseCase', () => {
   });
 
   it('should fail when campaign does not exist', async () => {
-    vi.mocked(prisma.campaign.findUnique).mockResolvedValue(null);
+    vi.mocked(mockCampaignRepo.findByIdForPlay).mockResolvedValue(null);
 
     const result = await useCase.execute({ campaignId: 'invalid_id' });
 
@@ -62,12 +65,15 @@ describe('ValidateCampaignForPlayUseCase', () => {
       name: 'Test Campaign',
       isActive: false,
       storeId: 'store_123',
+      maxParticipants: null,
+      minDaysBetweenPlays: null,
+      prizeClaimExpiryDays: 30,
       game: null,
       prizes: [],
       conditions: [],
-    };
+    } as unknown as CampaignForPlay;
 
-    vi.mocked(prisma.campaign.findUnique).mockResolvedValue(mockCampaign as never);
+    vi.mocked(mockCampaignRepo.findByIdForPlay).mockResolvedValue(mockCampaign);
 
     const result = await useCase.execute({ campaignId: 'camp_123' });
 
@@ -80,35 +86,25 @@ describe('ValidateCampaignForPlayUseCase', () => {
   it('should only include prizes with remaining > 0', async () => {
     const mockCampaign = {
       id: 'camp_123',
+      name: 'Test Campaign',
       isActive: true,
       storeId: 'store_123',
+      maxParticipants: null,
+      minDaysBetweenPlays: null,
+      prizeClaimExpiryDays: 30,
       game: null,
       prizes: [
         { id: 'prize_1', remaining: 5 },
-        { id: 'prize_2', remaining: 0 }, // Should be filtered out
+        // Prize with remaining: 0 should be filtered out by the repository
       ],
       conditions: [],
-    };
+    } as unknown as CampaignForPlay;
 
-    vi.mocked(prisma.campaign.findUnique).mockResolvedValue(mockCampaign as never);
+    vi.mocked(mockCampaignRepo.findByIdForPlay).mockResolvedValue(mockCampaign);
 
-    await useCase.execute({ campaignId: 'camp_123' });
+    const result = await useCase.execute({ campaignId: 'camp_123' });
 
-    expect(prisma.campaign.findUnique).toHaveBeenCalledWith({
-      where: { id: 'camp_123' },
-      include: {
-        game: true,
-        prizes: {
-          where: {
-            remaining: {
-              gt: 0,
-            },
-          },
-        },
-        conditions: {
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
+    expect(result.success).toBe(true);
+    expect(mockCampaignRepo.findByIdForPlay).toHaveBeenCalledWith('camp_123');
   });
 });
