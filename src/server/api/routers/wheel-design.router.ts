@@ -8,6 +8,39 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 
+// Helper function to build update data dynamically - reduces complexity
+// Uses simple iteration to avoid high cyclomatic complexity
+function buildWheelDesignUpdateData(data: Partial<z.infer<typeof WheelDesignConfigSchema>>) {
+  const updateData: Record<string, unknown> = {};
+
+  // List of fields that can be undefined (null is valid)
+  const undefinedCheckFields = [
+    'primaryColor',
+    'secondaryColor',
+    'centerLogoUrl',
+    'showSegmentText',
+    'textRotation',
+    'enableSound',
+    'isDefault',
+  ];
+
+  // Process all fields from data
+  Object.entries(data).forEach(([key, value]) => {
+    // For fields where undefined is explicitly checked, include if not undefined
+    if (undefinedCheckFields.includes(key)) {
+      if (value !== undefined) {
+        updateData[key] = value;
+      }
+    }
+    // For other fields, include if truthy (covers strings, numbers, objects, arrays)
+    else if (value) {
+      updateData[key] = value;
+    }
+  });
+
+  return updateData;
+}
+
 // =====================
 // SCHEMAS DE VALIDATION
 // =====================
@@ -126,51 +159,12 @@ export const wheelDesignRouter = createTRPCRouter({
       }
 
       try {
+        // Build update data object dynamically
+        const updateData = buildWheelDesignUpdateData(input.data);
+
         const updated = await ctx.prisma.wheelDesign.update({
           where: { id: input.id },
-          data: {
-            ...(input.data.name && { name: input.data.name }),
-            ...(input.data.colorMode && { colorMode: input.data.colorMode }),
-            ...(input.data.primaryColor !== undefined && { primaryColor: input.data.primaryColor }),
-            ...(input.data.secondaryColor !== undefined && {
-              secondaryColor: input.data.secondaryColor,
-            }),
-            ...(input.data.segments && { segments: input.data.segments }),
-            ...(input.data.numberOfSegments && {
-              numberOfSegments: input.data.numberOfSegments,
-            }),
-            ...(input.data.centerLogoUrl !== undefined && {
-              centerLogoUrl: input.data.centerLogoUrl,
-            }),
-            ...(input.data.centerLogoSize && { centerLogoSize: input.data.centerLogoSize }),
-            ...(input.data.backgroundColor && { backgroundColor: input.data.backgroundColor }),
-            ...(input.data.segmentBorderWidth && {
-              segmentBorderWidth: input.data.segmentBorderWidth,
-            }),
-            ...(input.data.segmentBorderColor && {
-              segmentBorderColor: input.data.segmentBorderColor,
-            }),
-            ...(input.data.showSegmentText !== undefined && {
-              showSegmentText: input.data.showSegmentText,
-            }),
-            ...(input.data.textSize && { textSize: input.data.textSize }),
-            ...(input.data.textFont && { textFont: input.data.textFont }),
-            ...(input.data.textRotation !== undefined && {
-              textRotation: input.data.textRotation,
-            }),
-            ...(input.data.centerCircleColor && {
-              centerCircleColor: input.data.centerCircleColor,
-            }),
-            ...(input.data.centerCircleSize && {
-              centerCircleSize: input.data.centerCircleSize,
-            }),
-            ...(input.data.pointerColor && { pointerColor: input.data.pointerColor }),
-            ...(input.data.pointerStyle && { pointerStyle: input.data.pointerStyle }),
-            ...(input.data.animationSpeed && { animationSpeed: input.data.animationSpeed }),
-            ...(input.data.spinDuration && { spinDuration: input.data.spinDuration }),
-            ...(input.data.enableSound !== undefined && { enableSound: input.data.enableSound }),
-            ...(input.data.isDefault !== undefined && { isDefault: input.data.isDefault }),
-          },
+          data: updateData,
         });
 
         return updated;
