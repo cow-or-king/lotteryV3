@@ -14,8 +14,19 @@ type Game = {
   };
 };
 
+type WheelDesign = {
+  id: string;
+  name: string;
+  numberOfSegments: number;
+  colorMode: string;
+};
+
 export function useGamesList() {
-  const { data: customDesigns = [], isLoading: isLoadingDesigns } = api.wheelDesign.list.useQuery();
+  const wheelDesignsQuery = api.wheelDesign.list.useQuery();
+  // Type assertion to avoid deep type instantiation issues
+  const customDesigns = (wheelDesignsQuery.data ?? []) as WheelDesign[];
+  const isLoadingDesigns = wheelDesignsQuery.isLoading;
+
   const gamesQuery = api.game.list.useQuery();
   const customGames = (gamesQuery.data ?? []) as Game[];
 

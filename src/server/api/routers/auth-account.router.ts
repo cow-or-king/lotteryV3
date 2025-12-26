@@ -49,27 +49,26 @@ export const authAccountRouter = createTRPCRouter({
 
     const supabaseUserId = authResult.data.id;
 
-    // Auto-confirmer l'email en mode développement
-    if (process.env.NODE_ENV === 'development') {
-      try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Auto-confirmer l'email (dev + production temporairement)
+    // TODO: Retirer en production une fois qu'on a un système d'emails
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        if (!supabaseUrl || !serviceRoleKey) {
-          throw new Error('Missing Supabase configuration for auto-confirm');
-        }
-
-        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-          auth: { autoRefreshToken: false, persistSession: false },
-        });
-
-        await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
-          email_confirm: true,
-        });
-      } catch (_err) {
-        // On continue quand même, l'utilisateur pourra confirmer manuellement
+      if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Missing Supabase configuration for auto-confirm');
       }
+
+      const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+
+      await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
+        email_confirm: true,
+      });
+    } catch (_err) {
+      // On continue quand même, l'utilisateur pourra confirmer manuellement
     }
 
     // 2. Créer l'utilisateur dans notre base de données
@@ -104,13 +103,11 @@ export const authAccountRouter = createTRPCRouter({
       });
     }
 
-    // Mettre à jour emailVerified dans notre DB si auto-confirmé en DEV
-    if (process.env.NODE_ENV === 'development') {
-      await ctx.prisma.user.update({
-        where: { id: supabaseUserId },
-        data: { emailVerified: true },
-      });
-    }
+    // Mettre à jour emailVerified dans notre DB (toujours auto-confirmé pour le moment)
+    await ctx.prisma.user.update({
+      where: { id: supabaseUserId },
+      data: { emailVerified: true },
+    });
 
     // 3. Connecter automatiquement l'utilisateur après registration
     const loginResult = await supabaseAuthService.signIn(input.email, input.password);

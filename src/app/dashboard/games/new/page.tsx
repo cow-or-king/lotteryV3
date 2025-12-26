@@ -17,8 +17,13 @@ export default function NewGamePage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Create mutation
-  const createMutation = api.game.create.useMutation({
+  // Extract mutation options to avoid type instantiation depth issues
+  type MutationOptions = {
+    onSuccess: (game: { id: string }) => void;
+    onError: (error: { message: string }) => void;
+  };
+
+  const createGameOptions: MutationOptions = {
     onSuccess: (game) => {
       toast({
         title: 'Jeu créé',
@@ -26,14 +31,16 @@ export default function NewGamePage() {
       });
       router.push(`/dashboard/games/${game.id}/edit`);
     },
-    onError: (error: { message: string }) => {
+    onError: (error) => {
       toast({
         title: 'Erreur',
         description: error.message,
         variant: 'error',
       });
     },
-  });
+  };
+
+  const createMutation = api.game.create.useMutation(createGameOptions);
 
   const handleSubmit = (values: {
     name: string;

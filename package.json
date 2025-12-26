@@ -18,6 +18,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
     "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate",
     "prepare": "husky",
     "review:last": "git diff HEAD~1 --stat",
     "review:show": "cat docs/CODE_REVIEW.md",

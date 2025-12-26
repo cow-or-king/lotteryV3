@@ -10,8 +10,9 @@ import { AnimatedBackground } from '@/components/ui/AnimatedBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useSearchParams } from 'next/navigation';
 import { useAuthCallback } from '@/hooks/auth/useAuthCallback';
+import { Suspense } from 'react';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const { status, message } = useAuthCallback({ searchParams });
 
@@ -59,5 +60,23 @@ export default function AuthCallbackPage() {
         <p className="text-white/70">{message}</p>
       </GlassCard>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
+          <AnimatedBackground />
+          <GlassCard className="w-full max-w-md p-8 text-center">
+            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
+            <p className="mt-4 text-white/70">Chargement...</p>
+          </GlassCard>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }

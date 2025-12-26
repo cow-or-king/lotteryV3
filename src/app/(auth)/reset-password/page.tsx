@@ -11,9 +11,10 @@ import { api } from '@/lib/trpc/client';
 import { CheckCircle, Key, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function ResetPasswordPage() {
+// Component that uses useSearchParams
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
@@ -209,5 +210,25 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Page wrapper with Suspense boundary
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="relative min-h-dvh overflow-x-hidden">
+          <AnimatedBackground className="absolute inset-0" />
+          <div className="relative min-h-dvh flex items-center justify-center px-4 py-6">
+            <GlassCard className="w-full max-w-md text-center">
+              <p className="text-gray-600">Chargement...</p>
+            </GlassCard>
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
