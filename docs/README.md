@@ -1,20 +1,22 @@
-# 📚 Documentation ReviewLottery V3
+# 📚 Documentation ReviewLottery v3.0
 
-> **⭐ FICHIER DE RÉFÉRENCE CENTRAL: [`CONVENTIONS.md`](./CONVENTIONS.md)**
+**Dernière mise à jour**: 2025-12-27
+
+> **⭐ COMMENCER ICI: [`STATUS-REPORT.md`](./STATUS-REPORT.md)**
 >
-> **Avant tout développement, lire obligatoirement `docs/CONVENTIONS.md`**
-> Ce fichier contient TOUTES les règles, standards et bonnes pratiques du projet.
+> **Rapport complet de situation** - Dette technique, fonctionnalités, métriques, prochaines étapes
 
-Documentation complète du projet ReviewLottery V3 - Application SaaS de gestion d'avis clients avec système de loterie.
+Documentation complète du projet ReviewLottery V3 - SaaS de gestion d'avis clients avec système de loterie.
 
 ---
 
-## 🚀 Démarrage Rapide
+## 🚀 Documents Essentiels
 
-- **[CONVENTIONS.md](./CONVENTIONS.md)** ⭐ Standards & conventions (LIRE EN PREMIER)
-- **[planning/DEVELOPMENT-TRACKER.md](./planning/DEVELOPMENT-TRACKER.md)** 🎯 Suivi du développement (METTRE À JOUR À CHAQUE COMMIT)
-- **[QUICK-START.md](./QUICK-START.md)** - Démarrage en 5 minutes
-- **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Guide de contribution
+- **[STATUS-REPORT.md](./STATUS-REPORT.md)** ⭐ Rapport de situation (COMMENCER ICI)
+- **[CONVENTIONS.md](./CONVENTIONS.md)** ⚠️ Standards obligatoires (LIRE AVANT DE CODER)
+- **[planning/plan.md](./planning/plan.md)** 📅 Plan développement 30 jours
+- **[planning/ROADMAP.md](./planning/ROADMAP.md)** 🗺️ Roadmap par phases
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** 🚀 Guide de déploiement
 
 ---
 

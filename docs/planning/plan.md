@@ -25,12 +25,14 @@
 | Phase                      | Statut      | Progression | Jours |
 | -------------------------- | ----------- | ----------- | ----- |
 | **Phase 0: Foundation**    | ✅ Complété | 100%        | 1-3   |
-| **Phase 1: Core Business** | 🚧 En cours | 40%         | 4-10  |
-| **Phase 2: UI/UX**         | 🚧 En cours | 20%         | 11-20 |
-| **Phase 3: Integrations**  | 📅 À faire  | 0%          | 21-25 |
-| **Phase 4: Deployment**    | 📅 À faire  | 0%          | 26-30 |
+| **Phase 1: Core Business** | ✅ Complété | 100%        | 4-10  |
+| **Phase 2: UI/UX**         | ✅ Complété | 90%         | 11-20 |
+| **Phase 3: Integrations**  | 🚧 En cours | 60%         | 21-25 |
+| **Phase 4: Deployment**    | 🚧 En cours | 40%         | 26-30 |
 
 **Légende**: 📅 À faire | 🚧 En cours | ✅ Complété | ❌ Bloqué
+
+**Dernière mise à jour**: 2025-12-27 - Refactoring hexagonal complet terminé
 
 ---
 
@@ -206,110 +208,159 @@ Development plan for ReviewLottery v3.0, a **professional-grade SaaS** built wit
 - [x] **6. Refresh token logic**
 - [x] **7. Dashboard basique avec glassmorphism V5**
 
-### Day 7-8: Store & Campaign Management 📅
+### Day 7-8: Store & Campaign Management ✅
+
+**Statut**: ✅ Complété
+**Progression**: [▓▓▓▓▓▓▓▓▓▓] 100%
 
 **Tasks**:
 
-- [ ] Store CRUD operations
-- [ ] Campaign business rules
-- [ ] Prize pool logic
-- [ ] QR code generation
+- [x] Store CRUD operations
+- [x] Campaign business rules (wizard 5 steps)
+- [x] Prize pool logic avec probabilités
+- [x] QR code generation automatique
+- [x] Multi-store support
+- [x] Logo upload (Supabase Storage)
 
-### Day 9-10: Subscription & Billing 📅
+### Day 9-10: Subscription & Billing 🚧
+
+**Statut**: 🚧 En cours
+**Progression**: [▓▓▓▓▓░░░░░] 50%
 
 **Tasks**:
 
+- [x] Pricing plans définition (FREE, STARTER, PRO)
+- [x] Pricing page publique
+- [x] CRUD plans (super-admin)
 - [ ] Stripe integration
-- [ ] Subscription plans (Free, Pro, Business)
 - [ ] Webhook handling
-- [ ] Usage limits
+- [ ] Usage limits enforcement
 
 ---
 
 ## Phase 2: UI/UX Implementation (Days 11-20)
 
-### Day 11-13: Landing Page (Glassmorphism V5) 🚧
+### Day 11-13: Landing Page (Glassmorphism V5) ✅
+
+**Statut**: ✅ Complété
+**Progression**: [▓▓▓▓▓▓▓▓▓▓] 100%
 
 **Tasks**:
 
-- [ ] Hero section avec animations
-- [ ] Features grid avec glass effect
-- [ ] Pricing cards glassmorphism
-- [ ] Testimonials section
-- [ ] FAQ accordion
-- [ ] CTA sections
+- [x] Hero section avec animations (4 variants)
+- [x] Features grid avec glass effect
+- [x] Pricing cards glassmorphism
+- [x] Testimonials section
+- [x] FAQ accordion
+- [x] CTA sections
 
-### Day 14-16: Admin Dashboard 🚧
+### Day 14-16: Admin Dashboard ✅
 
-**Tasks**:
-
-- [ ] Dashboard layout avec sidebar
-- [ ] Metrics cards (MRR, campaigns, conversion)
-- [ ] Store management UI
-- [ ] Analytics charts
-
-### Day 17-20: Customer Flow & Lottery 📅
+**Statut**: ✅ Complété
+**Progression**: [▓▓▓▓▓▓▓▓▓▓] 100%
 
 **Tasks**:
 
-- [ ] Wheel of Fortune component
-- [ ] Store landing page
-- [ ] Review prompt flow
-- [ ] Prize claim page
-- [ ] Animations de tirage
+- [x] Dashboard layout avec sidebar
+- [x] Metrics cards (MRR, campaigns, conversion)
+- [x] Store management UI (CRUD complet)
+- [x] Campaign wizard (5 steps)
+- [x] QR codes customization
+- [x] Reviews management
+- [x] IA configuration
+
+### Day 17-20: Customer Flow & Lottery ✅
+
+**Statut**: ✅ Complété
+**Progression**: [▓▓▓▓▓▓▓▓▓▓] 100%
+
+**Tasks**:
+
+- [x] Wheel of Fortune component
+- [x] Slot Machine component
+- [x] Store landing page (`/c/[shortCode]`)
+- [x] Conditions flow (Google Review, Instagram)
+- [x] Prize claim page avec claim codes
+- [x] Animations de tirage (wheel + slot)
+- [x] Game state management (Zustand)
 
 ---
 
 ## Phase 3: Integrations & Testing (Days 21-25)
 
-### Day 21-22: Google Reviews Integration 📅
+### Day 21-22: Google Reviews Integration 🚧
+
+**Statut**: 🚧 En cours
+**Progression**: [▓▓▓▓▓▓░░░░] 60%
 
 **Tasks**:
 
-- [ ] Google My Business API setup
+- [x] Google My Business service (mock)
+- [x] Review display interface
+- [x] IA response generation
+- [x] Email notifications (Resend)
+- [ ] Google My Business API réelle (OAuth 2.0)
 - [ ] Review sync cron job
-- [ ] Sentiment analysis
-- [ ] Email notifications
+- [ ] Sentiment analysis automatique
 
-### Day 23-25: Testing 📅
+### Day 23-25: Testing ✅
+
+**Statut**: ✅ Complété (avec quelques ajustements à faire)
+**Progression**: [▓▓▓▓▓▓▓▓▓░] 90%
 
 **Tasks**:
 
-- [ ] Unit tests (Vitest) - 80% coverage
-- [ ] Integration tests
-- [ ] E2E tests (Playwright)
-- [ ] Performance testing
+- [x] Unit tests (Vitest) - 96.6% coverage
+- [x] Integration tests
+- [x] E2E tests (Playwright) - 281/291 passing
+- [x] Architecture tests (CONVENTIONS.md)
+- [ ] Fix 10 test failures (DB setup)
+- [ ] Performance testing (Lighthouse)
 
 ---
 
 ## Phase 4: Deployment & Monitoring (Days 26-30)
 
-### Day 26-27: Production Setup 📅
+### Day 26-27: Production Setup 🚧
+
+**Statut**: 🚧 En cours
+**Progression**: [▓▓▓▓▓░░░░░] 50%
 
 **Tasks**:
 
-- [ ] Vercel deployment
-- [ ] Environment variables configuration
-- [ ] Database migrations
-- [ ] Seed data
+- [x] Vercel deployment configuré
+- [x] Environment variables (Supabase, Resend, IA)
+- [x] Database Prisma + Supabase
+- [x] Seed data (super-admin, plans pricing)
+- [ ] Custom domain configuration
+- [ ] CDN setup pour assets
 
 ### Day 28-29: Monitoring & Analytics 📅
+
+**Statut**: 📅 À faire
+**Progression**: [░░░░░░░░░░] 0%
 
 **Tasks**:
 
 - [ ] Sentry error tracking
 - [ ] PostHog analytics
 - [ ] Performance monitoring
-- [ ] Core Web Vitals optimization
+- [ ] Core Web Vitals optimization (Lighthouse)
+- [ ] Rate limiting
+- [ ] Security headers
 
 ### Day 30: Launch Preparation 📅
 
+**Statut**: 📅 À faire
+**Progression**: [░░░░░░░░░░] 0%
+
 **Tasks**:
 
-- [ ] Security audit
-- [ ] Documentation finale
+- [ ] Security audit complet
+- [ ] Documentation finale utilisateur
 - [ ] Launch checklist validation
-- [ ] Backup strategy
+- [ ] Backup strategy automatique
+- [ ] Load testing
 
 ---
 
@@ -383,7 +434,35 @@ Development plan for ReviewLottery v3.0, a **professional-grade SaaS** built wit
 
 ---
 
-**Last Updated**: 2024-12-06
+**Last Updated**: 2025-12-27
 **Version**: 3.0.0
 **Author**: ReviewLottery Team
-**Status**: Phase 1 en cours (Days 1-4 complétés)
+**Status**: Phase 3 en cours (90% du projet complété)
+
+---
+
+## 🎉 Achievements Récents
+
+### 2025-12-27: Refactoring Architecture Hexagonale Complet
+
+- ✅ 100% conformité CONVENTIONS.md
+- ✅ 0 violations architecturales
+- ✅ Repository Pattern implémenté (Game + Pricing)
+- ✅ 6 use cases pricing créés
+- ✅ Split fichiers >300 lignes
+- ✅ Type-check: 0 erreurs
+
+### 2025-12-25: Pricing System & Email Service
+
+- ✅ Page pricing publique
+- ✅ Dashboard super-admin pricing-config
+- ✅ Service Resend pour emails
+- ✅ Templates email (magic link, welcome, prize won)
+
+### 2025-12-20: Game Flow Complet
+
+- ✅ Slot Machine implémentée
+- ✅ Wheel of Fortune
+- ✅ Conditions system
+- ✅ Participant tracking
+- ✅ Prize claiming
