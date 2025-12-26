@@ -89,6 +89,118 @@ export interface QRCodeRepository {
   updateCampaignUrl(qrCodeId: string, campaignId: string): Promise<void>;
 }
 
+// ============================================================================
+// HELPER FUNCTIONS (Outside class to reduce execute() complexity)
+// ============================================================================
+
+/**
+ * Validates campaign name
+ */
+function validateCampaignName(name: string): Result<void> {
+  if (!name || name.trim().length < 2) {
+    return Result.fail(new Error('Le nom de la campagne doit contenir au moins 2 caractères'));
+  }
+
+  if (name.length > 200) {
+    return Result.fail(new Error('Le nom de la campagne ne peut pas dépasser 200 caractères'));
+  }
+
+  return Result.ok(undefined);
+}
+
+/**
+ * Validates max participants
+ */
+function validateMaxParticipants(maxParticipants: number | undefined): Result<void> {
+  if (maxParticipants === undefined || maxParticipants === null) {
+    return Result.ok(undefined);
+  }
+
+  if (maxParticipants < 1) {
+    return Result.fail(new Error('Le nombre maximum de participants doit être au moins 1'));
+  }
+
+  if (maxParticipants > 1000000) {
+    return Result.fail(
+      new Error('Le nombre maximum de participants ne peut pas dépasser 1 000 000'),
+    );
+  }
+
+  return Result.ok(undefined);
+}
+
+/**
+ * Validates prize claim expiry days
+ */
+function validateExpiryDays(expiryDays: number): Result<void> {
+  if (expiryDays < 1 || expiryDays > 365) {
+    return Result.fail(new Error("La durée d'expiration doit être entre 1 et 365 jours"));
+  }
+
+  return Result.ok(undefined);
+}
+
+/**
+ * Transforms conditions for repository
+ */
+function transformConditions(conditions: ConditionConfig[] | undefined):
+  | Array<{
+      type: ConditionType;
+      order: number;
+      title: string;
+      description: string;
+      iconEmoji: string;
+      config: Record<string, string | number | boolean> | null;
+      redirectUrl?: string;
+      isRequired: boolean;
+      enablesGame?: boolean;
+    }>
+  | undefined {
+  if (!conditions) {
+    return undefined;
+  }
+
+  return conditions.map((condition, index) => ({
+    type: condition.type,
+    order: index,
+    title: condition.title,
+    description: condition.description,
+    iconEmoji: condition.iconEmoji,
+    config: condition.config,
+    redirectUrl: condition.config?.googleReviewUrl
+      ? String(condition.config.googleReviewUrl)
+      : undefined,
+    isRequired: true,
+    enablesGame: condition.enablesGame ?? true,
+  }));
+}
+
+/**
+ * Attempts to update QR code, returns true if successful
+ */
+async function tryUpdateQRCode(
+  qrCodeRepo: QRCodeRepository,
+  qrCodeId: string,
+  campaignId: string,
+): Promise<boolean> {
+  try {
+    await qrCodeRepo.updateCampaignUrl(qrCodeId, campaignId);
+    return true;
+  } catch (_error) {
+    // Log l'erreur mais ne pas faire échouer la création
+    return false;
+  }
+}
+
+/**
+ * Builds success message based on QR code update status
+ */
+function buildSuccessMessage(qrCodeUpdated: boolean): string {
+  return qrCodeUpdated
+    ? 'Campagne créée et activée. Le QR Code du commerce pointe maintenant vers cette campagne.'
+    : 'Campagne créée avec succès.';
+}
+
 export class CreateCampaignUseCase {
   constructor(
     private readonly campaignRepo: CampaignRepository,
@@ -98,12 +210,9 @@ export class CreateCampaignUseCase {
 
   async execute(dto: CreateCampaignDTO): Promise<Result<CreateCampaignResult>> {
     // 1. Validation du nom
-    if (!dto.name || dto.name.trim().length < 2) {
-      return Result.fail(new Error('Le nom de la campagne doit contenir au moins 2 caractères'));
-    }
-
-    if (dto.name.length > 200) {
-      return Result.fail(new Error('Le nom de la campagne ne peut pas dépasser 200 caractères'));
+    const nameValidation = validateCampaignName(dto.name);
+    if (!nameValidation.success) {
+      return nameValidation;
     }
 
     // 2. Validation des prizes avec PrizeConfiguration VO
@@ -112,25 +221,17 @@ export class CreateCampaignUseCase {
       return Result.fail(prizeConfigResult.error);
     }
 
-    const prizeConfig = prizeConfigResult.data;
-
     // 3. Validation maxParticipants
-    if (dto.maxParticipants !== undefined && dto.maxParticipants !== null) {
-      if (dto.maxParticipants < 1) {
-        return Result.fail(new Error('Le nombre maximum de participants doit être au moins 1'));
-      }
-
-      if (dto.maxParticipants > 1000000) {
-        return Result.fail(
-          new Error('Le nombre maximum de participants ne peut pas dépasser 1 000 000'),
-        );
-      }
+    const maxParticipantsValidation = validateMaxParticipants(dto.maxParticipants);
+    if (!maxParticipantsValidation.success) {
+      return maxParticipantsValidation;
     }
 
     // 4. Validation prizeClaimExpiryDays
     const expiryDays = dto.prizeClaimExpiryDays ?? 30;
-    if (expiryDays < 1 || expiryDays > 365) {
-      return Result.fail(new Error("La durée d'expiration doit être entre 1 et 365 jours"));
+    const expiryValidation = validateExpiryDays(expiryDays);
+    if (!expiryValidation.success) {
+      return expiryValidation;
     }
 
     // 5. Vérifier que le commerce appartient à l'utilisateur
@@ -145,25 +246,10 @@ export class CreateCampaignUseCase {
       return Result.fail(new Error('Commerce introuvable'));
     }
 
+    // 7. Pre-compute boolean flags
     const isActiveCampaign = dto.isActive ?? false;
 
-    // 7. Transformer les conditions pour le repository
-    const conditions = dto.conditions?.map((condition, index) => ({
-      type: condition.type,
-      order: index,
-      title: condition.title,
-      description: condition.description,
-      iconEmoji: condition.iconEmoji,
-      config: condition.config,
-      redirectUrl: condition.config?.googleReviewUrl
-        ? String(condition.config.googleReviewUrl)
-        : undefined,
-      isRequired: true,
-      enablesGame: condition.enablesGame ?? true,
-    }));
-
     // 8. Créer la campagne avec les prizes et conditions
-    // IMPORTANT: Copier automatiquement googleBusinessUrl du Store vers googleReviewUrl de la Campaign
     const campaign = await this.campaignRepo.createWithPrizes({
       campaign: {
         name: dto.name,
@@ -177,35 +263,43 @@ export class CreateCampaignUseCase {
         googleReviewUrl: store.googleBusinessUrl || null,
         isActive: isActiveCampaign,
       },
-      prizes: prizeConfig.getPrizes() as PrizeConfig[],
-      conditions,
+      prizes: prizeConfigResult.data.getPrizes() as PrizeConfig[],
+      conditions: transformConditions(dto.conditions),
     });
 
-    // 8. Si la campagne est active, désactiver les autres et mettre à jour le QR
-    let qrCodeUpdated = false;
-
-    if (isActiveCampaign) {
-      // Désactiver les autres campagnes actives de ce commerce
-      await this.campaignRepo.deactivateOtherCampaigns(dto.storeId, campaign.id);
-
-      // 9. IMPORTANT: Mettre à jour le QR Code par défaut du commerce
-      // pour qu'il pointe vers cette campagne active
-      if (store.defaultQrCodeId) {
-        try {
-          await this.qrCodeRepo.updateCampaignUrl(store.defaultQrCodeId, campaign.id);
-          qrCodeUpdated = true;
-        } catch (_error) {
-          // Log l'erreur mais ne pas faire échouer la création
-        }
-      }
-    }
+    // 9. Si la campagne est active, désactiver les autres et mettre à jour le QR
+    const qrCodeUpdated = await this.handleActiveCampaign(
+      isActiveCampaign,
+      dto.storeId,
+      campaign.id,
+      store.defaultQrCodeId,
+    );
 
     return Result.ok({
       campaignId: campaign.id,
       qrCodeUpdated,
-      message: qrCodeUpdated
-        ? 'Campagne créée et activée. Le QR Code du commerce pointe maintenant vers cette campagne.'
-        : 'Campagne créée avec succès.',
+      message: buildSuccessMessage(qrCodeUpdated),
     });
+  }
+
+  private async handleActiveCampaign(
+    isActive: boolean,
+    storeId: string,
+    campaignId: string,
+    defaultQrCodeId: string | null,
+  ): Promise<boolean> {
+    if (!isActive) {
+      return false;
+    }
+
+    // Désactiver les autres campagnes actives de ce commerce
+    await this.campaignRepo.deactivateOtherCampaigns(storeId, campaignId);
+
+    // Mettre à jour le QR Code par défaut du commerce
+    if (!defaultQrCodeId) {
+      return false;
+    }
+
+    return await tryUpdateQRCode(this.qrCodeRepo, defaultQrCodeId, campaignId);
   }
 }

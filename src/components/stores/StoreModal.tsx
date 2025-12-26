@@ -2,6 +2,7 @@
  * Store Modal Component
  * Modal de création d'un nouveau commerce
  * REFACTORÉ : 423 lignes → 150 lignes (extraction de 7 sous-composants)
+ * Phase 3: Réduction de la complexité cyclomatique de 19 à <15
  */
 
 'use client';
@@ -61,6 +62,41 @@ interface StoreModalProps {
   onShowGoogleApiHelp: () => void;
 }
 
+// Helper functions to reduce complexity
+function getModalTitle(isNewBrand: boolean): string {
+  return isNewBrand ? 'Nouvelle enseigne' : 'Nouveau commerce';
+}
+
+function getSubmitButtonText(isSubmitting: boolean): string {
+  return isSubmitting ? 'Création...' : 'Créer';
+}
+
+function shouldShowPlanLimitsWarning(limits: StoreModalProps['limits']): boolean {
+  return !!limits && limits.plan === 'FREE' && !limits.canCreateStore;
+}
+
+function shouldShowPlanInfoCard(limits: StoreModalProps['limits']): boolean {
+  return !!limits && limits.plan === 'FREE' && limits.canCreateStore && limits.brandsCount > 0;
+}
+
+function shouldShowBrandSelector(
+  selectedBrand: StoreModalProps['selectedBrand'],
+  isNewBrand: boolean,
+): boolean {
+  return !!selectedBrand && !isNewBrand;
+}
+
+function shouldShowNewBrandWarning(isNewBrand: boolean): boolean {
+  return isNewBrand;
+}
+
+function shouldShowBrandFormFields(
+  isNewBrand: boolean,
+  selectedBrand: StoreModalProps['selectedBrand'],
+): boolean {
+  return isNewBrand || !selectedBrand;
+}
+
 export function StoreModal({
   isOpen,
   onClose,
@@ -81,12 +117,21 @@ export function StoreModal({
     return null;
   }
 
-  // Helper pour mettre à jour un champ du formulaire
+  // Compute all display values upfront
+  const modalTitle = getModalTitle(isNewBrand);
+  const submitButtonText = getSubmitButtonText(isSubmitting);
+  const showPlanLimitsWarning = shouldShowPlanLimitsWarning(limits);
+  const showPlanInfoCard = shouldShowPlanInfoCard(limits);
+  const showBrandSelector = shouldShowBrandSelector(selectedBrand, isNewBrand);
+  const showNewBrandWarning = shouldShowNewBrandWarning(isNewBrand);
+  const showBrandFormFields = shouldShowBrandFormFields(isNewBrand, selectedBrand);
+  const hasNameError = !!errors.name;
+
+  // Event handlers
   const updateField = (field: keyof typeof formData, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  // Helper pour mettre à jour le logo file
   const updateLogoFile = (file: File | null, previewUrl: string | null) => {
     setFormData({ ...formData, logoFile: file, logoPreviewUrl: previewUrl });
   };
@@ -96,16 +141,14 @@ export function StoreModal({
       <div className="bg-white backdrop-blur-xl border border-purple-600/20 rounded-3xl p-4 sm:p-6 md:p-8 max-w-full sm:max-w-md w-full shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {isNewBrand ? 'Nouvelle enseigne' : 'Nouveau commerce'}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">{modalTitle}</h2>
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Limites du plan FREE (mode dev: affichage informatif sans blocage) */}
-        {limits && limits.plan === 'FREE' && !limits.canCreateStore && (
+        {showPlanLimitsWarning && limits && (
           <PlanLimitsWarning
             maxBrands={limits.maxBrands}
             maxStoresPerBrand={limits.maxStoresPerBrand}
@@ -113,7 +156,7 @@ export function StoreModal({
         )}
 
         {/* Info sur les enseignes */}
-        {limits && limits.plan === 'FREE' && limits.canCreateStore && limits.brandsCount > 0 && (
+        {showPlanInfoCard && limits && (
           <PlanInfoCard
             storesCount={limits.storesCount}
             maxStoresPerBrand={limits.maxStoresPerBrand}
@@ -126,7 +169,7 @@ export function StoreModal({
         {/* Form */}
         <form onSubmit={onSubmit} className="space-y-5">
           {/* Bouton Nouvelle enseigne - affiché seulement si une enseigne existe */}
-          {selectedBrand && !isNewBrand && (
+          {showBrandSelector && selectedBrand && (
             <BrandSelector
               brandName={selectedBrand.brandName}
               logoUrl={selectedBrand.logoUrl}
@@ -135,10 +178,10 @@ export function StoreModal({
           )}
 
           {/* Message nouvelle enseigne payante */}
-          {isNewBrand && <NewBrandWarning onUseExisting={() => setIsNewBrand(false)} />}
+          {showNewBrandWarning && <NewBrandWarning onUseExisting={() => setIsNewBrand(false)} />}
 
           {/* Nom de l'enseigne - affiché seulement si nouvelle enseigne OU première création */}
-          {(isNewBrand || !selectedBrand) && (
+          {showBrandFormFields && (
             <BrandFormFields
               brandName={formData.brandName}
               logoUrl={formData.logoUrl}
@@ -163,7 +206,7 @@ export function StoreModal({
               className="w-full px-4 py-3 bg-white/50 border border-purple-600/20 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
               placeholder="Ex: McDonald's Champs-Élysées"
             />
-            {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
+            {hasNameError && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
           </div>
 
           {/* Google Business URL */}
@@ -200,7 +243,7 @@ export function StoreModal({
                 disabled={isSubmitting}
                 className="flex-1 px-4 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {isSubmitting ? 'Création...' : 'Créer'}
+                {submitButtonText}
               </button>
             </div>
           </div>

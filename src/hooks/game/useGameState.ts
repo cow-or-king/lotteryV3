@@ -61,6 +61,99 @@ interface UseGameStateProps {
   completeConditionIsPending: boolean;
 }
 
+/**
+ * Check if we should skip step updates due to early return conditions
+ */
+function shouldSkipStepUpdate(
+  conditionsProgress: ConditionsProgress | undefined,
+  gameUser: { id: string; email: string; name: string } | null,
+  isCompletingCondition: boolean,
+  completeConditionIsPending: boolean,
+  currentStep: GameStep,
+): boolean {
+  if (!conditionsProgress || !gameUser) {
+    return true;
+  }
+
+  if (isCompletingCondition || completeConditionIsPending) {
+    return true;
+  }
+
+  if (currentStep === 'playing' || currentStep === 'result') {
+    return true;
+  }
+
+  if (currentStep === 'journey-complete' && !isCompletingCondition) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Determine the game step when there are no conditions
+ */
+function getStepWithNoConditions(conditionsProgress: ConditionsProgress): GameStep {
+  if (!conditionsProgress.participant?.hasPlayed) {
+    return 'ready-to-play';
+  }
+  return 'journey-complete';
+}
+
+/**
+ * Check if all conditions are completed
+ */
+function areAllConditionsCompleted(completedCount: number, totalConditions: number): boolean {
+  return completedCount >= totalConditions;
+}
+
+/**
+ * Check if user should see conditions screen
+ */
+function shouldShowConditions(conditionsProgress: ConditionsProgress, canPlay: boolean): boolean {
+  return Boolean(conditionsProgress.currentCondition && !canPlay);
+}
+
+/**
+ * Check if there are remaining conditions but user cannot play
+ */
+function hasRemainingConditionsButCannotPlay(
+  canPlay: boolean,
+  completedCount: number,
+  totalConditions: number,
+): boolean {
+  return !canPlay && completedCount < totalConditions;
+}
+
+/**
+ * Determine the appropriate game step based on conditions progress
+ */
+function determineGameStep(
+  conditionsProgress: ConditionsProgress,
+  completedCount: number,
+  totalConditions: number,
+): GameStep {
+  const canPlay = conditionsProgress.canPlay;
+
+  if (shouldShowConditions(conditionsProgress, canPlay)) {
+    return 'conditions';
+  }
+
+  if (canPlay) {
+    return 'ready-to-play';
+  }
+
+  if (areAllConditionsCompleted(completedCount, totalConditions)) {
+    return 'journey-complete';
+  }
+
+  if (hasRemainingConditionsButCannotPlay(canPlay, completedCount, totalConditions)) {
+    return 'conditions';
+  }
+
+  return 'loading';
+}
+
 export function useGameState({
   currentStep,
   setCurrentStep,
@@ -70,71 +163,33 @@ export function useGameState({
   completeConditionIsPending,
 }: UseGameStateProps) {
   useEffect(() => {
-    if (!conditionsProgress || !gameUser) {
-      return;
-    }
-
-    // Si on est en train de compléter une condition, ne rien faire
-    // (handleConditionComplete va gérer la transition)
-    if (isCompletingCondition || completeConditionIsPending) {
-      return;
-    }
-
-    // Si on est en train de jouer ou si on affiche le résultat, ne PAS écraser le step
-    // Ces steps sont gérés par handlePlay() et handleSpinComplete()
-    if (currentStep === 'playing' || currentStep === 'result') {
-      return;
-    }
-
-    // IMPORTANT: Si on vient de terminer une visite (journey-complete), ne PAS repasser automatiquement
-    // aux conditions. L'utilisateur doit rescanner le QR code pour une nouvelle visite.
-    // On détecte cela si le step est déjà 'journey-complete' ET qu'il reste des conditions
-    if (currentStep === 'journey-complete' && !isCompletingCondition) {
+    if (
+      shouldSkipStepUpdate(
+        conditionsProgress,
+        gameUser,
+        isCompletingCondition,
+        completeConditionIsPending,
+        currentStep,
+      )
+    ) {
       return;
     }
 
     // Si pas de conditions, on peut jouer directement
-    if (conditionsProgress.conditions.length === 0) {
-      if (!conditionsProgress.participant?.hasPlayed) {
-        setCurrentStep('ready-to-play');
-      } else {
-        setCurrentStep('journey-complete');
-      }
+    if (conditionsProgress && conditionsProgress.conditions.length === 0) {
+      const step = getStepWithNoConditions(conditionsProgress);
+      setCurrentStep(step);
       return;
     }
 
     // NOUVEAU SYSTÈME playCount: Vérifier si l'utilisateur peut jouer
-    const completedCount = conditionsProgress.completedConditions?.length || 0;
-    const totalConditions = conditionsProgress.conditions?.length || 0;
+    if (conditionsProgress) {
+      const completedCount = conditionsProgress.completedConditions?.length || 0;
+      const totalConditions = conditionsProgress.conditions?.length || 0;
 
-    // Si il y a une condition courante à compléter ET qu'on ne peut pas encore jouer
-    if (conditionsProgress.currentCondition && !conditionsProgress.canPlay) {
-      setCurrentStep('conditions');
-      return;
+      const step = determineGameStep(conditionsProgress, completedCount, totalConditions);
+      setCurrentStep(step);
     }
-
-    // Si on peut jouer (au moins une condition complétée de plus que le nombre de jeux)
-    if (conditionsProgress.canPlay) {
-      setCurrentStep('ready-to-play');
-      return;
-    }
-
-    // Si toutes les conditions sont complétées => Parcours terminé
-    // Peu importe le nombre de jeux joués (certaines conditions peuvent être sans jeu)
-    if (completedCount >= totalConditions) {
-      setCurrentStep('journey-complete');
-      return;
-    }
-
-    // Si on ne peut pas jouer et qu'il reste des conditions à compléter
-    // (Cas où toutes les conditions game-enabled ont été jouées au niveau store)
-    if (!conditionsProgress.canPlay && completedCount < totalConditions) {
-      setCurrentStep('conditions');
-      return;
-    }
-
-    // Par défaut
-    setCurrentStep('loading');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conditionsProgress, gameUser, isCompletingCondition, completeConditionIsPending]);
 }

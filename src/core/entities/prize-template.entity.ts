@@ -45,6 +45,101 @@ export interface PrizeTemplateProps {
   readonly updatedAt: Date;
 }
 
+export interface PrizeTemplateUpdateProps {
+  name?: string;
+  description?: string;
+  value?: number;
+  color?: string;
+  iconUrl?: string;
+}
+
+// Helper functions for validation - shared between create and update
+function validateName(name: string | undefined): Result<string> {
+  if (!name || name.trim().length < 2) {
+    return Result.fail(
+      new InvalidPrizeTemplateDataError('Prize template name must be at least 2 characters'),
+    );
+  }
+
+  if (name.length > 100) {
+    return Result.fail(
+      new InvalidPrizeTemplateDataError('Prize template name must be less than 100 characters'),
+    );
+  }
+
+  return Result.ok(name.trim());
+}
+
+function validateNameUpdate(name: string): Result<string> {
+  return validateName(name);
+}
+
+function validateDescription(description: string | undefined): Result<string | null> {
+  if (description && description.length > 500) {
+    return Result.fail(
+      new InvalidPrizeTemplateDataError('Description must be less than 500 characters'),
+    );
+  }
+
+  return Result.ok(description?.trim() || null);
+}
+
+function validateDescriptionUpdate(description: string): Result<string | null> {
+  return validateDescription(description);
+}
+
+function validateValue(value: number | undefined): Result<number | null> {
+  if (value !== undefined && value < 0) {
+    return Result.fail(new InvalidPrizeTemplateDataError('Value must be positive'));
+  }
+
+  return Result.ok(value ?? null);
+}
+
+function validateValueUpdate(value: number): Result<number> {
+  if (value < 0) {
+    return Result.fail(new InvalidPrizeTemplateDataError('Value must be positive'));
+  }
+
+  return Result.ok(value);
+}
+
+function validateColorUpdate(color: string): Result<string> {
+  const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  if (!hexRegex.test(color)) {
+    return Result.fail(new InvalidPrizeTemplateDataError('Invalid color format'));
+  }
+
+  return Result.ok(color);
+}
+
+function validateIconUrlUpdate(iconUrl: string): Result<string | null> {
+  if (iconUrl) {
+    try {
+      new URL(iconUrl);
+    } catch {
+      return Result.fail(new InvalidPrizeTemplateDataError('Invalid icon URL'));
+    }
+  }
+
+  return Result.ok(iconUrl || null);
+}
+
+function buildUpdatedProps(
+  currentProps: PrizeTemplateProps,
+  updates: PrizeTemplateUpdateProps,
+): PrizeTemplateProps {
+  return {
+    ...currentProps,
+    name: updates.name !== undefined ? updates.name : currentProps.name,
+    description: updates.description !== undefined ? updates.description : currentProps.description,
+    value: updates.value !== undefined ? updates.value : currentProps.value,
+    color: updates.color !== undefined ? updates.color : currentProps.color,
+    iconUrl: updates.iconUrl !== undefined ? updates.iconUrl : currentProps.iconUrl,
+    updatedAt: new Date(),
+  };
+}
+
 /**
  * PrizeTemplate Entity
  */
@@ -53,40 +148,37 @@ export class PrizeTemplateEntity {
 
   // Factory Methods
   static create(props: CreatePrizeTemplateProps): Result<PrizeTemplateEntity> {
-    // Validation du nom
-    if (!props.name || props.name.trim().length < 2) {
-      return Result.fail(
-        new InvalidPrizeTemplateDataError('Prize template name must be at least 2 characters'),
-      );
+    // Validate name
+    const nameResult = validateName(props.name);
+    if (!nameResult.success) {
+      return Result.fail(nameResult.error);
     }
 
-    if (props.name.length > 100) {
-      return Result.fail(
-        new InvalidPrizeTemplateDataError('Prize template name must be less than 100 characters'),
-      );
+    // Validate description
+    const descriptionResult = validateDescription(props.description);
+    if (!descriptionResult.success) {
+      return Result.fail(descriptionResult.error);
     }
 
-    // Validation de la description
-    if (props.description && props.description.length > 500) {
-      return Result.fail(
-        new InvalidPrizeTemplateDataError('Description must be less than 500 characters'),
-      );
+    // Validate value
+    const valueResult = validateValue(props.value);
+    if (!valueResult.success) {
+      return Result.fail(valueResult.error);
     }
 
-    // Validation de la valeur
-    if (props.value !== undefined && props.value < 0) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Value must be positive'));
-    }
-
-    // Validation de la couleur
+    // Validate color
     const color = props.color || '#8B5CF6';
-    if (!this.isValidHexColor(color)) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Invalid color format'));
+    const colorResult = validateColorUpdate(color);
+    if (!colorResult.success) {
+      return Result.fail(colorResult.error);
     }
 
-    // Validation de l'URL de l'icône
-    if (props.iconUrl && !this.isValidUrl(props.iconUrl)) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Invalid icon URL'));
+    // Validate icon URL
+    if (props.iconUrl) {
+      const iconResult = validateIconUrlUpdate(props.iconUrl);
+      if (!iconResult.success) {
+        return Result.fail(iconResult.error);
+      }
     }
 
     const now = new Date();
@@ -149,87 +241,58 @@ export class PrizeTemplateEntity {
   }
 
   // Business Logic
-  update(updates: {
-    name?: string;
-    description?: string;
-    value?: number;
-    color?: string;
-    iconUrl?: string;
-  }): Result<PrizeTemplateEntity> {
-    // Validation du nom
+  update(updates: PrizeTemplateUpdateProps): Result<PrizeTemplateEntity> {
+    const validatedUpdates: PrizeTemplateUpdateProps = {};
+
+    // Validate name if provided
     if (updates.name !== undefined) {
-      if (!updates.name || updates.name.trim().length < 2) {
-        return Result.fail(
-          new InvalidPrizeTemplateDataError('Prize template name must be at least 2 characters'),
-        );
+      const nameResult = validateNameUpdate(updates.name);
+      if (!nameResult.success) {
+        return nameResult;
       }
+      validatedUpdates.name = nameResult.data;
+    }
 
-      if (updates.name.length > 100) {
-        return Result.fail(
-          new InvalidPrizeTemplateDataError('Prize template name must be less than 100 characters'),
-        );
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      const descriptionResult = validateDescriptionUpdate(updates.description);
+      if (!descriptionResult.success) {
+        return descriptionResult;
       }
+      validatedUpdates.description = descriptionResult.data ?? undefined;
     }
 
-    // Validation de la description
-    if (
-      updates.description !== undefined &&
-      updates.description &&
-      updates.description.length > 500
-    ) {
-      return Result.fail(
-        new InvalidPrizeTemplateDataError('Description must be less than 500 characters'),
-      );
+    // Validate value if provided
+    if (updates.value !== undefined) {
+      const valueResult = validateValueUpdate(updates.value);
+      if (!valueResult.success) {
+        return valueResult;
+      }
+      validatedUpdates.value = valueResult.data;
     }
 
-    // Validation de la valeur
-    if (updates.value !== undefined && updates.value < 0) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Value must be positive'));
+    // Validate color if provided
+    if (updates.color !== undefined) {
+      const colorResult = validateColorUpdate(updates.color);
+      if (!colorResult.success) {
+        return colorResult;
+      }
+      validatedUpdates.color = colorResult.data;
     }
 
-    // Validation de la couleur
-    if (updates.color !== undefined && !PrizeTemplateEntity.isValidHexColor(updates.color)) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Invalid color format'));
+    // Validate iconUrl if provided
+    if (updates.iconUrl !== undefined) {
+      const iconUrlResult = validateIconUrlUpdate(updates.iconUrl);
+      if (!iconUrlResult.success) {
+        return iconUrlResult;
+      }
+      validatedUpdates.iconUrl = iconUrlResult.data ?? undefined;
     }
 
-    // Validation de l'URL de l'icône
-    if (
-      updates.iconUrl !== undefined &&
-      updates.iconUrl &&
-      !PrizeTemplateEntity.isValidUrl(updates.iconUrl)
-    ) {
-      return Result.fail(new InvalidPrizeTemplateDataError('Invalid icon URL'));
-    }
-
-    const updatedPrizeTemplate = new PrizeTemplateEntity({
-      ...this.props,
-      name: updates.name !== undefined ? updates.name.trim() : this.props.name,
-      description:
-        updates.description !== undefined
-          ? updates.description?.trim() || null
-          : this.props.description,
-      value: updates.value !== undefined ? updates.value : this.props.value,
-      color: updates.color !== undefined ? updates.color : this.props.color,
-      iconUrl: updates.iconUrl !== undefined ? updates.iconUrl || null : this.props.iconUrl,
-      updatedAt: new Date(),
-    });
+    const updatedProps = buildUpdatedProps(this.props, validatedUpdates);
+    const updatedPrizeTemplate = new PrizeTemplateEntity(updatedProps);
 
     return Result.ok(updatedPrizeTemplate);
-  }
-
-  // Private Helpers
-  private static isValidHexColor(color: string): boolean {
-    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    return hexRegex.test(color);
-  }
-
-  private static isValidUrl(url: string): boolean {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   private static generatePrizeTemplateId(): PrizeTemplateId {
