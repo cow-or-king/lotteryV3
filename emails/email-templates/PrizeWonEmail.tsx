@@ -3,7 +3,6 @@
  * Email envoyé lorsqu'un utilisateur gagne un lot
  */
 
-import * as React from 'react';
 import {
   Html,
   Head,
@@ -54,7 +53,7 @@ export function PrizeWonEmail({
 
             <Section style={prizeBox}>
               <Heading style={h2}>{prizeName}</Heading>
-              {prizeDescription && <Text style={prizeDescription}>{prizeDescription}</Text>}
+              {prizeDescription && <Text style={prizeDescriptionStyle}>{prizeDescription}</Text>}
             </Section>
 
             <Text style={paragraph}>Pour récupérer votre lot, présentez ce code en magasin:</Text>

@@ -7,7 +7,7 @@
 import 'dotenv/config';
 import { createResendEmailService } from '@/infrastructure/services/resend-email.service';
 import { render } from '@react-email/components';
-import { WelcomeEmail, PrizeWonEmail } from '@/lib/email-templates';
+import { WelcomeEmail, PrizeWonEmail } from '../../emails/email-templates';
 import React from 'react';
 
 async function testEmailService() {

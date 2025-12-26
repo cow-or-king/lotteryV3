@@ -3,7 +3,6 @@
  * Email de bienvenue pour nouveaux utilisateurs
  */
 
-import * as React from 'react';
 import {
   Html,
   Head,
