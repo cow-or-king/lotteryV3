@@ -23,6 +23,12 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-4">
               <Link
+                href="/pricing"
+                className="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium transition-colors"
+              >
+                Tarifs
+              </Link>
+              <Link
                 href="/login"
                 className="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium transition-colors"
               >

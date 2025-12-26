@@ -662,3 +662,46 @@ enum ConditionType {
   CUSTOM_REDIRECT
   GAME
 }
+
+// ============================================================================
+// PRICING PLANS
+// ============================================================================
+
+model PricingPlan {
+  id                String              @id @default(cuid())
+  name              String              // e.g., "Starter", "Pro", "Enterprise"
+  slug              String              @unique // e.g., "starter", "pro", "enterprise"
+  description       String
+  monthlyPrice      Float?              @map("monthly_price") // null for "Sur devis"
+  annualPrice       Float?              @map("annual_price") // null for "Sur devis"
+  currency          String              @default("EUR")
+  isActive          Boolean             @default(true) @map("is_active")
+  isPopular         Boolean             @default(false) @map("is_popular") // Badge "Most Popular"
+  displayOrder      Int                 @default(0) @map("display_order") // Order of display
+  ctaText           String              @default("Commencer l'essai") @map("cta_text")
+  ctaHref           String              @default("/login") @map("cta_href")
+  badgeText         String?             @map("badge_text") // e.g., "Most Popular"
+  features          PricingFeature[]
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([displayOrder])
+  @@map("pricing_plans")
+}
+
+model PricingFeature {
+  id                String        @id @default(cuid())
+  planId            String        @map("plan_id")
+  plan              PricingPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  text              String        // e.g., "1 commerce", "100 participations/mois"
+  isIncluded        Boolean       @default(true) @map("is_included") // true = included, false = not included (crossed out)
+  isEmphasized      Boolean       @default(false) @map("is_emphasized") // Bold text for important features
+  displayOrder      Int           @default(0) @map("display_order")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  @@index([planId])
+  @@index([displayOrder])
+  @@map("pricing_features")
+}

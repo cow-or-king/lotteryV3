@@ -21,6 +21,7 @@ import { wheelDesignRouter } from './routers/wheel-design.router';
 import { campaignRouter } from './routers/campaign.router';
 import { winnerRouter } from './routers/winner.router';
 import { conditionRouter } from './routers/condition.router';
+import { pricingRouter } from './routers/pricing.router';
 
 /**
  * Router principal de l'API
@@ -43,6 +44,7 @@ export const appRouter = createTRPCRouter({
   campaign: campaignRouter,
   winner: winnerRouter,
   condition: conditionRouter,
+  pricing: pricingRouter,
 });
 
 /**

@@ -60,6 +60,17 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     targetRole: 'SUPER_ADMIN',
   },
   {
+    id: 'pricing',
+    label: 'Tarification',
+    path: '/dashboard/super-admin/pricing-config',
+    icon: 'TrendingUp',
+    superAdminVisible: true,
+    adminVisible: false,
+    userVisible: false,
+    displayOrder: 3,
+    targetRole: 'SUPER_ADMIN',
+  },
+  {
     id: 'settings',
     label: 'Paramètres',
     path: '/dashboard/super-admin/settings',
@@ -67,7 +78,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: true,
     adminVisible: false,
     userVisible: false,
-    displayOrder: 3,
+    displayOrder: 4,
     targetRole: 'SUPER_ADMIN',
   },
 
@@ -80,7 +91,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 4,
+    displayOrder: 5,
     targetRole: 'ADMIN',
   },
   {
@@ -91,7 +102,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 5,
+    displayOrder: 6,
     targetRole: 'ADMIN',
   },
   {
@@ -102,7 +113,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 6,
+    displayOrder: 7,
     targetRole: 'ADMIN',
   },
   {
@@ -113,7 +124,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 7,
+    displayOrder: 8,
     targetRole: 'ADMIN',
   },
   {
@@ -124,7 +135,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 8,
+    displayOrder: 9,
     targetRole: 'ADMIN',
   },
   {
@@ -135,7 +146,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 9,
+    displayOrder: 10,
     targetRole: 'ADMIN',
   },
   {
@@ -146,7 +157,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: true, // Activé par défaut pour SUPER_ADMIN
     adminVisible: true,
     userVisible: false,
-    displayOrder: 10,
+    displayOrder: 11,
     targetRole: 'ADMIN',
   },
   {
@@ -157,7 +168,7 @@ export const DEFAULT_MENU_CONFIG: MenuConfig[] = [
     superAdminVisible: false, // Peut être activé par le SUPER_ADMIN dans la config
     adminVisible: true,
     userVisible: false,
-    displayOrder: 11,
+    displayOrder: 12,
     targetRole: 'ADMIN',
   },
 ];

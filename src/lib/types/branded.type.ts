@@ -46,6 +46,10 @@ export type PaymentMethodId = Brand<'PaymentMethodId', string>;
 export type ReviewId = Brand<'ReviewId', string>;
 export type ReviewToken = Brand<'ReviewToken', string>;
 
+// Pricing Types
+export type PricingPlanId = Brand<'PricingPlanId', string>;
+export type PricingFeatureId = Brand<'PricingFeatureId', string>;
+
 // Helpers
 export const BrandedTypes = {
   userId: (id: string): UserId => id as UserId,
@@ -69,6 +73,8 @@ export const BrandedTypes = {
   paymentMethodId: (id: string): PaymentMethodId => id as PaymentMethodId,
   reviewId: (id: string): ReviewId => id as ReviewId,
   reviewToken: (token: string): ReviewToken => token as ReviewToken,
+  pricingPlanId: (id: string): PricingPlanId => id as PricingPlanId,
+  pricingFeatureId: (id: string): PricingFeatureId => id as PricingFeatureId,
 };
 
 // Validation helpers
