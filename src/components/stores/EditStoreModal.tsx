@@ -1,6 +1,7 @@
 'use client';
 
 import { HelpCircle, X } from 'lucide-react';
+import { GoogleBusinessConnect } from '@/components/reviews/GoogleBusinessConnect';
 
 interface EditStoreModalProps {
   isOpen: boolean;
@@ -101,6 +102,14 @@ export function EditStoreModal({
             <p className="text-xs text-gray-600 mt-1">
               URL de votre page Google Business (pour laisser un avis)
             </p>
+          </div>
+
+          {/* Google Business Profile Connection */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-700">
+              Connexion Google Business Profile (API)
+            </h3>
+            <GoogleBusinessConnect storeId={store.id} />
           </div>
 
           {/* Info pour configurer Place ID dans /reviews */}
