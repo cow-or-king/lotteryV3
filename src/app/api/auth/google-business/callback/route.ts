@@ -37,16 +37,17 @@ function createOAuth2Client() {
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // Récupérer le code d'autorisation
+    // Récupérer le code d'autorisation et storeId
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const storeId = searchParams.get('state'); // state contient le storeId
 
     // Gérer les erreurs OAuth
     if (error) {
       return NextResponse.redirect(
         new URL(
-          `/dashboard/reviews?error=${encodeURIComponent(error)}&source=google-business`,
+          `/dashboard/stores?error=${encodeURIComponent(error)}&source=google-business`,
           request.url,
         ),
       );
@@ -54,7 +55,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!code) {
       return NextResponse.redirect(
-        new URL('/dashboard/reviews?error=no_code&source=google-business', request.url),
+        new URL('/dashboard/stores?error=no_code&source=google-business', request.url),
+      );
+    }
+
+    if (!storeId) {
+      return NextResponse.redirect(
+        new URL('/dashboard/stores?error=no_store&source=google-business', request.url),
       );
     }
 
@@ -63,6 +70,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session) {
       return NextResponse.redirect(
         new URL('/login?error=unauthorized&source=google-business', request.url),
+      );
+    }
+
+    // Vérifier que le store appartient bien à l'utilisateur
+    const store = await prisma.store.findFirst({
+      where: {
+        id: storeId,
+        brand: {
+          userId: session.userId,
+        },
+      },
+    });
+
+    if (!store) {
+      return NextResponse.redirect(
+        new URL('/dashboard/stores?error=unauthorized_store&source=google-business', request.url),
       );
     }
 
@@ -87,9 +110,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Sauvegarder les tokens en base de données (upsert)
     await prisma.googleBusinessToken.upsert({
-      where: { userId: session.userId },
+      where: { storeId },
       create: {
-        userId: session.userId,
+        storeId,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         expiresAt,
@@ -102,15 +125,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Rediriger vers le dashboard reviews avec succès
+    // Rediriger vers la page du store avec succès
     return NextResponse.redirect(
-      new URL('/dashboard/reviews?success=google_business_connected', request.url),
+      new URL(`/dashboard/stores/${storeId}?success=google_business_connected`, request.url),
     );
   } catch (err) {
     console.error('Google Business OAuth callback error:', err);
 
     return NextResponse.redirect(
-      new URL('/dashboard/reviews?error=oauth_failed&source=google-business', request.url),
+      new URL('/dashboard/stores?error=oauth_failed&source=google-business', request.url),
     );
   }
 }

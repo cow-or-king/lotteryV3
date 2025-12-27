@@ -97,9 +97,11 @@ export default function ReviewsPage() {
       {showHeader && <ReviewsHeader />}
 
       {/* Connexion Google Business */}
-      <div className="mb-6">
-        <GoogleBusinessConnect />
-      </div>
+      {selectedStoreId && (
+        <div className="mb-6">
+          <GoogleBusinessConnect storeId={selectedStoreId} />
+        </div>
+      )}
 
       {showFilters && (
         <ReviewFilters

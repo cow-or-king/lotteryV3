@@ -26,7 +26,6 @@ model User {
   reviewsResponded       Review[]
   subscription           Subscription?
   wheelDesigns           WheelDesign[]
-  googleBusinessToken    GoogleBusinessToken?
 
   @@index([email])
   @@map("users")
@@ -51,8 +50,8 @@ model GameUser {
 /// Google Business Profile API tokens (encrypted)
 model GoogleBusinessToken {
   id           String   @id @default(cuid())
-  userId       String   @unique @map("user_id")
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId      String   @unique @map("store_id")
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   // Tokens OAuth (chiffrés en AES-256-GCM)
   accessToken  String   @db.Text @map("access_token")
@@ -68,7 +67,7 @@ model GoogleBusinessToken {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  @@index([userId])
+  @@index([storeId])
   @@map("google_business_tokens")
 }
 
@@ -140,6 +139,7 @@ model Store {
   responseTemplates        ResponseTemplate[]
   reviews                  Review[]
   storeConditionCompletions StoreConditionCompletion[]
+  googleBusinessToken      GoogleBusinessToken?
   brand                    Brand                       @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId])

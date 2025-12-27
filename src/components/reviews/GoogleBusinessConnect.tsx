@@ -12,18 +12,25 @@ import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useState } from 'react';
 
-export function GoogleBusinessConnect() {
+interface GoogleBusinessConnectProps {
+  storeId: string;
+}
+
+export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
 
   // Queries
   const { data: connectionStatus, refetch: refetchStatus } =
-    api.googleBusiness.getConnectionStatus.useQuery();
-  const { data: authUrlData } = api.googleBusiness.getAuthUrl.useQuery(undefined, {
-    enabled: !connectionStatus?.isConnected,
-  });
+    api.googleBusiness.getConnectionStatus.useQuery({ storeId });
+  const { data: authUrlData } = api.googleBusiness.getAuthUrl.useQuery(
+    { storeId },
+    {
+      enabled: !connectionStatus?.isConnected,
+    },
+  );
   const { data: locations, refetch: refetchLocations } = api.googleBusiness.getLocations.useQuery(
-    undefined,
+    { storeId },
     {
       enabled: connectionStatus?.isConnected && !connectionStatus?.token?.locationId,
     },
@@ -55,6 +62,7 @@ export function GoogleBusinessConnect() {
     if (!location) return;
 
     selectLocationMutation.mutate({
+      storeId,
       accountId: location.accountId,
       locationId: location.locationId,
       locationName: location.displayName,
@@ -63,7 +71,7 @@ export function GoogleBusinessConnect() {
 
   const handleDisconnect = () => {
     if (confirm('Êtes-vous sûr de vouloir déconnecter votre compte Google Business ?')) {
-      disconnectMutation.mutate();
+      disconnectMutation.mutate({ storeId });
     }
   };
 
