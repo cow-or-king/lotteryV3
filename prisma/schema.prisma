@@ -19,13 +19,14 @@ model User {
   role             String          @default("ADMIN")
   createdAt        DateTime        @default(now()) @map("created_at")
   updatedAt        DateTime        @updatedAt @map("updated_at")
-  brands           Brand[]
-  games            Game[]
-  prizeTemplates   PrizeTemplate[]
-  qrCodes          QRCode[]
-  reviewsResponded Review[]
-  subscription     Subscription?
-  wheelDesigns     WheelDesign[]
+  brands                 Brand[]
+  games                  Game[]
+  prizeTemplates         PrizeTemplate[]
+  qrCodes                QRCode[]
+  reviewsResponded       Review[]
+  subscription           Subscription?
+  wheelDesigns           WheelDesign[]
+  googleBusinessToken    GoogleBusinessToken?
 
   @@index([email])
   @@map("users")
@@ -45,6 +46,30 @@ model GameUser {
   @@index([email])
   @@index([supabaseId])
   @@map("game_users")
+}
+
+/// Google Business Profile API tokens (encrypted)
+model GoogleBusinessToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Tokens OAuth (chiffrés en AES-256-GCM)
+  accessToken  String   @db.Text @map("access_token")
+  refreshToken String   @db.Text @map("refresh_token")
+
+  // Métadonnées Google Business
+  accountId    String?  @map("account_id")
+  locationId   String?  @map("location_id")
+  locationName String?  @map("location_name")
+
+  // Expiration et dates
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("google_business_tokens")
 }
 
 model Subscription {

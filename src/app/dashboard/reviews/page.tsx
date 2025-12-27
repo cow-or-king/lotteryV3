@@ -8,6 +8,7 @@
 
 import {
   GoogleApiConfigModal,
+  GoogleBusinessConnect,
   NoApiConfigMessage,
   NoStoresMessage,
   ResponseModal,
@@ -94,6 +95,11 @@ export default function ReviewsPage() {
   return (
     <div>
       {showHeader && <ReviewsHeader />}
+
+      {/* Connexion Google Business */}
+      <div className="mb-6">
+        <GoogleBusinessConnect />
+      </div>
 
       {showFilters && (
         <ReviewFilters

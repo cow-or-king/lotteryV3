@@ -22,6 +22,7 @@ import { campaignRouter } from './routers/campaign.router';
 import { winnerRouter } from './routers/winner.router';
 import { conditionRouter } from './routers/condition.router';
 import { pricingRouter } from './routers/pricing.router';
+import { googleBusinessRouter } from './routers/google-business.router';
 
 /**
  * Router principal de l'API
@@ -45,6 +46,7 @@ export const appRouter = createTRPCRouter({
   winner: winnerRouter,
   condition: conditionRouter,
   pricing: pricingRouter,
+  googleBusiness: googleBusinessRouter,
 });
 
 /**

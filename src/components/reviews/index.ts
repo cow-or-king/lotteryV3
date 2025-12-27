@@ -12,3 +12,4 @@ export { StarRatingSelector } from './StarRatingSelector';
 export { NoApiConfigMessage } from './NoApiConfigMessage';
 export { ReviewList } from './ReviewList';
 export { NoStoresMessage } from './NoStoresMessage';
+export { GoogleBusinessConnect } from './GoogleBusinessConnect';

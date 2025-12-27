@@ -83,7 +83,7 @@ async function handleGameAuth(
     );
   }
 
-  const response = NextResponse.redirect(new URL(`/play/${campaignId}`, requestUrl));
+  const response = NextResponse.redirect(new URL(`/game/${campaignId}`, requestUrl));
   setGameCookies(response, session, gameUserResult.data);
   return response;
 }
