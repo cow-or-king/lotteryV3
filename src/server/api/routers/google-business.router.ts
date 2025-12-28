@@ -12,6 +12,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { google } from 'googleapis';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import { decryptToken } from '@/lib/encryption/token-encryption.service';
+import { googleBusinessOAuthService } from '@/infrastructure/services/google-business-oauth.service';
 
 // Validate environment variables
 if (
@@ -57,56 +58,82 @@ export const googleBusinessRouter = createTRPCRouter({
   getConnectionStatus: protectedProcedure
     .input(z.object({ storeId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Vérifier que le store appartient à l'utilisateur
-      const store = await prisma.store.findFirst({
-        where: {
-          id: input.storeId,
-          brand: {
-            userId: ctx.session.userId,
-          },
-        },
-      });
+      try {
+        console.log('[getConnectionStatus] Input:', input);
+        console.log('[getConnectionStatus] userId:', ctx.userId);
 
-      if (!store) {
+        // Vérifier que le store appartient à l'utilisateur
+        const store = await prisma.store.findFirst({
+          where: {
+            id: input.storeId,
+            brand: {
+              ownerId: ctx.userId,
+            },
+          },
+        });
+
+        console.log('[getConnectionStatus] Store found:', !!store);
+
+        if (!store) {
+          console.error(
+            '[getConnectionStatus] Store not found for storeId:',
+            input.storeId,
+            'userId:',
+            ctx.userId,
+          );
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Store not found',
+          });
+        }
+
+        const token = await prisma.googleBusinessToken.findUnique({
+          where: { storeId: input.storeId },
+          select: {
+            id: true,
+            accountId: true,
+            locationId: true,
+            locationName: true,
+            expiresAt: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        console.log('[getConnectionStatus] Token found:', !!token);
+
+        if (!token) {
+          return {
+            isConnected: false,
+            token: null,
+          };
+        }
+
+        const isExpired = token.expiresAt < new Date();
+
+        console.log('[getConnectionStatus] Is expired:', isExpired);
+
+        return {
+          isConnected: !isExpired,
+          token: {
+            accountId: token.accountId,
+            locationId: token.locationId,
+            locationName: token.locationName,
+            expiresAt: token.expiresAt.toISOString(),
+            createdAt: token.createdAt.toISOString(),
+            updatedAt: token.updatedAt.toISOString(),
+          },
+        };
+      } catch (error) {
+        console.error('[getConnectionStatus] ERROR:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Store not found',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
         });
       }
-
-      const token = await prisma.googleBusinessToken.findUnique({
-        where: { storeId: input.storeId },
-        select: {
-          id: true,
-          accountId: true,
-          locationId: true,
-          locationName: true,
-          expiresAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      if (!token) {
-        return {
-          isConnected: false,
-          token: null,
-        };
-      }
-
-      const isExpired = token.expiresAt < new Date();
-
-      return {
-        isConnected: !isExpired,
-        token: {
-          accountId: token.accountId,
-          locationId: token.locationId,
-          locationName: token.locationName,
-          expiresAt: token.expiresAt.toISOString(),
-          createdAt: token.createdAt.toISOString(),
-          updatedAt: token.updatedAt.toISOString(),
-        },
-      };
     }),
 
   /**
@@ -120,7 +147,7 @@ export const googleBusinessRouter = createTRPCRouter({
         where: {
           id: input.storeId,
           brand: {
-            userId: ctx.session.userId,
+            ownerId: ctx.userId,
           },
         },
       });
@@ -162,8 +189,10 @@ export const googleBusinessRouter = createTRPCRouter({
         });
 
         // Récupérer les accounts
+        console.log('[Google Business] Fetching accounts...');
         const accountsResponse = await mybusiness.accounts.list();
         const accounts = accountsResponse.data.accounts || [];
+        console.log('[Google Business] Found', accounts.length, 'accounts');
 
         if (accounts.length === 0) {
           return { locations: [] };
@@ -181,6 +210,8 @@ export const googleBusinessRouter = createTRPCRouter({
         for (const account of accounts) {
           if (!account.name) continue;
 
+          console.log('[Google Business] Fetching locations for account:', account.name);
+
           const mybusinessinfo = google.mybusinessbusinessinformation({
             version: 'v1',
             auth: oauth2Client,
@@ -191,6 +222,7 @@ export const googleBusinessRouter = createTRPCRouter({
           });
 
           const locations = locationsResponse.data.locations || [];
+          console.log('[Google Business] Found', locations.length, 'locations for account');
 
           for (const location of locations) {
             if (!location.name || !location.title) continue;
@@ -209,9 +241,19 @@ export const googleBusinessRouter = createTRPCRouter({
           }
         }
 
+        console.log('[Google Business] Total locations found:', allLocations.length);
         return { locations: allLocations };
       } catch (error) {
-        console.error('Error fetching Google Business locations:', error);
+        console.error('[Google Business] Error fetching locations:', error);
+        // Log plus de détails sur l'erreur
+        if (error && typeof error === 'object' && 'message' in error) {
+          console.error('[Google Business] Error message:', (error as Error).message);
+        }
+        if (error && typeof error === 'object' && 'response' in error) {
+          const apiError = error as { response?: { data?: unknown; status?: number } };
+          console.error('[Google Business] API response status:', apiError.response?.status);
+          console.error('[Google Business] API response data:', apiError.response?.data);
+        }
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to fetch Google Business locations',
@@ -237,7 +279,7 @@ export const googleBusinessRouter = createTRPCRouter({
         where: {
           id: input.storeId,
           brand: {
-            userId: ctx.session.userId,
+            ownerId: ctx.userId,
           },
         },
       });
@@ -273,7 +315,7 @@ export const googleBusinessRouter = createTRPCRouter({
         where: {
           id: input.storeId,
           brand: {
-            userId: ctx.session.userId,
+            ownerId: ctx.userId,
           },
         },
       });
@@ -288,6 +330,88 @@ export const googleBusinessRouter = createTRPCRouter({
       await prisma.googleBusinessToken.delete({
         where: { storeId: input.storeId },
       });
+
+      return { success: true };
+    }),
+
+  /**
+   * Récupère les avis Google Business pour un store
+   */
+  getReviews: protectedProcedure
+    .input(z.object({ storeId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Vérifier que le store appartient à l'utilisateur
+      const store = await prisma.store.findFirst({
+        where: {
+          id: input.storeId,
+          brand: {
+            ownerId: ctx.userId,
+          },
+        },
+      });
+
+      if (!store) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Store not found',
+        });
+      }
+
+      // Récupérer les avis via le service OAuth
+      const result = await googleBusinessOAuthService.fetchReviews(input.storeId);
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: result.error.message,
+        });
+      }
+
+      return { reviews: result.data };
+    }),
+
+  /**
+   * Répond à un avis Google Business
+   */
+  replyToReview: protectedProcedure
+    .input(
+      z.object({
+        storeId: z.string(),
+        reviewName: z.string(),
+        replyText: z.string().min(1).max(4096),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Vérifier que le store appartient à l'utilisateur
+      const store = await prisma.store.findFirst({
+        where: {
+          id: input.storeId,
+          brand: {
+            ownerId: ctx.userId,
+          },
+        },
+      });
+
+      if (!store) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Store not found',
+        });
+      }
+
+      // Publier la réponse via le service OAuth
+      const result = await googleBusinessOAuthService.replyToReview(
+        input.storeId,
+        input.reviewName,
+        input.replyText,
+      );
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: result.error.message,
+        });
+      }
 
       return { success: true };
     }),

@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, superAdminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { DEFAULT_MENU_CONFIG } from '@/lib/rbac/menuConfig';
 
@@ -22,15 +22,7 @@ export const menuRouter = createTRPCRouter({
   /**
    * Récupère toutes les permissions de menus
    */
-  getPermissions: protectedProcedure.query(async ({ ctx }) => {
-    // Vérifier que l'utilisateur est SUPER_ADMIN
-    if (ctx.user.role !== 'SUPER_ADMIN') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Seuls les SUPER_ADMIN peuvent accéder aux permissions de menus',
-      });
-    }
-
+  getPermissions: superAdminProcedure.query(async ({ ctx }) => {
     const permissions = await ctx.prisma.menuPermission.findMany({
       orderBy: { displayOrder: 'asc' },
     });
@@ -41,17 +33,9 @@ export const menuRouter = createTRPCRouter({
   /**
    * Sauvegarde les permissions de menus (batch update)
    */
-  savePermissions: protectedProcedure
+  savePermissions: superAdminProcedure
     .input(z.array(menuPermissionSchema))
     .mutation(async ({ ctx, input }) => {
-      // Vérifier que l'utilisateur est SUPER_ADMIN
-      if (ctx.user.role !== 'SUPER_ADMIN') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Seuls les SUPER_ADMIN peuvent modifier les permissions de menus',
-        });
-      }
-
       // Valider que les routes SUPER_ADMIN ne peuvent pas être activées pour ADMIN/USER
       for (const permission of input) {
         const menuConfig = DEFAULT_MENU_CONFIG.find((m) => m.id === permission.menuId);
@@ -97,15 +81,7 @@ export const menuRouter = createTRPCRouter({
   /**
    * Réinitialise les permissions aux valeurs par défaut
    */
-  resetPermissions: protectedProcedure.mutation(async ({ ctx }) => {
-    // Vérifier que l'utilisateur est SUPER_ADMIN
-    if (ctx.user.role !== 'SUPER_ADMIN') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Seuls les SUPER_ADMIN peuvent réinitialiser les permissions',
-      });
-    }
-
+  resetPermissions: superAdminProcedure.mutation(async ({ ctx }) => {
     // Supprimer toutes les permissions existantes
     await ctx.prisma.menuPermission.deleteMany({});
 

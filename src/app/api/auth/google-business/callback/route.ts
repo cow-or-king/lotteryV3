@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { prisma } from '@/infrastructure/database/prisma-client';
 import { encryptToken } from '@/lib/encryption/token-encryption.service';
-import { getServerSession } from '@/infrastructure/auth/session.service';
+import { sessionService } from '@/infrastructure/auth/session.service';
 
 // Validate environment variables
 if (
@@ -66,19 +66,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Vérifier que l'utilisateur est authentifié
-    const session = await getServerSession();
-    if (!session) {
+    const sessionResult = await sessionService.getSession();
+    if (!sessionResult.success || !sessionResult.data) {
       return NextResponse.redirect(
         new URL('/login?error=unauthorized&source=google-business', request.url),
       );
     }
+
+    const session = sessionResult.data;
 
     // Vérifier que le store appartient bien à l'utilisateur
     const store = await prisma.store.findFirst({
       where: {
         id: storeId,
         brand: {
-          userId: session.userId,
+          ownerId: session.userId,
         },
       },
     });
@@ -125,9 +127,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Rediriger vers la page du store avec succès
+    // Rediriger vers la page des stores avec succès
     return NextResponse.redirect(
-      new URL(`/dashboard/stores/${storeId}?success=google_business_connected`, request.url),
+      new URL(`/dashboard/stores?success=google_business_connected`, request.url),
     );
   } catch (err) {
     console.error('Google Business OAuth callback error:', err);

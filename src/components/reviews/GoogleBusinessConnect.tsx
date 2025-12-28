@@ -20,19 +20,31 @@ export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
 
-  // Queries
-  const { data: connectionStatus, refetch: refetchStatus } =
-    api.googleBusiness.getConnectionStatus.useQuery({ storeId });
+  // Queries - Only run if storeId is available
+  const {
+    data: connectionStatus,
+    refetch: refetchStatus,
+    isLoading: isLoadingStatus,
+  } = api.googleBusiness.getConnectionStatus.useQuery(
+    { storeId },
+    {
+      enabled: !!storeId,
+      refetchOnMount: true, // Force refetch on mount
+    },
+  );
+
+  // Debug log
+  console.log('[GoogleBusinessConnect] connectionStatus:', connectionStatus);
   const { data: authUrlData } = api.googleBusiness.getAuthUrl.useQuery(
     { storeId },
     {
-      enabled: !connectionStatus?.isConnected,
+      enabled: !!storeId && !connectionStatus?.isConnected,
     },
   );
   const { data: locations, refetch: refetchLocations } = api.googleBusiness.getLocations.useQuery(
     { storeId },
     {
-      enabled: connectionStatus?.isConnected && !connectionStatus?.token?.locationId,
+      enabled: false, // Ne pas charger automatiquement, uniquement au clic
     },
   );
 
@@ -76,7 +88,7 @@ export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
   };
 
   // Loading state
-  if (!connectionStatus) {
+  if (isLoadingStatus) {
     return (
       <GlassCard className="p-6">
         <div className="animate-pulse">
@@ -87,8 +99,17 @@ export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
     );
   }
 
+  // If no storeId, show message
+  if (!storeId) {
+    return (
+      <GlassCard className="p-6">
+        <p className="text-sm text-white/70">Aucun commerce sélectionné</p>
+      </GlassCard>
+    );
+  }
+
   // Not connected
-  if (!connectionStatus.isConnected) {
+  if (!connectionStatus || !connectionStatus.isConnected) {
     return (
       <GlassCard className="p-6">
         <div className="flex items-start justify-between">
@@ -130,7 +151,13 @@ export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
             <p className="mt-1 text-sm text-white/70">Sélectionnez votre commerce pour commencer</p>
           </div>
           <div className="flex gap-2">
-            <GlassButton variant="secondary" onClick={() => setIsSelecting(true)}>
+            <GlassButton
+              variant="secondary"
+              onClick={() => {
+                setIsSelecting(true);
+                void refetchLocations();
+              }}
+            >
               Sélectionner un commerce
             </GlassButton>
             <GlassButton variant="secondary" onClick={handleDisconnect}>
@@ -207,7 +234,13 @@ export function GoogleBusinessConnect({ storeId }: GoogleBusinessConnectProps) {
           </p>
         </div>
         <div className="flex gap-2">
-          <GlassButton variant="secondary" onClick={() => setIsSelecting(true)}>
+          <GlassButton
+            variant="secondary"
+            onClick={() => {
+              setIsSelecting(true);
+              void refetchLocations();
+            }}
+          >
             Changer de commerce
           </GlassButton>
           <GlassButton variant="secondary" onClick={handleDisconnect}>
